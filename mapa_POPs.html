@@ -1,0 +1,2390 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <script>window["__codeletBootstrap__"] = JSON.parse('{"A":"A","B":"20260902-06-6f520ec","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YAHO2-t-jNE,0","Arial":"YAGyDvJ_4Ts,0","Bebas Neue":"YACgESME5ew,0","Bricolage Grotesque":"YAFyMcdwzpc,0","Canva Sans":"YAFLd8sKbwc,2","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAHO2VMiyZo,0","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAEul-FRQw4,0","Georgia":"YAGzXkO0pEM,0","Helvetica Neue":"YAFcf6CtJfI,0","Impact":"YAFcfnjI7Vk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YAHO2a5g66Q,0","JetBrains Mono":"YAFdJksXcAk,0","Libre Baskerville":"YACgEUFdPdA,0","Manrope":"YAHO2b2feC4,0","Merriweather":"YACgEXvHxxs,0","Montserrat":"YADLjI9qxTA,0","Nunito":"YACgEX8C5Gg,0","Oleo Script":"YACgEQQ14jI,0","Phantom Sans":"YAHO2E8Pb88,0","Playfair Display":"YACgEYmuCJE,0","Poppins":"YAFdJjbTu24,1","Press Start 2P":"YAFyGr-8pmQ,0","Quicksand":"YADWjpfPmdk,0","Raleway":"YACgEVg3xZg,0","Segoe UI":"YAHNdRD1Klw,0","Source Sans 3":"YAG4lO1Mj10,0","Spectral":"YAHO2rVUHIM,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Ubuntu":"YACgERDU--Q,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0","ui-monospace":"YADlN8CFZ8Q,0","ui-sans-serif":"YACkoN-xg4g,0"}}');</script>
+  <script src="/_sdk/50d846425a1e5082.telemetry_sdk.js"
+    integrity="sha512-Otbex+ztlVbcEGql0rXGd/3E3ee/hqAntg6DeuUEMG6pIPbXGOSvZbFZVzknAXi1tH/itQ+ijEhOTr2aWj6CXg=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organização de POPs</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --ink: #0b1736;
+      --paper: #edf3ff;
+      --line: rgba(160, 190, 255, 0.56);
+      --focus: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: calc(100 * min(var(--vh, 1vh), 1vh));
+      font-family: "DM Sans", sans-serif;
+      overflow-x: hidden;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .mindmap-shell {
+      width: 100%;
+      min-height: calc(100 * min(var(--vh, 1vh), 1vh));
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.25rem 1.25rem;
+    }
+
+    .mindmap-shell::before,
+    .mindmap-shell::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      z-index: -1;
+      border-radius: 999px;
+      filter: blur(2px);
+    }
+
+    .mindmap-shell::before {
+      width: 29rem;
+      height: 29rem;
+      top: -16rem;
+      right: -10rem;
+      background: radial-gradient(circle, rgba(25, 183, 187, 0.24), transparent 69%);
+    }
+
+    .mindmap-shell::after {
+      width: 26rem;
+      height: 26rem;
+      bottom: -14rem;
+      left: -9rem;
+      background: radial-gradient(circle, rgba(245, 177, 75, 0.18), transparent 69%);
+    }
+
+    .eyebrow {
+      position: absolute;
+      top: 1.65rem;
+      left: 1.8rem;
+      color: rgba(231, 240, 255, 0.78);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .map-stage {
+      width: 100%;
+      max-width: 1040px;
+      position: relative;
+    }
+
+    .camera-viewport {
+      width: 100%;
+      height: min(78vh, 640px);
+      min-height: 440px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+    }
+
+    .world {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      transition: transform 700ms cubic-bezier(.22, .8, .28, 1);
+      will-change: transform;
+    }
+
+    .connectors {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .connector {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 2.5px;
+      opacity: 0;
+      transition: opacity 320ms ease, stroke-dashoffset 700ms cubic-bezier(.22, .8, .28, 1);
+    }
+
+    .connector.is-visible {
+      opacity: 1;
+    }
+
+    .core-area {
+      position: absolute;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .dev-node-controls {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      display: flex;
+      gap: 4px;
+      z-index: 6;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    body.dev-mode .dev-node-controls {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .dev-node-btn {
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      padding: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: #101d40;
+      color: rgb(230, 238, 255);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+      transition: transform 160ms ease, background 160ms ease;
+    }
+
+    .dev-node-btn:hover,
+    .dev-node-btn:focus-visible {
+      transform: scale(1.12);
+      background: #16244d;
+    }
+
+    .dev-node-btn-danger {
+      color: rgb(255, 150, 150);
+      border-color: rgba(255, 120, 120, 0.45);
+    }
+
+    .core-button,
+    .branch-button {
+      border: 0;
+      cursor: pointer;
+      transition: transform 260ms ease, box-shadow 260ms ease, filter 260ms ease;
+    }
+
+    .core-button {
+      width: 168px;
+      min-height: 168px;
+      padding: 1.2rem;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 18px 0 rgba(2, 9, 31, 0.13), 0 22px 45px rgba(2, 9, 31, 0.38);
+      position: relative;
+    }
+
+    .core-button::after {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: inherit;
+      transition: transform 300ms ease, opacity 300ms ease;
+    }
+
+    .core-button:hover,
+    .core-button:focus-visible {
+      transform: translateY(-5px) scale(1.02);
+      filter: brightness(1.08);
+    }
+
+    .core-button:hover::after,
+    .core-button:focus-visible::after {
+      transform: scale(1.08);
+      opacity: 0.8;
+    }
+
+    .node-label {
+      font-family: "Fraunces", serif;
+      text-align: center;
+      line-height: 1.05;
+    }
+
+    .instruction {
+      color: rgba(235, 243, 255, 0.76);
+      font-size: 0.82rem;
+      letter-spacing: 0.025em;
+      white-space: nowrap;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .map-stage.is-open .instruction {
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+    }
+
+    .branch {
+      position: absolute;
+      z-index: 2;
+      width: 214px;
+      opacity: 0;
+      pointer-events: none;
+      /* Cresce a partir do próprio centro: no layout radial os galhos saem
+         em qualquer direção, então nenhum deslocamento lateral serviria. */
+      transform: scale(0.82);
+      transition: opacity 420ms ease, transform 480ms cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .branch.is-visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    .branch-button {
+      width: 100%;
+      min-height: 70px;
+      border-radius: 18px;
+      padding: 0.9rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+      box-shadow: 0 12px 25px rgba(1, 10, 31, 0.24);
+    }
+
+    .branch-button:hover,
+    .branch-button:focus-visible {
+      transform: translateY(-3px);
+      filter: brightness(1.08);
+    }
+
+    .branch-button svg {
+      flex: 0 0 auto;
+      transition: transform 240ms ease;
+    }
+
+    .branch.is-expanded .branch-button svg {
+      transform: rotate(45deg);
+    }
+
+    .branch-name {
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.15;
+    }
+
+    button:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 4px;
+    }
+
+    .screen-reader-status {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .dev-toggle {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.8rem;
+      z-index: 20;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(231, 240, 255, 0.85);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background 200ms ease, transform 200ms ease, color 200ms ease, border-color 200ms ease;
+    }
+
+    .dev-toggle:hover,
+    .dev-toggle:focus-visible {
+      background: rgba(255, 255, 255, 0.18);
+      transform: translateY(-2px);
+    }
+
+    .dev-toggle.is-unlocked {
+      border-color: rgba(120, 220, 160, 0.6);
+      color: rgb(150, 240, 190);
+    }
+
+    .dev-toggle-icon-unlocked {
+      display: none;
+    }
+
+    .dev-toggle.is-unlocked .dev-toggle-icon-locked {
+      display: none;
+    }
+
+    .dev-toggle.is-unlocked .dev-toggle-icon-unlocked {
+      display: block;
+    }
+
+    .dev-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 8, 20, 0.66);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1.25rem;
+    }
+
+    .dev-overlay[hidden] {
+      display: none;
+    }
+
+    .dev-modal {
+      position: relative;
+      width: min(100%, 380px);
+      max-height: 88vh;
+      overflow-y: auto;
+      background: #101d40;
+      border: 1px solid rgba(160, 190, 255, 0.28);
+      border-radius: 20px;
+      padding: 1.6rem 1.5rem 1.5rem;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+      color: rgb(230, 238, 255);
+    }
+
+    .dev-modal-close {
+      position: absolute;
+      top: 0.7rem;
+      right: 0.8rem;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: transparent;
+      color: rgba(230, 238, 255, 0.7);
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+      border: 0;
+    }
+
+    .dev-modal-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .dev-modal-title {
+      font-family: "Fraunces", serif;
+      font-size: 1.25rem;
+      margin: 0 0 0.4rem;
+    }
+
+    .dev-modal-desc {
+      font-size: 0.85rem;
+      color: rgba(230, 238, 255, 0.7);
+      margin: 0 0 1.1rem;
+    }
+
+    .dev-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .dev-label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(230, 238, 255, 0.8);
+    }
+
+    .dev-input {
+      font: inherit;
+      padding: 0.55rem 0.7rem;
+      border-radius: 10px;
+      border: 1px solid rgba(160, 190, 255, 0.35);
+      background: rgba(255, 255, 255, 0.06);
+      color: rgb(240, 245, 255);
+      resize: vertical;
+    }
+
+    .dev-input:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 1px;
+    }
+
+    .dev-btn {
+      font: inherit;
+      font-weight: 700;
+      padding: 0.65rem 1rem;
+      border-radius: 12px;
+      border: 0;
+      cursor: pointer;
+      transition: transform 200ms ease, filter 200ms ease;
+    }
+
+    .dev-btn:hover,
+    .dev-btn:focus-visible {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+    }
+
+    .dev-btn-primary {
+      background: linear-gradient(135deg, rgb(246, 190, 88), rgb(239, 136, 84));
+      color: rgb(11, 23, 54);
+    }
+
+    .dev-error {
+      color: rgb(255, 150, 150);
+      font-size: 0.8rem;
+      margin: 0;
+    }
+
+    /* --- Câmera controlada pelo usuário: roda do mouse, arrasto e botões.
+       O #world recebe um transform escrito em JS a partir do estado
+       `camera`; a transição é ligada/desligada inline conforme o
+       movimento seja programático (enquadrar) ou manual (arrastar). --- */
+    .camera-viewport {
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .camera-viewport.is-panning {
+      cursor: grabbing;
+    }
+
+    .camera-controls {
+      position: absolute;
+      right: 0.85rem;
+      bottom: 0.85rem;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.28rem;
+      border-radius: 999px;
+      background: rgba(10, 20, 48, 0.72);
+      border: 1px solid rgba(160, 190, 255, 0.28);
+      box-shadow: 0 10px 24px rgba(2, 9, 31, 0.4);
+      backdrop-filter: blur(6px);
+    }
+
+    .camera-btn {
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      padding: 0;
+      border-radius: 50%;
+      border: 0;
+      background: transparent;
+      color: rgba(231, 240, 255, 0.85);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .camera-btn:hover,
+    .camera-btn:focus-visible {
+      background: rgba(255, 255, 255, 0.14);
+      color: rgb(255, 255, 255);
+      transform: translateY(-1px);
+    }
+
+    .camera-btn.is-active {
+      color: rgb(150, 240, 190);
+    }
+
+    .camera-zoom-readout {
+      min-width: 44px;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: rgba(231, 240, 255, 0.8);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .camera-legend {
+      position: absolute;
+      left: 1rem;
+      bottom: 1.1rem;
+      z-index: 30;
+      display: flex;
+      gap: 0.9rem;
+      font-size: 0.66rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: rgba(231, 240, 255, 0.5);
+      pointer-events: none;
+    }
+
+    .camera-legend span {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .camera-legend b {
+      width: 11px;
+      height: 11px;
+      flex: none;
+      border-radius: 3px;
+      background: rgb(72, 111, 197);
+    }
+
+    .camera-legend .legend-sub b {
+      border-radius: 999px;
+      background: rgb(224, 233, 255);
+    }
+
+    /* --- Subnós: a folhagem do galho. Mesma largura dos nós, na cor clara
+       da paleta do galho. A caixa cresce com o texto (até 400 palavras) e
+       rola por dentro depois do teto; enquanto for curta mantém o formato
+       de pílula, que vira um oval feio quando a caixa fica alta. --- */
+    .branch.is-subnode .branch-button {
+      min-height: 54px;
+      max-height: 320px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      align-items: flex-start;
+      border-radius: 999px;
+      padding: 0.6rem 1.15rem;
+      box-shadow: 0 8px 18px rgba(1, 10, 31, 0.18);
+    }
+
+    /* Só o raio muda: mexer no padding alteraria a altura já medida por
+       measureNodes() e obrigaria a remedir. */
+    .branch.is-subnode.is-tall .branch-button {
+      border-radius: 18px;
+    }
+
+    .branch.is-subnode .branch-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      white-space: pre-wrap;
+      text-align: left;
+      /* min-width:0 é o que deixa o texto realmente quebrar dentro do flex,
+         em vez de esticar a caixa até caber a maior palavra. */
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .connector.is-subnode {
+      stroke-width: 1.6px;
+    }
+
+    .connector.is-subnode.is-visible {
+      opacity: 0.72;
+    }
+
+    /* O botão que cria subnós usa a própria aparência de subnó, para que a
+       categoria se aprenda olhando, sem precisar de legenda no botão. */
+    .dev-node-btn-sub {
+      background: rgb(226, 235, 255);
+      color: rgb(23, 52, 105);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .dev-node-btn-sub:hover,
+    .dev-node-btn-sub:focus-visible {
+      background: rgb(255, 255, 255);
+    }
+
+    /* --- Dados do mapa: exportar/importar. Fica ao lado do cadeado e só
+       aparece no modo dev, porque importar substitui o mapa inteiro. --- */
+    .data-toggle {
+      right: 4.4rem;
+      display: none;
+    }
+
+    body.dev-mode .data-toggle {
+      display: grid;
+    }
+
+    .dev-btn-ghost {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(160, 190, 255, 0.35);
+      color: rgb(230, 238, 255);
+    }
+
+    .dev-data-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .dev-data-hint {
+      font-size: 0.76rem;
+      color: rgba(230, 238, 255, 0.6);
+      margin: 0.1rem 0 0.6rem;
+      line-height: 1.4;
+    }
+
+    .dev-word-count {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: rgba(230, 238, 255, 0.6);
+      margin: -0.5rem 0 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dev-word-count.is-over {
+      color: rgb(255, 150, 150);
+    }
+
+    .dev-input-long {
+      min-height: 190px;
+      line-height: 1.45;
+    }
+
+    .dev-file-input {
+      display: none;
+    }
+
+    @media (max-width: 720px) {
+      .mindmap-shell {
+        min-height: auto;
+        padding: 4.4rem 1rem 2rem;
+      }
+
+      .eyebrow {
+        top: 1.35rem;
+        left: 1.2rem;
+      }
+
+      .camera-viewport {
+        height: min(70vh, 520px);
+        min-height: 360px;
+        border-radius: 20px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+  <script src="/_sdk/b3bf9e8ac58e6ad6.data_sdk.js" type="text/javascript"
+    integrity="sha512-otc1u9NYq9Ms5Jt//7vmhrrqR5CLPr8Jdgs6741gqniClfLMcfmC+jK/cKuQdhLv6G0esJ/FzaMS9tv0T/vj/Q=="></script>
+  <script src="/_sdk/85d8138ba0e9799c.resizing_sdk.js" type="text/javascript"
+    integrity="sha512-8dt8XK3OsxyrL/A/AlNWHjY+utLvSBcXg410ejaLzAIOVGDj1jNmEYRbymhdzToKhNo0uO9dxAmMLwHQseh3Lw=="></script>
+</head>
+
+<body data-template-id="__page-root" style="background: rgb(11, 23, 54);">
+  <main class="mindmap-shell" aria-label="Organização de POPs">
+    <p class="eyebrow">Mapa de POPs</p>
+    <button id="dev-toggle" class="dev-toggle" type="button" aria-haspopup="dialog" aria-label="Modo desenvolvedor" title="Modo desenvolvedor">
+      <i data-lucide="lock" class="dev-toggle-icon-locked" aria-hidden="true" width="17" height="17"></i>
+      <i data-lucide="unlock" class="dev-toggle-icon-unlocked" aria-hidden="true" width="17" height="17"></i>
+    </button>
+    <button id="data-toggle" class="dev-toggle data-toggle" type="button" aria-haspopup="dialog" aria-label="Dados do mapa" title="Exportar ou importar o mapa">
+      <i data-lucide="database" aria-hidden="true" width="16" height="16"></i>
+    </button>
+    <input id="import-file" class="dev-file-input" type="file" accept="application/json,.json" />
+    <section id="map-stage" class="map-stage" aria-label="Área do mapa de POPs">
+     <div id="camera-viewport" class="camera-viewport">
+      <div id="world" class="world">
+       <svg class="connectors" aria-hidden="true"></svg>
+      <div id="core-area" class="core-area"><button id="core-button" data-template-id="core-button" class="canva-button core-button"
+          type="button" aria-expanded="false" aria-controls=""
+          style="background: linear-gradient(135deg, rgb(246, 190, 88), rgb(239, 136, 84)); color: rgb(11, 23, 54);">
+          <span data-template-id="core-label" class="canva-text node-label"
+            style="color: rgb(11, 23, 54); font-weight: 700; font-style: normal; font-size: 22px; line-height: 1.1;">BUCAREIN</span> </button>
+        <div class="dev-node-controls">
+          <button type="button" class="dev-node-btn" data-dev-action="edit" data-node-id="root" title="Editar nó central" aria-label="Editar nó central"><i data-lucide="pencil" width="13" height="13" aria-hidden="true"></i></button>
+          <button type="button" class="dev-node-btn" data-dev-action="add-node" data-node-id="root" title="Novo nó (continua o galho)" aria-label="Novo nó"><i data-lucide="git-branch" width="13" height="13" aria-hidden="true"></i></button>
+        </div>
+        <p id="instruction" data-template-id="initial-instruction" class="canva-text instruction"
+          style="color: rgb(220, 233, 255); font-weight: 500; font-style: normal; font-size: 13px;">Clique para expandir
+        </p>
+      </div>
+      <div id="branches-layer"></div>
+      </div>
+      <div class="camera-legend" aria-hidden="true">
+        <span><b></b>Nó</span>
+        <span class="legend-sub"><b></b>Subnó</span>
+      </div>
+      <div class="camera-controls" role="group" aria-label="Controles da câmera">
+        <button id="camera-zoom-out" class="camera-btn" type="button" title="Afastar (tecla −)" aria-label="Afastar">
+          <i data-lucide="minus" width="16" height="16" aria-hidden="true"></i>
+        </button>
+        <span id="camera-zoom-readout" class="camera-zoom-readout" aria-live="off">100%</span>
+        <button id="camera-zoom-in" class="camera-btn" type="button" title="Aproximar (tecla +)" aria-label="Aproximar">
+          <i data-lucide="plus" width="16" height="16" aria-hidden="true"></i>
+        </button>
+        <button id="camera-fit" class="camera-btn" type="button" title="Recentrar o mapa (tecla 0)" aria-label="Recentrar o mapa">
+          <i data-lucide="maximize" width="15" height="15" aria-hidden="true"></i>
+        </button>
+      </div>
+     </div>
+    </section>
+    <p id="map-status" class="screen-reader-status" aria-live="polite"></p>
+
+    <div id="dev-overlay" class="dev-overlay" hidden>
+      <div class="dev-modal" role="dialog" aria-modal="true" aria-labelledby="dev-modal-title">
+        <button id="dev-modal-close" class="dev-modal-close" type="button" aria-label="Fechar">&times;</button>
+        <div id="dev-modal-body"></div>
+      </div>
+    </div>
+  </main>
+  <!-- Estado embutido pela exportação "HTML autocontido". Vazio no arquivo
+       original: quem exporta preenche este bloco com o mapa serializado, e
+       o arquivo baixado passa a abrir já montado em qualquer computador. -->
+  <script id="map-seed" type="application/json">{"format":"mapaPOPs","version":2,"exportedAt":"2026-09-04T18:55:17.000Z","root":{"id":"root","label":"BUCAREIN","url":"","type":"node","children":[{"id":"node-mtn8lx2v-1","label":"RECEPÇÃO","url":"","type":"node","children":[]},{"id":"node-mtn8m3lj-2","label":"ENFERMEIROS","url":"","type":"node","children":[]},{"id":"node-mtn8malb-3","label":"PROCEDIMENTOS","url":"","type":"node","children":[{"id":"node-mtn8pbtu-15","label":"SINAIS VITAIS","url":"","type":"node","children":[{"id":"node-mtn8qvjr-22","label":"OXIMETRIA DIGITAL","url":"","type":"subnode","children":[]},{"id":"node-mtn8reqg-23","label":"COMO AFERIR E INTERPRETAR OS VALORES DE P.A EM CRIANÇAS E ADOLECENTES","url":"","type":"subnode","children":[]},{"id":"node-mtn8scpy-25","label":"COMO VERIFICAR OS SSUV E REALIZAR EXAME FÍSICO EM CRIANÇA E ADOLESCENTE","url":"","type":"subnode","children":[]}]},{"id":"node-mtn8pj84-16","label":"TESTE DO PEZINHO","url":"","type":"node","children":[]},{"id":"node-mtn8pnyn-17","label":"CURATIVOS","url":"","type":"node","children":[{"id":"node-mtn8smcr-26","label":"RETIRADA DE PONTOS","url":"","type":"subnode","children":[]},{"id":"node-mtn8t1z8-27","label":"COMO REALIZAR TÉCNICA DE CURATIVOS EM LESÕES ABERTAS","url":"","type":"subnode","children":[]},{"id":"node-mtn8tcne-28","label":"PROGRAMA DE CURATIVOS ESPECIAIS","url":"","type":"subnode","children":[]}]},{"id":"node-mtn8pr9r-18","label":"ECG","url":"","type":"node","children":[]},{"id":"node-mtn8pwnv-19","label":"PLANILHAS","url":"","type":"node","children":[{"id":"node-mtn8ufd6-29","label":"COMO UTILIZAR A PLANILHA DE MONITORAMENTO DO CUIDADO  A PESSOA COM SIFILIS","url":"","type":"subnode","children":[]}]},{"id":"node-mtn8q5jv-20","label":"HIGIENIZAÇÃO DAS MÃOS","url":"","type":"node","children":[]},{"id":"node-mtn8qjmo-21","label":"FORMULÁRIO DE CONSUMO ALIMENTAR","url":"","type":"node","children":[]}]},{"id":"node-mtn8mg92-4","label":"MÉDICOS","url":"","type":"node","children":[]},{"id":"node-mtn8mn94-5","label":"SALA DE VACINA","url":"","type":"node","children":[]},{"id":"node-mtn8mxk5-6","label":"E-MULT","url":"","type":"node","children":[]},{"id":"node-mtn8n5tn-7","label":"BIOSSEGURANÇA","url":"","type":"node","children":[]},{"id":"node-mtn8n9ek-8","label":"CME","url":"","type":"node","children":[]},{"id":"node-mtn8ndm4-9","label":"ACS","url":"","type":"node","children":[]},{"id":"node-mtn8nhsu-10","label":"ODONTO","url":"","type":"node","children":[]},{"id":"node-mtn8npws-11","label":"CNAR","url":"","type":"node","children":[]},{"id":"node-mtn8nxgh-12","label":"LABORATÓRIO","url":"","type":"node","children":[]},{"id":"node-mtn8o2us-13","label":"FARMÁCIA","url":"","type":"node","children":[]},{"id":"node-mtn8o8bf-14","label":"COORDENAÇÃO","url":"","type":"node","children":[]}]}}</script>
+  <script src="/_sdk/0b5911494a4ff060.editing_sdk.js"
+    integrity="sha512-/vyQ+jNH4Q/uooDsnMcX6o3IxIcmA7RW0TJmBR88seymBCMyLn9QjvQ8qpBP5hx5JmcAoEFUTuGK9amUMyPFpA=="></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const stage = document.getElementById("map-stage");
+      const viewport = document.getElementById("camera-viewport");
+      const world = document.getElementById("world");
+      const branchesLayer = document.getElementById("branches-layer");
+      const connectorsSvg = document.querySelector(".connectors");
+      const coreArea = document.getElementById("core-area");
+      const coreButton = document.getElementById("core-button");
+      const coreLabel = coreButton.querySelector(".node-label");
+      const status = document.getElementById("map-status");
+
+      const zoomInBtn = document.getElementById("camera-zoom-in");
+      const zoomOutBtn = document.getElementById("camera-zoom-out");
+      const fitBtn = document.getElementById("camera-fit");
+      const zoomReadout = document.getElementById("camera-zoom-readout");
+
+      const DEV_PASSWORD = "2387";
+      const devToggle = document.getElementById("dev-toggle");
+      const dataToggle = document.getElementById("data-toggle");
+      const importFile = document.getElementById("import-file");
+      const devOverlay = document.getElementById("dev-overlay");
+      const devModalClose = document.getElementById("dev-modal-close");
+      const devModalBody = document.getElementById("dev-modal-body");
+      let devUnlocked = false;
+
+      // Geometria: o tronco fica no centro e só os setores que saem dele se
+      // espalham em 360°. Dali para dentro, cada galho cresce na horizontal
+      // para o lado em que nasceu, com os irmãos empilhados na vertical —
+      // é o que mantém a largura do galho independente do ângulo. Só nós
+      // visíveis ocupam espaço: quem está fechado não reserva lugar nenhum.
+      const ROOT = { x: 0, y: 0, r: 84 };
+      const NODE_W = 214;
+      const NODE_H = 70;
+      const SUB_H = 54;
+
+      const RING_FIRST = 300;      // raio mínimo do anel dos setores
+      const RING_PAD = 34;         // folga entre setores vizinhos, no anel
+      const STEP_X = 254;          // avanço horizontal por geração dentro do galho
+      const SIBLING_GAP = 24;      // folga vertical entre irmãos dentro do galho
+      const WORLD_MARGIN = 160;
+      const TWEEN_MS = 450;        // duração da reacomodação do mapa
+
+      const SUB_TALL_AT = 96;      // acima disso o subnó perde o formato de pílula
+      const SUB_WORD_LIMIT = 400;
+      const NODE_CHAR_LIMIT = 80;
+
+      const PALETTE = [
+        { bg: "rgb(26, 157, 158)", fg: "rgb(255, 255, 255)", subBg: "rgb(217, 245, 241)", subFg: "rgb(18, 60, 66)" },
+        { bg: "rgb(72, 111, 197)", fg: "rgb(255, 255, 255)", subBg: "rgb(224, 233, 255)", subFg: "rgb(23, 52, 105)" },
+        { bg: "rgb(164, 74, 119)", fg: "rgb(255, 255, 255)", subBg: "rgb(249, 225, 235)", subFg: "rgb(100, 33, 63)" },
+        { bg: "rgb(214, 109, 64)", fg: "rgb(255, 255, 255)", subBg: "rgb(255, 233, 216)", subFg: "rgb(109, 43, 23)" },
+        { bg: "rgb(90, 150, 90)", fg: "rgb(255, 255, 255)", subBg: "rgb(224, 245, 224)", subFg: "rgb(30, 80, 30)" },
+        { bg: "rgb(120, 90, 190)", fg: "rgb(255, 255, 255)", subBg: "rgb(232, 224, 250)", subFg: "rgb(55, 30, 100)" },
+      ];
+
+      // --- Categorias ---------------------------------------------------
+      // "node"    : galho. Nasce de qualquer nó e continua a árvore.
+      // "subnode" : folha do galho. Só nasce de um nó-folha (um nó que
+      //             ainda não tem nenhum filho do tipo "node") e é sempre
+      //             terminal — não recebe filhos de espécie alguma.
+      // Consequência das duas regras juntas: um nó ou continua o galho com
+      // nós, ou o encerra com subnós. Nunca as duas coisas ao mesmo tempo.
+      const NODE = "node";
+      const SUBNODE = "subnode";
+
+      const treeData = {
+        root: {
+          id: "root", label: "BUCAREIN", url: "", type: NODE,
+          children: [
+            {
+              id: "objective", label: "Objetivo", url: "", type: NODE, children: [
+                { id: "objective-sub-1", label: "Resultado desejado", url: "", type: SUBNODE, children: [] },
+                { id: "objective-sub-2", label: "Critério de sucesso", url: "", type: SUBNODE, children: [] },
+              ],
+            },
+            {
+              id: "ideas", label: "Ideias", url: "", type: NODE, children: [
+                { id: "ideas-sub-1", label: "Possibilidades", url: "", type: SUBNODE, children: [] },
+                { id: "ideas-sub-2", label: "Perguntas-chave", url: "", type: SUBNODE, children: [] },
+              ],
+            },
+            {
+              id: "resources", label: "Recursos", url: "", type: NODE, children: [
+                { id: "resources-sub-1", label: "Pessoas e apoio", url: "", type: SUBNODE, children: [] },
+                { id: "resources-sub-2", label: "Ferramentas", url: "", type: SUBNODE, children: [] },
+              ],
+            },
+            {
+              id: "next", label: "Próximos passos", url: "", type: NODE, children: [
+                { id: "next-sub-1", label: "Primeira ação", url: "", type: SUBNODE, children: [] },
+                { id: "next-sub-2", label: "Prazo e revisão", url: "", type: SUBNODE, children: [] },
+              ],
+            },
+          ],
+        },
+      };
+
+      function isSub(node) {
+        return node.type === SUBNODE;
+      }
+
+      function hasNodeChild(node) {
+        return node.children.some((child) => !isSub(child));
+      }
+
+      function hasSubChild(node) {
+        return node.children.some(isSub);
+      }
+
+      // Um nó aceita novos nós enquanto não tiver encerrado o galho com
+      // subnós. Subnós nunca aceitam filhos.
+      function canAddNode(node) {
+        return !isSub(node) && !hasSubChild(node);
+      }
+
+      // Subnós só pendem da ponta de um galho. A raiz é o tronco: ela
+      // sempre inicia galhos, nunca recebe folhagem direto.
+      function canAddSub(node) {
+        return !isSub(node) && node !== treeData.root && !hasNodeChild(node);
+      }
+
+      // Meia-largura e meia-altura da caixa. A altura do subnó depende do
+      // texto renderizado, então vem de measureNodes(); as constantes só
+      // valem como estimativa antes da primeira medição.
+      function halfW(node) {
+        return node.depth === 0 ? ROOT.r : (node.w || NODE_W) / 2;
+      }
+
+      function halfH(node) {
+        if (node.depth === 0) return ROOT.r;
+        return (node.h || (isSub(node) ? SUB_H : NODE_H)) / 2;
+      }
+
+      function countWords(text) {
+        const trimmed = String(text).trim();
+        return trimmed ? trimmed.split(/\s+/).length : 0;
+      }
+
+      // Rótulos de subnó podem ter centenas de palavras; onde o texto é lido
+      // fora da caixa (leitor de tela, aviso de remoção) entra só um resumo.
+      function shortLabel(node, max) {
+        const limit = max || 60;
+        const flat = String(node.label).replace(/\s+/g, " ").trim();
+        return flat.length > limit ? flat.slice(0, limit - 1) + "…" : flat;
+      }
+
+      let nodeById = new Map();
+      let nodeCounter = 0;
+      function newNodeId() {
+        nodeCounter += 1;
+        return "node-" + Date.now().toString(36) + "-" + nodeCounter;
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, (ch) => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+        }[ch]));
+      }
+
+      // --- Persistência: o localStorage é o rascunho automático (salva a
+      // cada mudança do modo dev, no mesmo navegador/perfil). O mapa
+      // portátil sai por exportação, em .json ou em .html autocontido. ---
+      const STORAGE_KEY = "mapaPOPs.treeData.v1";
+      const SEED_STAMP_KEY = "mapaPOPs.seedStamp.v1";
+      const MAP_FORMAT = "mapaPOPs";
+      const MAP_FORMAT_VERSION = 2;
+
+      function serializeNode(node) {
+        return {
+          id: node.id,
+          label: node.label,
+          url: node.url || "",
+          type: isSub(node) ? SUBNODE : NODE,
+          children: node.children.map(serializeNode),
+        };
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeNode(treeData.root)));
+        } catch (e) {
+          // localStorage indisponível (ex.: navegação privada) — ignora.
+        }
+      }
+
+      // Mapas salvos antes das categorias não têm `type`. Nesses casos a
+      // categoria é inferida da aparência que o nó já tinha: da segunda
+      // geração em diante, quem não tinha filhos era desenhado na cor
+      // clara — ou seja, já era um subnó na prática.
+      function reviveChildren(list, depth) {
+        if (!Array.isArray(list)) return [];
+        return list.map((n) => {
+          const children = reviveChildren(n && n.children, depth + 1);
+          let type = n && (n.type === SUBNODE || n.type === NODE) ? n.type : null;
+          if (!type) type = depth >= 2 && children.length === 0 ? SUBNODE : NODE;
+          if (children.length) type = NODE; // subnó é sempre terminal
+          return {
+            id: (n && n.id) || newNodeId(),
+            label: (n && n.label) || "",
+            url: (n && n.url) || "",
+            type: type,
+            children: children,
+          };
+        });
+      }
+
+      // Garante a exclusividade entre as categorias em dados antigos: se um
+      // nó ficou com filhos das duas espécies, os subnós são promovidos a
+      // nós — assim nada some do mapa e a regra volta a valer.
+      function normalizeTypes(node) {
+        if (node.children.length && hasNodeChild(node)) {
+          node.children.forEach((child) => { child.type = NODE; });
+        }
+        node.children.forEach(normalizeTypes);
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return null;
+          return parsed;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      // Aceita tanto o envelope de exportação quanto um nó solto — que é o
+      // formato gravado no localStorage desde a v05. Assim um mapa antigo
+      // continua abrindo sem conversão.
+      function readEnvelope(parsed) {
+        if (!parsed || typeof parsed !== "object") return null;
+        if (parsed.format === MAP_FORMAT && parsed.root && typeof parsed.root === "object") {
+          return parsed.root;
+        }
+        if (Array.isArray(parsed.children) || typeof parsed.label === "string") return parsed;
+        return null;
+      }
+
+      function buildEnvelope() {
+        return {
+          format: MAP_FORMAT,
+          version: MAP_FORMAT_VERSION,
+          exportedAt: new Date().toISOString(),
+          root: serializeNode(treeData.root),
+        };
+      }
+
+      // Substitui a árvore inteira por um nó-raiz vindo de arquivo ou do
+      // seed embutido, passando pelo mesmo saneamento do carregamento
+      // normal (tipos inferidos e exclusividade nó/subnó reimposta).
+      function adoptRoot(rootData) {
+        treeData.root.label = rootData.label || treeData.root.label;
+        treeData.root.url = "";
+        treeData.root.type = NODE;
+        treeData.root.children = reviveChildren(rootData.children, 1);
+        normalizeTypes(treeData.root);
+        coreLabel.textContent = treeData.root.label;
+      }
+
+      function readSeed() {
+        const el = document.getElementById("map-seed");
+        if (!el || !el.textContent.trim()) return null;
+        try {
+          return JSON.parse(el.textContent);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function downloadFile(filename, mime, text) {
+        const blob = new Blob([text], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function stamp() {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, "0");
+        return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+      }
+
+      // --- Layout: anel radial no tronco, galhos lineares ------------------
+      // Só os setores que saem do tronco se espalham em 360°. De cada setor
+      // para dentro o galho cresce na horizontal, para o lado em que nasceu,
+      // com os irmãos empilhados na vertical — assim a largura do galho não
+      // depende do ângulo (uma caixa tem 214px de largura contra 70px de
+      // altura: empilhada de lado ficaria três vezes mais larga).
+      //
+      // Só nós VISÍVEIS ocupam espaço. Reservar lugar para galhos fechados
+      // era o que abria os buracos no anel: um setor com 7 filhos ocultos
+      // pesava sete vezes mais que o vizinho fechado e engolia um terço do
+      // círculo. Nós ocultos herdam a posição do pai, para emergirem de
+      // dentro dele quando abrem.
+      //
+      // As caixas não giram: rótulo inclinado seria ilegível.
+      // ---------------------------------------------------------------------
+      function layoutTree() {
+        nodeById = new Map();
+
+        // Índice e parentesco primeiro: computeVisibility() e colorFor()
+        // dependem de depth/parent, e as duas rodam antes do posicionamento.
+        (function index(node, depth, parent) {
+          node.depth = depth;
+          node.parent = parent;
+          nodeById.set(node.id, node);
+          node.children.forEach((child) => index(child, depth + 1, node));
+        })(treeData.root, 0, null);
+
+        computeVisibility();
+
+        const sectors = treeData.root.children.filter((node) => node.visible);
+        if (!sectors.length) {
+          treeData.root.x = WORLD_MARGIN + ROOT.r;
+          treeData.root.y = WORLD_MARGIN + ROOT.r;
+          nodeById.forEach((node) => {
+            if (node.depth === 0) return;
+            node.x = treeData.root.x;
+            node.y = treeData.root.y;
+          });
+          return;
+        }
+
+        function visibleChildren(node) {
+          return node.children.filter((child) => child.visible);
+        }
+
+        // Altura que o galho ocupa na vertical, empilhando irmãos visíveis.
+        function branchHeight(node) {
+          const kids = visibleChildren(node);
+          if (!kids.length) return node.h || (isSub(node) ? SUB_H : NODE_H);
+          const total = kids.reduce((sum, kid) => sum + branchHeight(kid), 0)
+            + SIBLING_GAP * (kids.length - 1);
+          return Math.max(node.h || NODE_H, total);
+        }
+
+        // Quantas gerações visíveis o galho tem, para saber sua largura.
+        function branchDepth(node) {
+          const kids = visibleChildren(node);
+          if (!kids.length) return 1;
+          return 1 + Math.max.apply(null, kids.map(branchDepth));
+        }
+
+        // Posiciona um galho inteiro no eixo horizontal, a partir do setor.
+        // `dir` é +1 para a metade direita do anel e -1 para a esquerda.
+        function placeBranch(node, dir) {
+          const kids = visibleChildren(node);
+          if (!kids.length) return;
+          const heights = kids.map(branchHeight);
+          const total = heights.reduce((a, b) => a + b, 0) + SIBLING_GAP * (kids.length - 1);
+          let cursor = node.y - total / 2;
+          kids.forEach((kid, i) => {
+            kid.x = node.x + dir * STEP_X;
+            kid.y = cursor + heights[i] / 2;
+            cursor += heights[i] + SIBLING_GAP;
+            placeBranch(kid, dir);
+          });
+        }
+
+        // Espaço que o setor ocupa na direção tangente ao anel. Um galho
+        // deitado (setor à direita ou à esquerda) gasta a própria altura;
+        // um galho no topo ou embaixo atravessa o anel de lado e gasta a
+        // largura. Daí o W·|sen θ| + H·|cos θ|.
+        function tangentialNeed(node, angle) {
+          const w = (branchDepth(node) - 1) * STEP_X + NODE_W;
+          const h = branchHeight(node);
+          return Math.abs(w * Math.sin(angle)) + Math.abs(h * Math.cos(angle)) + RING_PAD;
+        }
+
+        // A necessidade depende do ângulo e o ângulo depende da necessidade:
+        // duas passadas resolvem — ângulos iguais como chute, mede, realoca.
+        const start = -Math.PI / 2;
+        let angles = sectors.map((_, i) => start + (Math.PI * 2 * (i + 0.5)) / sectors.length);
+        let radius = RING_FIRST;
+
+        for (let pass = 0; pass < 2; pass += 1) {
+          const needs = sectors.map((node, i) => tangentialNeed(node, angles[i]));
+          const totalNeed = needs.reduce((a, b) => a + b, 0) || 1;
+          // R·ângulo_i >= necessidade_i para todo i equivale a R >= Σ/2π,
+          // quando o ângulo é repartido proporcional à necessidade.
+          radius = Math.max(RING_FIRST, totalNeed / (Math.PI * 2));
+          let cursor = start;
+          angles = needs.map((need) => {
+            const span = (Math.PI * 2 * need) / totalNeed;
+            const mid = cursor + span / 2;
+            cursor += span;
+            return mid;
+          });
+        }
+
+        treeData.root.x = 0;
+        treeData.root.y = 0;
+        sectors.forEach((node, i) => {
+          node.angle = angles[i];
+          node.x = Math.cos(angles[i]) * radius;
+          node.y = Math.sin(angles[i]) * radius;
+          placeBranch(node, Math.cos(angles[i]) >= 0 ? 1 : -1);
+        });
+
+        // Quem está oculto nasce e morre na posição do pai.
+        (function settleHidden(node) {
+          node.children.forEach((child) => {
+            if (!child.visible) {
+              child.x = node.x;
+              child.y = node.y;
+            }
+            settleHidden(child);
+          });
+        })(treeData.root);
+
+        // Desloca tudo para o canvas ficar em números positivos; o centro se
+        // move conforme o mapa abre e fecha.
+        let minX = -ROOT.r;
+        let minY = -ROOT.r;
+        nodeById.forEach((node) => {
+          if (node.depth === 0 || !node.visible) return;
+          minX = Math.min(minX, node.x - halfW(node));
+          minY = Math.min(minY, node.y - halfH(node));
+        });
+
+        const offsetX = WORLD_MARGIN - minX;
+        const offsetY = WORLD_MARGIN - minY;
+        nodeById.forEach((node) => {
+          node.x += offsetX;
+          node.y += offsetY;
+        });
+      }
+
+      // A cor vem do galho a que o nó pertence; a categoria escolhe entre a
+      // versão forte (nó) e a clara (subnó) dessa mesma cor.
+      function colorFor(node) {
+        let topAncestor = node;
+        while (topAncestor.depth > 1) topAncestor = topAncestor.parent;
+        const idx = Math.max(0, treeData.root.children.indexOf(topAncestor));
+        const palette = PALETTE[idx % PALETTE.length];
+        return isSub(node)
+          ? { bg: palette.subBg, fg: palette.subFg }
+          : { bg: palette.bg, fg: palette.fg };
+      }
+
+      // Onde a reta centro→centro cruza a borda da caixa. No radial os nós
+      // se ligam em qualquer direção, então não dá para fixar "sai pela
+      // direita, entra pela esquerda" como no layout anterior.
+      function borderPoint(node, towardX, towardY) {
+        const dx = towardX - node.x;
+        const dy = towardY - node.y;
+        if (!dx && !dy) return { x: node.x, y: node.y };
+
+        if (node.depth === 0) {
+          const len = Math.hypot(dx, dy);
+          return { x: node.x + (dx / len) * ROOT.r, y: node.y + (dy / len) * ROOT.r };
+        }
+
+        const hw = halfW(node);
+        const hh = halfH(node);
+        const scaleX = dx ? hw / Math.abs(dx) : Infinity;
+        const scaleY = dy ? hh / Math.abs(dy) : Infinity;
+        const s = Math.min(scaleX, scaleY);
+        return { x: node.x + dx * s, y: node.y + dy * s };
+      }
+
+      function refreshAriaControls() {
+        coreButton.setAttribute(
+          "aria-controls",
+          treeData.root.children.map((c) => "node-" + c.id).join(" ")
+        );
+      }
+
+      function refreshWorldSize() {
+        let maxX = treeData.root.x + ROOT.r;
+        let maxY = treeData.root.y + ROOT.r;
+        nodeById.forEach((node) => {
+          if (node.depth === 0) return;
+          maxX = Math.max(maxX, node.x + halfW(node));
+          maxY = Math.max(maxY, node.y + halfH(node));
+        });
+        world.style.width = Math.max(1040, maxX + WORLD_MARGIN) + "px";
+        world.style.height = Math.max(920, maxY + WORLD_MARGIN) + "px";
+      }
+
+      // O conector é criado uma vez e depois só tem o `d` reescrito. Recriar
+      // trinta paths a cada quadro da reacomodação seria desperdício, e o
+      // comprimento — que a animação de traçado precisa — sai de um hypot,
+      // já que a linha é reta: getTotalLength() num laço de animação custa
+      // caro à toa.
+      function addConnectorFor(node) {
+        if (!node.parent) return;
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("id", "line-" + node.id);
+        path.setAttribute("class", "connector" + (isSub(node) ? " is-subnode" : ""));
+        connectorsSvg.appendChild(path);
+        node.path = path;
+      }
+
+      function drawConnector(node) {
+        const parent = node.parent;
+        if (!parent || !node.path) return;
+        const start = borderPoint(parent, node.x, node.y);
+        const end = borderPoint(node, parent.x, parent.y);
+        const length = Math.hypot(end.x - start.x, end.y - start.y);
+        node.path.setAttribute("d", "M " + start.x + " " + start.y + " L " + end.x + " " + end.y);
+        node.lineLength = length;
+        node.path.style.strokeDasharray = String(length);
+        node.path.style.strokeDashoffset = node.visible ? "0" : String(length);
+      }
+
+      // Os botões de criação aparecem só quando a regra da categoria
+      // permite: o de "novo nó" some depois que o galho foi encerrado com
+      // subnós, e o de "novo subnó" só existe na ponta de um galho. A regra
+      // vira algo que se lê na tela, em vez de virar mensagem de erro.
+      function buildDevControls(node) {
+        const actions = [{ action: "edit", icon: "pencil", title: "Editar" }];
+        if (canAddNode(node)) {
+          actions.push({ action: "add-node", icon: "git-branch", title: "Novo nó (continua o galho)" });
+        }
+        if (canAddSub(node)) {
+          actions.push({ action: "add-subnode", icon: "plus", title: "Novo subnó (folha do galho)", sub: true });
+        }
+        if (node !== treeData.root) {
+          actions.push({ action: "delete", icon: "trash-2", title: "Remover", danger: true });
+        }
+
+        const wrap = document.createElement("div");
+        wrap.className = "dev-node-controls";
+        actions.forEach((a) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "dev-node-btn"
+            + (a.danger ? " dev-node-btn-danger" : "")
+            + (a.sub ? " dev-node-btn-sub" : "");
+          btn.dataset.devAction = a.action;
+          btn.dataset.nodeId = node.id;
+          btn.title = a.title;
+          btn.setAttribute("aria-label", a.title);
+
+          const icon = document.createElement("i");
+          icon.setAttribute("data-lucide", a.icon);
+          icon.setAttribute("width", "13");
+          icon.setAttribute("height", "13");
+          icon.setAttribute("aria-hidden", "true");
+          btn.appendChild(icon);
+
+          wrap.appendChild(btn);
+        });
+        return wrap;
+      }
+
+      function mountNodeEl(node) {
+        const article = document.createElement("article");
+        article.id = "node-" + node.id;
+        article.className = "branch" + (isSub(node) ? " is-subnode" : "");
+        article.setAttribute("aria-label", (isSub(node) ? "Subnó " : "Nó ") + shortLabel(node));
+        article.style.transitionDelay = (20 + Math.min(node.depth, 6) * 40) + "ms";
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "canva-button branch-button";
+        button.setAttribute("aria-expanded", "false");
+        const color = colorFor(node);
+        button.style.background = color.bg;
+        button.style.color = color.fg;
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "canva-text branch-name";
+        nameSpan.style.color = color.fg;
+        nameSpan.textContent = node.label;
+        button.appendChild(nameSpan);
+
+        if (node.children.length > 0) {
+          const icon = document.createElement("i");
+          icon.className = "branch-toggle-icon";
+          icon.setAttribute("data-lucide", "plus");
+          icon.setAttribute("aria-hidden", "true");
+          icon.setAttribute("width", "19");
+          icon.setAttribute("height", "19");
+          button.appendChild(icon);
+        } else if (node.url) {
+          const icon = document.createElement("i");
+          icon.setAttribute("data-lucide", "external-link");
+          icon.setAttribute("aria-hidden", "true");
+          icon.setAttribute("width", "16");
+          icon.setAttribute("height", "16");
+          button.appendChild(icon);
+        }
+
+        article.appendChild(button);
+        article.appendChild(buildDevControls(node));
+        branchesLayer.appendChild(article);
+
+        node.el = article;
+      }
+
+      function mountChildren(node) {
+        node.children.forEach((child) => {
+          mountNodeEl(child);
+          mountChildren(child);
+        });
+      }
+
+      // === Pipeline de desenho ============================================
+      // A altura de um subnó depende do texto já renderizado, então a ordem
+      // é montar → medir → posicionar. Inverter isso (posicionar com alturas
+      // constantes, como fazia a v05) faz o layout radial errar o raio dos
+      // anéis e os conectores pararem na borda errada.
+      // ====================================================================
+
+      function measureNodes() {
+        nodeById.forEach((node) => {
+          if (node.depth === 0 || !node.el) return;
+          node.w = node.el.offsetWidth || NODE_W;
+          node.h = node.el.offsetHeight || (isSub(node) ? SUB_H : NODE_H);
+          // Puramente cosmético: não altera a altura, então não obriga a
+          // remedir. Se algum dia mudar tamanho, medir de novo.
+          if (isSub(node)) node.el.classList.toggle("is-tall", node.h > SUB_TALL_AT);
+        });
+      }
+
+      // Escreve na tela a posição EXIBIDA (dx, dy), que durante a
+      // reacomodação fica atrás da posição alvo (x, y) calculada pelo layout.
+      function applyPositions() {
+        const root = treeData.root;
+        coreArea.style.left = ((root.dx === undefined ? root.x : root.dx) - ROOT.r) + "px";
+        coreArea.style.top = ((root.dy === undefined ? root.y : root.dy) - ROOT.r) + "px";
+        coreArea.style.width = (ROOT.r * 2) + "px";
+
+        nodeById.forEach((node) => {
+          if (node.depth === 0 || !node.el) return;
+          node.el.style.left = (node.dx - halfW(node)) + "px";
+          node.el.style.top = (node.dy - halfH(node)) + "px";
+        });
+        // Os conectores leem dx/dy pelas mesmas propriedades x/y que
+        // borderPoint() consulta, então a troca acontece aqui dentro.
+        withDisplayedCoords(() => {
+          nodeById.forEach((node) => drawConnector(node));
+        });
+        refreshWorldSize();
+      }
+
+      // borderPoint() e refreshWorldSize() falam em node.x/node.y. Durante o
+      // tween o que vale é a posição exibida, então x/y são trocados pelo par
+      // exibido só enquanto o desenho acontece, e devolvidos em seguida.
+      function withDisplayedCoords(fn) {
+        const saved = [];
+        nodeById.forEach((node) => {
+          saved.push([node, node.x, node.y]);
+          if (node.dx !== undefined) node.x = node.dx;
+          if (node.dy !== undefined) node.y = node.dy;
+        });
+        try {
+          fn();
+        } finally {
+          saved.forEach((entry) => { entry[0].x = entry[1]; entry[0].y = entry[2]; });
+        }
+      }
+
+      function snapDisplayed() {
+        nodeById.forEach((node) => { node.dx = node.x; node.dy = node.y; });
+      }
+
+      // Reacomodação animada: as caixas deslizam até a posição nova e os
+      // conectores são redesenhados no MESMO quadro, senão linha e caixa se
+      // descolam durante o movimento. Um tween só por vez — abrir outro nó no
+      // meio cancela o anterior e parte de onde as caixas estão.
+      let tweenFrame = null;
+      function tweenTo(duration) {
+        if (tweenFrame) cancelAnimationFrame(tweenFrame);
+        const from = [];
+        nodeById.forEach((node) => {
+          if (node.dx === undefined) { node.dx = node.x; node.dy = node.y; }
+          from.push([node, node.dx, node.dy]);
+        });
+        if (!duration) {
+          snapDisplayed();
+          applyPositions();
+          return;
+        }
+
+        const t0 = performance.now();
+        const step = (now) => {
+          const p = Math.min(1, (now - t0) / duration);
+          const e = 1 - Math.pow(1 - p, 3); // desaceleração cúbica
+          from.forEach((entry) => {
+            const node = entry[0];
+            node.dx = entry[1] + (node.x - entry[1]) * e;
+            node.dy = entry[2] + (node.y - entry[2]) * e;
+          });
+          applyPositions();
+          if (p < 1) {
+            tweenFrame = requestAnimationFrame(step);
+          } else {
+            tweenFrame = null;
+            snapDisplayed();
+            applyPositions();
+          }
+        };
+        tweenFrame = requestAnimationFrame(step);
+      }
+
+      // Recalcula o layout com a visibilidade atual e desliza até ele.
+      function relayout(duration) {
+        measureNodes();
+        layoutTree();
+        tweenTo(duration);
+      }
+
+      function render() {
+        branchesLayer.innerHTML = "";
+        connectorsSvg.innerHTML = "";
+        if (tweenFrame) { cancelAnimationFrame(tweenFrame); tweenFrame = null; }
+        layoutTree();            // 1ª passada: registra nodeById, depth e parent
+        mountChildren(treeData.root);
+        lucide.createIcons();    // antes de medir: os ícones entram no fluxo
+        measureNodes();
+        layoutTree();            // 2ª passada: agora com as alturas reais
+        snapDisplayed();
+        nodeById.forEach((node) => addConnectorFor(node));
+        applyPositions();
+        refreshAriaControls();
+      }
+
+      // As fontes chegam depois do primeiro desenho e mudam a quebra de
+      // linha; sem remedir, subnós longos ficam com a altura errada.
+      function remeasureOnFontsReady() {
+        if (!document.fonts || !document.fonts.ready) return;
+        document.fonts.ready.then(() => {
+          relayout(0);
+          updateVisibility();
+          autoFit(0);
+        });
+      }
+
+      // A expansão vive no dado (`node.expanded`) e não mais numa classe do
+      // DOM. O layout precisa saber quem está visível para não reservar
+      // espaço a quem está fechado, e ler isso de volta do DOM tornaria a
+      // ordem entre desenhar e posicionar frágil. A classe continua, só que
+      // como reflexo, para o CSS.
+      function computeVisibility() {
+        const isOpen = stage.classList.contains("is-open");
+        function walk(node, parentVisible) {
+          node.visible = node.depth === 0 ? true : parentVisible;
+          const childrenVisible = node.depth === 0 ? isOpen : (node.visible && !!node.expanded);
+          node.children.forEach((child) => walk(child, childrenVisible));
+        }
+        walk(treeData.root, true);
+      }
+
+      function updateVisibility() {
+        computeVisibility();
+        nodeById.forEach((node) => {
+          if (node.depth === 0) return;
+          if (node.el) {
+            node.el.classList.toggle("is-visible", node.visible);
+            node.el.classList.toggle("is-expanded", !!node.expanded);
+          }
+          if (node.path) {
+            node.path.classList.toggle("is-visible", node.visible);
+            node.path.style.strokeDashoffset = node.visible ? "0" : String(node.lineLength || 0);
+          }
+        });
+      }
+
+      // =====================================================================
+      // Câmera
+      // ---------------------------------------------------------------------
+      // A câmera deixou de ser derivada do conteúdo e passou a ter estado
+      // próprio: `camera` guarda o deslocamento e a escala, e o transform do
+      // #world é apenas o reflexo desse estado. Enquanto o usuário não
+      // encosta nela, o mapa continua se enquadrando sozinho ao abrir e
+      // fechar; no primeiro gesto (roda, arrasto ou +/−) o enquadramento
+      // automático se desliga e só volta pelo botão "recentrar".
+      // =====================================================================
+      const MIN_SCALE = 0.2;
+      const MAX_SCALE = 2.5;
+      const FIT_MAX_SCALE = 1.2;
+      const KEEP_ON_SCREEN = 120;
+
+      // Limiar para o gesto virar arrasto. O toque-para-clicar do touchpad
+      // se apresenta como "mouse" no Windows e tem pouco tremor; dedo e
+      // caneta precisam de folga maior para não virar arrasto sem querer.
+      const DRAG_THRESHOLD_MOUSE = 4;
+      const DRAG_THRESHOLD_TOUCH = 10;
+
+      // A pinça do touchpad chega como wheel com ctrlKey e deltaY pequeno
+      // (ordem de 1 a 10), enquanto a rodinha manda ~100 por entalhe. Cada
+      // gesto precisa da sua própria sensibilidade para os dois darem a
+      // mesma sensação de zoom.
+      const WHEEL_ZOOM_SENS = 0.0015;
+      const PINCH_ZOOM_SENS = 0.012;
+      const MAX_ZOOM_STEP = 1.35;
+
+      const camera = { x: 0, y: 0, scale: 1 };
+      let cameraIsManual = false;
+
+      function applyCamera(ms) {
+        world.style.transition = ms ? "transform " + ms + "ms cubic-bezier(.22,.8,.28,1)" : "none";
+        world.style.transform = "translate(" + camera.x + "px, " + camera.y + "px) scale(" + camera.scale + ")";
+        zoomReadout.textContent = Math.round(camera.scale * 100) + "%";
+      }
+
+      // Caixa que envolve tudo o que está visível agora. `pad` é a folga
+      // usada ao enquadrar; para travar o arrasto usamos pad 0.
+      function boxOf(node) {
+        return {
+          l: node.x - halfW(node), r: node.x + halfW(node),
+          t: node.y - halfH(node), b: node.y + halfH(node),
+        };
+      }
+
+      function unionBox(boxes, pad) {
+        return {
+          l: Math.min.apply(null, boxes.map((b) => b.l)) - pad,
+          r: Math.max.apply(null, boxes.map((b) => b.r)) + pad,
+          t: Math.min.apply(null, boxes.map((b) => b.t)) - pad,
+          b: Math.max.apply(null, boxes.map((b) => b.b)) + pad,
+        };
+      }
+
+      function getActiveBox(pad) {
+        const p = pad === undefined ? 60 : pad;
+        const root = treeData.root;
+        const boxes = [{
+          l: root.x - ROOT.r, r: root.x + ROOT.r,
+          t: root.y - ROOT.r, b: root.y + ROOT.r,
+        }];
+        nodeById.forEach((node) => {
+          if (node.depth === 0 || !node.visible) return;
+          boxes.push(boxOf(node));
+        });
+        return {
+          l: Math.min.apply(null, boxes.map((b) => b.l)) - p,
+          r: Math.max.apply(null, boxes.map((b) => b.r)) + p,
+          t: Math.min.apply(null, boxes.map((b) => b.t)) - p,
+          b: Math.max.apply(null, boxes.map((b) => b.b)) + p,
+        };
+      }
+
+      // Trava suave: o usuário pode arrastar à vontade, mas nunca a ponto de
+      // jogar o mapa inteiro para fora da tela.
+      function clampCamera() {
+        const box = getActiveBox(0);
+        const vw = viewport.clientWidth;
+        const vh = viewport.clientHeight;
+        camera.x = clamp(camera.x, KEEP_ON_SCREEN - box.r * camera.scale, vw - KEEP_ON_SCREEN - box.l * camera.scale);
+        camera.y = clamp(camera.y, KEEP_ON_SCREEN - box.b * camera.scale, vh - KEEP_ON_SCREEN - box.t * camera.scale);
+      }
+
+      function fitCamera(ms) {
+        const box = getActiveBox();
+        const vw = viewport.clientWidth;
+        const vh = viewport.clientHeight;
+        const scale = clamp(
+          Math.min(vw / (box.r - box.l), vh / (box.b - box.t)),
+          MIN_SCALE,
+          FIT_MAX_SCALE
+        );
+        camera.scale = scale;
+        camera.x = vw / 2 - ((box.l + box.r) / 2) * scale;
+        camera.y = vh / 2 - ((box.t + box.b) / 2) * scale;
+        applyCamera(ms);
+      }
+
+      // Leva a câmera até o nó recém-aberto e o que ele acabou de revelar,
+      // ajustando o zoom nos dois sentidos: aproxima quando o grupo é
+      // pequeno, afasta quando é grande. Num mapa de 14 setores a visão
+      // geral fica perto do piso de escala, e é este enquadramento que
+      // devolve a legibilidade ao abrir um galho.
+      // Roda mesmo com cameraIsManual ligado: clicar num nó é um pedido
+      // explícito de atenção, diferente do reenquadramento passivo.
+      function focusOn(node, ms) {
+        if (!node) return;
+        const boxes = [node.depth === 0
+          ? { l: node.x - ROOT.r, r: node.x + ROOT.r, t: node.y - ROOT.r, b: node.y + ROOT.r }
+          : boxOf(node)];
+        node.children.forEach((child) => {
+          if (child.visible) boxes.push(boxOf(child));
+        });
+
+        const box = unionBox(boxes, 90);
+        const vw = viewport.clientWidth;
+        const vh = viewport.clientHeight;
+        camera.scale = clamp(
+          Math.min(vw / (box.r - box.l), vh / (box.b - box.t)),
+          MIN_SCALE,
+          FIT_MAX_SCALE
+        );
+
+        camera.x = vw / 2 - ((box.l + box.r) / 2) * camera.scale;
+        camera.y = vh / 2 - ((box.t + box.b) / 2) * camera.scale;
+        clampCamera();
+        applyCamera(ms);
+      }
+
+      // Zoom ancorado num ponto da viewport: o que estava sob o cursor
+      // continua sob o cursor depois da mudança de escala.
+      function zoomAt(px, py, factor, ms) {
+        const next = clamp(camera.scale * factor, MIN_SCALE, MAX_SCALE);
+        if (next === camera.scale) return;
+        const worldX = (px - camera.x) / camera.scale;
+        const worldY = (py - camera.y) / camera.scale;
+        camera.scale = next;
+        camera.x = px - worldX * next;
+        camera.y = py - worldY * next;
+        clampCamera();
+        applyCamera(ms);
+      }
+
+      function takeCameraControl() {
+        if (cameraIsManual) return;
+        cameraIsManual = true;
+        fitBtn.classList.add("is-active");
+        fitBtn.title = "Recentrar o mapa e voltar ao enquadramento automático (tecla 0)";
+      }
+
+      function releaseCameraControl() {
+        cameraIsManual = false;
+        fitBtn.classList.remove("is-active");
+        fitBtn.title = "Recentrar o mapa (tecla 0)";
+      }
+
+      // Chamado depois de abrir/fechar/expandir/reconstruir: reenquadra
+      // enquanto a câmera for automática, e apenas revalida a trava quando
+      // ela já pertence ao usuário.
+      function autoFit(ms) {
+        if (cameraIsManual) {
+          clampCamera();
+          applyCamera(ms);
+          return;
+        }
+        fitCamera(ms);
+      }
+
+      function zoomFromCenter(factor) {
+        takeCameraControl();
+        zoomAt(viewport.clientWidth / 2, viewport.clientHeight / 2, factor, 220);
+      }
+
+      zoomInBtn.addEventListener("click", () => zoomFromCenter(1.25));
+      zoomOutBtn.addEventListener("click", () => zoomFromCenter(1 / 1.25));
+      fitBtn.addEventListener("click", () => {
+        releaseCameraControl();
+        fitCamera(420);
+        status.textContent = "Mapa recentrado.";
+      });
+
+      // Zoom por rodinha (mouse), por dois dedos e por pinça (touchpad). O
+      // preventDefault é incondicional de propósito: sem ele o navegador dá
+      // zoom na página inteira na pinça e no Ctrl+rolagem.
+      // deltaX é ignorado: num gesto diagonal, misturar deslocamento lateral
+      // com zoom deixaria o movimento errático.
+      // Um subnó longo rola por dentro. Enquanto ele ainda tiver texto para
+      // percorrer naquela direção, a roda pertence ao texto e não ao zoom;
+      // ao chegar ao fim, o zoom volta a assumir.
+      function scrollableUnder(event) {
+        const box = event.target.closest(".branch.is-subnode .branch-button");
+        if (!box) return false;
+        const room = box.scrollHeight - box.clientHeight;
+        if (room <= 1) return false;
+        if (event.deltaY < 0) return box.scrollTop > 0;
+        if (event.deltaY > 0) return box.scrollTop < room - 1;
+        return false;
+      }
+
+      viewport.addEventListener("wheel", (event) => {
+        if (scrollableUnder(event)) return;
+        event.preventDefault();
+        takeCameraControl();
+
+        let delta = event.deltaY;
+        if (event.deltaMode === 1) delta *= 16;          // roda em linhas
+        else if (event.deltaMode === 2) delta *= viewport.clientHeight; // em páginas
+
+        const sens = event.ctrlKey ? PINCH_ZOOM_SENS : WHEEL_ZOOM_SENS;
+        // O limite fica no fator, e não no delta: o touchpad manda muitos
+        // eventos minúsculos e a rodinha manda poucos e grandes: limitar o
+        // resultado aproxima a sensação dos dois sem travar nenhum.
+        const factor = clamp(Math.exp(-delta * sens), 1 / MAX_ZOOM_STEP, MAX_ZOOM_STEP);
+
+        const rect = viewport.getBoundingClientRect();
+        zoomAt(event.clientX - rect.left, event.clientY - rect.top, factor, 0);
+      }, { passive: false });
+
+      // Arrasto: começa em qualquer ponto da viewport, inclusive em cima de
+      // um nó, mas só vira arrasto depois do limiar de alguns pixels — abaixo
+      // disso continua sendo um clique normal no nó. O clique que o navegador
+      // dispara ao fim de um arrasto é engolido na fase de captura, senão
+      // arrastar por cima de um nó acabaria expandindo ou abrindo o link.
+      //
+      // IMPORTANTE: a captura do ponteiro é feita só quando o gesto vira
+      // arrasto de fato, nunca no pointerdown. Enquanto um elemento tem o
+      // ponteiro capturado, o navegador redireciona para ele também o
+      // "click" — o evento chegaria com target = #camera-viewport e nunca
+      // com o botão do nó, o que faz o clique no tronco (listener no próprio
+      // botão) e o clique nos demais nós (delegado por closest) pararem de
+      // funcionar. Mover esta chamada de volta para o pointerdown reintroduz
+      // exatamente esse bug.
+      let activePointerId = null;
+      let dragOrigin = null;
+      let didDrag = false;
+
+      viewport.addEventListener("pointerdown", (event) => {
+        didDrag = false;
+        if (event.button !== 0) return;
+        if (event.target.closest(".camera-controls")) return;
+        if (event.target.closest(".dev-node-btn")) return;
+        activePointerId = event.pointerId;
+        dragOrigin = {
+          px: event.clientX,
+          py: event.clientY,
+          cx: camera.x,
+          cy: camera.y,
+          threshold: event.pointerType === "mouse" ? DRAG_THRESHOLD_MOUSE : DRAG_THRESHOLD_TOUCH,
+        };
+      });
+
+      viewport.addEventListener("pointermove", (event) => {
+        if (!dragOrigin || event.pointerId !== activePointerId) return;
+        // Antes da captura existir, um movimento rápido para fora da viewport
+        // pode levar o pointerup embora junto. Sem esta guarda, o ponteiro
+        // voltaria para o mapa com o botão já solto e continuaria arrastando.
+        if (!(event.buttons & 1)) {
+          endDrag(event);
+          return;
+        }
+        const dx = event.clientX - dragOrigin.px;
+        const dy = event.clientY - dragOrigin.py;
+        if (!didDrag) {
+          if (Math.hypot(dx, dy) < dragOrigin.threshold) return;
+          didDrag = true;
+          takeCameraControl();
+          viewport.classList.add("is-panning");
+          // Só agora: a partir daqui o gesto é arrasto, o clique resultante
+          // já será descartado, e a captura garante que o mapa continue
+          // seguindo o cursor mesmo se ele sair da viewport.
+          try {
+            viewport.setPointerCapture(activePointerId);
+          } catch (e) {
+            // alguns navegadores recusam a captura; o arrasto ainda funciona.
+          }
+        }
+        camera.x = dragOrigin.cx + dx;
+        camera.y = dragOrigin.cy + dy;
+        clampCamera();
+        applyCamera(0);
+      });
+
+      function endDrag(event) {
+        if (!dragOrigin || (event && event.pointerId !== activePointerId)) return;
+        try {
+          if (viewport.hasPointerCapture(activePointerId)) viewport.releasePointerCapture(activePointerId);
+        } catch (e) {
+          // captura já liberada — nada a fazer.
+        }
+        dragOrigin = null;
+        activePointerId = null;
+        viewport.classList.remove("is-panning");
+        // didDrag continua ligado até o clique seguinte ser engolido; se
+        // nenhum clique vier, o proximo pointerdown o desarma.
+      }
+
+      viewport.addEventListener("pointerup", endDrag);
+      viewport.addEventListener("pointercancel", endDrag);
+
+      viewport.addEventListener("click", (event) => {
+        if (!didDrag) return;
+        didDrag = false;
+        event.stopPropagation();
+        event.preventDefault();
+      }, true);
+
+      viewport.addEventListener("dragstart", (event) => event.preventDefault());
+
+      function setAllNodesClosed() {
+        nodeById.forEach((node) => {
+          node.expanded = false;
+          const btn = node.el && node.el.querySelector(".branch-button");
+          if (btn) btn.setAttribute("aria-expanded", "false");
+        });
+      }
+
+      // Reconstrói toda a árvore visual a partir dos dados (necessário
+      // sempre que a estrutura muda: criar ou remover nós desloca a
+      // posição dos irmãos e pode mudar quais botões de criação existem).
+      // A expansão mora no dado, então sobrevive à reconstrução sozinha —
+      // não precisa mais ser recolhida do DOM antes e devolvida depois.
+      function rebuildPreservingExpanded(forceExpandId, focusId) {
+        if (forceExpandId) {
+          const forced = nodeById.get(forceExpandId);
+          if (forced) forced.expanded = true;
+        }
+
+        render();
+        updateVisibility();
+
+        const target = focusId ? nodeById.get(focusId) : null;
+        if (target) focusOn(target, 420);
+        else autoFit(420);
+      }
+
+      function addChild(parentNode, label, url, type) {
+        const allowed = type === SUBNODE ? canAddSub(parentNode) : canAddNode(parentNode);
+        if (!allowed) return false;
+        const node = { id: newNodeId(), label: label, url: url || "", type: type, children: [] };
+        parentNode.children.push(node);
+        rebuildPreservingExpanded(parentNode.id, parentNode.id);
+        saveState();
+        status.textContent = (type === SUBNODE ? "Subnó" : "Nó")
+          + " criado em " + shortLabel(parentNode, 40) + ".";
+        return true;
+      }
+
+      function removeNode(node) {
+        const parent = node.parent;
+        if (!parent) return;
+        const idx = parent.children.indexOf(node);
+        if (idx === -1) return;
+        parent.children.splice(idx, 1);
+        rebuildPreservingExpanded();
+        saveState();
+        status.textContent = (isSub(node) ? "Subnó" : "Nó") + " removido.";
+      }
+
+      // O nó central abre com o enquadramento geral (é a revelação do mapa
+      // inteiro), e não com o foco pontual usado ao expandir um galho.
+      function toggleCore() {
+        const isOpen = stage.classList.toggle("is-open");
+        coreButton.setAttribute("aria-expanded", String(isOpen));
+        if (!isOpen) setAllNodesClosed();
+        updateVisibility();
+        relayout(TWEEN_MS);
+        releaseCameraControl();
+        fitCamera(TWEEN_MS);
+        status.textContent = isOpen
+          ? "Mapa de POPs. Selecione um nó para revelar seus detalhes."
+          : "Mapa de POPs recolhido.";
+      }
+
+      function saveNodeEdits(node, label, url) {
+        node.label = label;
+        node.url = url || "";
+        if (node === treeData.root) {
+          coreLabel.textContent = label;
+        } else {
+          rebuildPreservingExpanded();
+        }
+        saveState();
+      }
+
+      coreButton.addEventListener("click", toggleCore);
+
+      stage.addEventListener("click", (event) => {
+        const button = event.target.closest(".branch-button");
+        if (!button) return;
+        if (!stage.classList.contains("is-open")) return;
+
+        const article = button.closest(".branch");
+        const nodeId = article.id.slice("node-".length);
+        const node = nodeById.get(nodeId);
+        if (!node) return;
+
+        const clickedToggle = event.target.closest(".branch-toggle-icon");
+
+        if (node.url && !clickedToggle) {
+          window.open(node.url, "_blank", "noopener,noreferrer");
+          return;
+        }
+        if (node.children.length === 0) return;
+
+        node.expanded = !node.expanded;
+        button.setAttribute("aria-expanded", String(node.expanded));
+        updateVisibility();
+        // O que abriu passou a ocupar espaço e o que fechou devolveu o seu:
+        // o mapa inteiro se reacomoda deslizando antes da câmera enquadrar.
+        relayout(TWEEN_MS);
+        // Expandir leva a câmera até o que acabou de aparecer; recolher só
+        // revalida o enquadramento, sem puxar a vista para lugar nenhum.
+        if (node.expanded) focusOn(node, TWEEN_MS);
+        else autoFit(TWEEN_MS);
+        status.textContent = node.expanded ? "Nó expandido." : "Nó recolhido.";
+      });
+
+      let resizeTimer;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => autoFit(0), 120);
+      });
+
+      // Atalhos de câmera. Ficam desligados enquanto um formulário do modo
+      // dev estiver aberto, para não roubar as teclas de quem está digitando.
+      document.addEventListener("keydown", (event) => {
+        if (!devOverlay.hidden) return;
+        const tag = (event.target.tagName || "").toLowerCase();
+        if (tag === "input" || tag === "textarea" || event.target.isContentEditable) return;
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+        if (event.key === "+" || event.key === "=") {
+          event.preventDefault();
+          zoomFromCenter(1.25);
+        } else if (event.key === "-" || event.key === "_") {
+          event.preventDefault();
+          zoomFromCenter(1 / 1.25);
+        } else if (event.key === "0") {
+          event.preventDefault();
+          releaseCameraControl();
+          fitCamera(420);
+        }
+      });
+
+      // --- Módulo de desenvolvedor: protegido por senha. Uma vez
+      // desbloqueado, pequenos botões escondidos em cada nó ficam visíveis,
+      // permitindo criar, editar e remover diretamente no lugar. Quais
+      // botões de criação aparecem depende da categoria do nó e das regras
+      // de nó/subnó. No modo usuário (padrão) esses controles ficam ocultos
+      // e a página serve apenas para consulta. ---
+
+      function openDevOverlay() {
+        devOverlay.hidden = false;
+      }
+
+      function closeDevOverlay() {
+        devOverlay.hidden = true;
+      }
+
+      function setDevMode(unlocked) {
+        devUnlocked = unlocked;
+        document.body.classList.toggle("dev-mode", unlocked);
+        devToggle.classList.toggle("is-unlocked", unlocked);
+        devToggle.setAttribute(
+          "aria-label",
+          unlocked ? "Modo desenvolvedor ativo — clique para bloquear" : "Modo desenvolvedor"
+        );
+        status.textContent = unlocked
+          ? "Modo desenvolvedor ativado. Os controles de edição estão visíveis nos nós."
+          : "Modo desenvolvedor desativado.";
+      }
+
+      function renderPasswordForm(errorMsg) {
+        devModalBody.innerHTML = `
+          <h2 id="dev-modal-title" class="dev-modal-title">Área do desenvolvedor</h2>
+          <p class="dev-modal-desc">Digite a senha para revelar os controles de edição nos nós.</p>
+          <form id="dev-password-form" class="dev-form">
+            <input id="dev-password-input" type="password" inputmode="numeric" autocomplete="off" placeholder="Senha" class="dev-input" />
+            ${errorMsg ? `<p class="dev-error">${escapeHtml(errorMsg)}</p>` : ""}
+            <button type="submit" class="dev-btn dev-btn-primary">Entrar</button>
+          </form>
+        `;
+        const form = document.getElementById("dev-password-form");
+        const input = document.getElementById("dev-password-input");
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          if (input.value === DEV_PASSWORD) {
+            setDevMode(true);
+            closeDevOverlay();
+          } else {
+            renderPasswordForm("Senha incorreta.");
+          }
+        });
+        input.focus();
+      }
+
+      // Campo de texto: nós seguem com 80 caracteres, subnós passam a
+      // aceitar até 400 PALAVRAS. maxlength conta caracteres e por isso não
+      // serve para o subnó — o limite vira um contador ao vivo que trava o
+      // envio quando estoura.
+      function textFieldMarkup(forSub) {
+        if (!forSub) {
+          return `<label class="dev-label">Texto
+              <textarea id="dev-node-text" class="dev-input" rows="2" maxlength="${NODE_CHAR_LIMIT}"></textarea>
+            </label>`;
+        }
+        return `<label class="dev-label">Texto do subnó
+              <textarea id="dev-node-text" class="dev-input dev-input-long" rows="9"></textarea>
+            </label>
+            <p id="dev-word-count" class="dev-word-count">0 / ${SUB_WORD_LIMIT} palavras</p>`;
+      }
+
+      // Liga o contador e devolve a função que diz se o envio pode passar.
+      function wireWordCounter(textarea, forSub) {
+        if (!forSub) return () => true;
+        const counter = document.getElementById("dev-word-count");
+        const refresh = () => {
+          const n = countWords(textarea.value);
+          counter.textContent = n + " / " + SUB_WORD_LIMIT + " palavras";
+          counter.classList.toggle("is-over", n > SUB_WORD_LIMIT);
+        };
+        textarea.addEventListener("input", refresh);
+        refresh();
+        return () => {
+          const ok = countWords(textarea.value) <= SUB_WORD_LIMIT;
+          if (!ok) counter.classList.add("is-over");
+          return ok;
+        };
+      }
+
+      function renderNodeEditForm(node) {
+        const isRoot = node === treeData.root;
+        const forSub = !isRoot && isSub(node);
+        const categoria = isRoot ? "Nó central (tronco)" : (forSub ? "Subnó" : "Nó");
+        devModalBody.innerHTML = `
+          <h2 id="dev-modal-title" class="dev-modal-title">${isRoot ? "Editar nó central" : "Editar " + (forSub ? "subnó" : "nó")}</h2>
+          <p class="dev-modal-desc">Categoria: <strong>${categoria}</strong></p>
+          <form id="dev-node-form" class="dev-form">
+            ${textFieldMarkup(forSub)}
+            ${isRoot ? "" : `
+            <label class="dev-label">Link externo (opcional)
+              <input id="dev-node-url" class="dev-input" type="url" placeholder="https://exemplo.com" />
+            </label>
+            <p class="dev-modal-desc" style="margin:-0.3rem 0 0;">Se preenchido, clicar abre o link em vez de expandir.</p>
+            `}
+            <button type="submit" class="dev-btn dev-btn-primary">Salvar</button>
+          </form>
+        `;
+        const textarea = document.getElementById("dev-node-text");
+        const urlInput = document.getElementById("dev-node-url");
+        textarea.value = node.label;
+        if (urlInput) urlInput.value = node.url || "";
+        const withinLimit = wireWordCounter(textarea, forSub);
+
+        document.getElementById("dev-node-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          const text = textarea.value.trim();
+          if (!text || !withinLimit()) return;
+          let url = urlInput ? urlInput.value.trim() : "";
+          if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+          saveNodeEdits(node, text, url);
+          closeDevOverlay();
+        });
+        textarea.focus();
+      }
+
+      function renderNodeCreateForm(parentNode, type) {
+        const isSubCreate = type === SUBNODE;
+        const explicacao = isSubCreate
+          ? "Subnós são a folhagem do galho: encerram o ramo e não recebem filhos. Este nó deixa de aceitar novos nós."
+          : "Nós continuam o galho e podem receber outros nós ou, na ponta, subnós.";
+        devModalBody.innerHTML = `
+          <h2 id="dev-modal-title" class="dev-modal-title">Novo ${isSubCreate ? "subnó" : "nó"} em "${escapeHtml(shortLabel(parentNode, 40))}"</h2>
+          <p class="dev-modal-desc">${explicacao}</p>
+          <form id="dev-node-form" class="dev-form">
+            ${textFieldMarkup(isSubCreate)}
+            <label class="dev-label">Link externo (opcional)
+              <input id="dev-node-url" class="dev-input" type="url" placeholder="https://exemplo.com" />
+            </label>
+            <p class="dev-modal-desc" style="margin:-0.3rem 0 0;">Se preenchido, clicar abre o link em vez de expandir.</p>
+            <button type="submit" class="dev-btn dev-btn-primary">Criar</button>
+          </form>
+        `;
+        const textarea = document.getElementById("dev-node-text");
+        const urlInput = document.getElementById("dev-node-url");
+        const withinLimit = wireWordCounter(textarea, isSubCreate);
+        document.getElementById("dev-node-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          const text = textarea.value.trim();
+          if (!text || !withinLimit()) return;
+          let url = urlInput.value.trim();
+          if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+          addChild(parentNode, text, url, type);
+          closeDevOverlay();
+        });
+        textarea.focus();
+      }
+
+      devToggle.addEventListener("click", () => {
+        if (devUnlocked) {
+          setDevMode(false);
+        } else {
+          renderPasswordForm();
+          openDevOverlay();
+        }
+      });
+
+      devModalClose.addEventListener("click", closeDevOverlay);
+      devOverlay.addEventListener("click", (event) => {
+        if (event.target === devOverlay) closeDevOverlay();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !devOverlay.hidden) closeDevOverlay();
+      });
+
+      document.addEventListener("click", (event) => {
+        const btn = event.target.closest(".dev-node-btn");
+        if (!btn || !devUnlocked) return;
+
+        const action = btn.dataset.devAction;
+        const nodeId = btn.dataset.nodeId;
+        const node = nodeId === "root" ? treeData.root : nodeById.get(nodeId);
+        if (!node) return;
+
+        if (action === "edit") {
+          renderNodeEditForm(node);
+          openDevOverlay();
+        } else if (action === "add-node") {
+          if (!canAddNode(node)) return;
+          renderNodeCreateForm(node, NODE);
+          openDevOverlay();
+        } else if (action === "add-subnode") {
+          if (!canAddSub(node)) return;
+          renderNodeCreateForm(node, SUBNODE);
+          openDevOverlay();
+        } else if (action === "delete") {
+          const warn = node.children.length ? " e todos os seus descendentes" : "";
+          if (window.confirm(`Remover "${shortLabel(node, 60)}"${warn}?`)) {
+            removeNode(node);
+          }
+        }
+      });
+
+      // --- Dados do mapa: exportar e importar ------------------------------
+      // O localStorage é só o rascunho local. O mapa portátil sai daqui: um
+      // .json para backup e troca, e um .html que já abre montado em
+      // qualquer computador, sem depender do cache de navegador nenhum.
+      // ---------------------------------------------------------------------
+
+      function exportJson() {
+        downloadFile(
+          "mapa-pops-" + stamp() + ".json",
+          "application/json",
+          JSON.stringify(buildEnvelope(), null, 2)
+        );
+        status.textContent = "Mapa exportado em JSON.";
+      }
+
+      // Captura o arquivo com o DOM limpo: os nós montados são removidos
+      // antes de serializar e reconstruídos logo depois. Sem isso, o HTML
+      // exportado abriria com os nós duplicados, porque o script de
+      // inicialização monta a árvore por cima do que já estiver no DOM.
+      // Devolve o DOM ao estado do arquivo original, roda `capture`, e
+      // restaura tudo. O que o navegador escreve na página durante o uso —
+      // modal aberto, cadeado destravado, texto de status, leitura do zoom,
+      // nós montados — sairia gravado no arquivo exportado se a captura
+      // acontecesse com a página como está. Foi assim que a "tela de
+      // salvamento" acabou embutida no export anterior: exportHtml roda com
+      // o modal ainda aberto, e os botões gravados nele chegam ao arquivo
+      // sem listener nenhum, porque as ligações só existem em memória.
+      // Qualquer estado novo que apareça no futuro entra nesta lista.
+      function withPristineDom(capture) {
+        const saved = {
+          worldStyle: world.getAttribute("style"),
+          coreStyle: coreArea.getAttribute("style"),
+          open: stage.classList.contains("is-open"),
+          dev: document.body.classList.contains("dev-mode"),
+          unlocked: devToggle.classList.contains("is-unlocked"),
+          devLabel: devToggle.getAttribute("aria-label"),
+          overlayHidden: devOverlay.hidden,
+          modalBody: devModalBody.innerHTML,
+          statusText: status.textContent,
+          zoomText: zoomReadout.textContent,
+          coreExpanded: coreButton.getAttribute("aria-expanded"),
+        };
+
+        branchesLayer.innerHTML = "";
+        connectorsSvg.innerHTML = "";
+        stage.classList.remove("is-open");
+        coreButton.setAttribute("aria-expanded", "false");
+        document.body.classList.remove("dev-mode");
+        devToggle.classList.remove("is-unlocked");
+        devToggle.setAttribute("aria-label", "Modo desenvolvedor");
+        devOverlay.hidden = true;
+        devModalBody.innerHTML = "";
+        status.textContent = "";
+        zoomReadout.textContent = "100%";
+        world.removeAttribute("style");
+        coreArea.removeAttribute("style");
+
+        let result;
+        try {
+          result = capture();
+        } finally {
+          if (saved.worldStyle) world.setAttribute("style", saved.worldStyle);
+          if (saved.coreStyle) coreArea.setAttribute("style", saved.coreStyle);
+          stage.classList.toggle("is-open", saved.open);
+          coreButton.setAttribute("aria-expanded", saved.coreExpanded || "false");
+          document.body.classList.toggle("dev-mode", saved.dev);
+          devToggle.classList.toggle("is-unlocked", saved.unlocked);
+          if (saved.devLabel) devToggle.setAttribute("aria-label", saved.devLabel);
+          devOverlay.hidden = saved.overlayHidden;
+          devModalBody.innerHTML = saved.modalBody;
+          status.textContent = saved.statusText;
+          zoomReadout.textContent = saved.zoomText;
+          render();
+          updateVisibility();
+          applyCamera(0);
+        }
+        return result;
+      }
+
+      function exportHtml() {
+        const seedEl = document.getElementById("map-seed");
+        const html = withPristineDom(() => {
+          // Escapar "<" impede que um rótulo contendo uma tag de fechamento
+          // de script encerre o bloco do seed e quebre o arquivo exportado —
+          // o parser HTML fecha no primeiro que encontrar, mesmo dentro de
+          // uma string. < é JSON válido e volta como "<" no parse.
+          seedEl.textContent = JSON.stringify(buildEnvelope()).replace(/</g, "\\u003c");
+          return "<!doctype html>\n" + document.documentElement.outerHTML;
+        });
+
+        downloadFile("mapa-pops-" + stamp() + ".html", "text/html;charset=utf-8", html);
+        status.textContent = "Mapa exportado como página autocontida.";
+      }
+
+      function applyImportedRoot(rootData, origem) {
+        adoptRoot(rootData);
+        render();
+        updateVisibility();
+        releaseCameraControl();
+        fitCamera(420);
+        saveState();
+        status.textContent = "Mapa importado de " + origem + ".";
+      }
+
+      importFile.addEventListener("change", () => {
+        const file = importFile.files && importFile.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          let rootData = null;
+          try {
+            rootData = readEnvelope(JSON.parse(String(reader.result)));
+          } catch (e) {
+            rootData = null;
+          }
+          if (!rootData) {
+            window.alert("Arquivo inválido: não parece um mapa exportado por esta página.");
+          } else if (window.confirm("Importar substitui o mapa atual por inteiro. Continuar?")) {
+            applyImportedRoot(rootData, file.name);
+            closeDevOverlay();
+          }
+          importFile.value = "";
+        };
+        reader.readAsText(file);
+      });
+
+      function renderDataForm() {
+        devModalBody.innerHTML = `
+          <h2 id="dev-modal-title" class="dev-modal-title">Dados do mapa</h2>
+          <p class="dev-data-hint">O navegador guarda uma cópia local automaticamente, mas ela não viaja com você. Para abrir o mapa em outro computador, exporte um arquivo.</p>
+          <div class="dev-data-actions">
+            <button id="data-export-html" type="button" class="dev-btn dev-btn-primary">Exportar página autocontida (.html)</button>
+            <p class="dev-data-hint" style="margin:-0.35rem 0 0.2rem;">Baixa uma cópia do programa com o mapa embutido: abre pronto em qualquer computador, sem importar nada.</p>
+            <button id="data-export-json" type="button" class="dev-btn dev-btn-ghost">Exportar dados (.json)</button>
+            <button id="data-import-json" type="button" class="dev-btn dev-btn-ghost">Importar dados (.json)</button>
+          </div>
+        `;
+        document.getElementById("data-export-html").addEventListener("click", () => {
+          exportHtml();
+          closeDevOverlay();
+        });
+        document.getElementById("data-export-json").addEventListener("click", exportJson);
+        document.getElementById("data-import-json").addEventListener("click", () => importFile.click());
+      }
+
+      dataToggle.addEventListener("click", () => {
+        if (!devUnlocked) return;
+        renderDataForm();
+        openDevOverlay();
+      });
+
+      // --- Carregamento -----------------------------------------------------
+      // Ordem: um seed embutido ainda não adotado vence (é um arquivo
+      // recém-exportado, aberto talvez numa máquina que já tinha outro mapa
+      // salvo); fora isso vale o rascunho do localStorage. Depois de adotado
+      // uma vez, o seed sai da frente e as edições locais é que mandam.
+      const seedEnvelope = readSeed();
+      const seedRoot = readEnvelope(seedEnvelope);
+      const seedStampValue = seedEnvelope && seedEnvelope.exportedAt
+        ? String(seedEnvelope.exportedAt)
+        : "sem-carimbo";
+      let seedAdopted = false;
+
+      if (seedRoot) {
+        let lastSeed = null;
+        try {
+          lastSeed = localStorage.getItem(SEED_STAMP_KEY);
+        } catch (e) {
+          lastSeed = null;
+        }
+        if (seedStampValue !== lastSeed) {
+          adoptRoot(seedRoot);
+          seedAdopted = true;
+          saveState();
+          try {
+            localStorage.setItem(SEED_STAMP_KEY, seedStampValue);
+          } catch (e) {
+            // localStorage indisponível — o seed será readotado a cada abertura,
+            // que é o comportamento certo quando não há onde guardar edições.
+          }
+        }
+      }
+
+      if (!seedAdopted) {
+        const saved = readEnvelope(loadState());
+        if (saved) adoptRoot(saved);
+      }
+      normalizeTypes(treeData.root);
+
+      render();
+      updateVisibility();
+      fitCamera(0);
+      remeasureOnFontsReady();
+    });
+  </script>
+
+</body>
+
+</html>
