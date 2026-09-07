@@ -80,26 +80,27 @@
       position: absolute;
       top: 1.65rem;
       left: 1.8rem;
+      z-index: 20;
       color: rgba(231, 240, 255, 0.78);
       letter-spacing: 0.18em;
       text-transform: uppercase;
       font-size: 0.7rem;
       font-weight: 700;
+      pointer-events: none;
     }
 
     .map-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
       width: 100%;
-      max-width: 1040px;
-      position: relative;
     }
 
     .camera-viewport {
       width: 100%;
-      height: min(78vh, 640px);
-      min-height: 440px;
+      height: 100%;
       position: relative;
       overflow: hidden;
-      border-radius: 28px;
     }
 
     .world {
@@ -684,11 +685,6 @@
         left: 1.2rem;
       }
 
-      .camera-viewport {
-        height: min(70vh, 520px);
-        min-height: 360px;
-        border-radius: 20px;
-      }
     }
 
     @media (prefers-reduced-motion: reduce) {
