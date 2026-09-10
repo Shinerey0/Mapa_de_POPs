@@ -715,6 +715,7 @@
       <i data-lucide="database" aria-hidden="true" width="16" height="16"></i>
     </button>
     <input id="import-file" class="dev-file-input" type="file" accept="application/json,.json" />
+    <datalist id="pdf-library-list"></datalist>
     <section id="map-stage" class="map-stage" aria-label="Área do mapa de POPs">
      <div id="camera-viewport" class="camera-viewport">
       <div id="world" class="world">
@@ -792,6 +793,30 @@
       const devModalClose = document.getElementById("dev-modal-close");
       const devModalBody = document.getElementById("dev-modal-body");
       let devUnlocked = false;
+
+      // --- PDFs do projeto: cada subnó pode apontar para um arquivo salvo
+      // em pdfs/ na raiz do site. Como a página é estática, não há como
+      // listar a pasta em tempo real — pdfs/manifest.json funciona como o
+      // índice: um array de nomes de arquivo, atualizado à mão sempre que
+      // um PDF novo é colocado na pasta. O campo de PDF no formulário
+      // aceita qualquer nome digitado (funciona mesmo sem o manifesto,
+      // como ao abrir o arquivo direto do disco), e usa esse índice só
+      // para sugerir os nomes já conhecidos via <datalist>.
+      let pdfLibrary = [];
+      function refreshPdfDatalist() {
+        const list = document.getElementById("pdf-library-list");
+        if (!list) return;
+        list.innerHTML = pdfLibrary.map(
+          (name) => `<option value="${escapeHtml(name)}"></option>`
+        ).join("");
+      }
+      fetch("pdfs/manifest.json")
+        .then((res) => (res.ok ? res.json() : []))
+        .then((list) => {
+          pdfLibrary = Array.isArray(list) ? list : [];
+          refreshPdfDatalist();
+        })
+        .catch(() => { pdfLibrary = []; });
 
       // Geometria: o tronco fica no centro e só os setores que saem dele se
       // espalham em 360°. Dali para dentro, cada galho cresce na horizontal
@@ -944,6 +969,7 @@
           id: node.id,
           label: node.label,
           url: node.url || "",
+          pdf: node.pdf || "",
           type: isSub(node) ? SUBNODE : NODE,
           children: node.children.map(serializeNode),
         };
@@ -972,6 +998,7 @@
             id: (n && n.id) || newNodeId(),
             label: (n && n.label) || "",
             url: (n && n.url) || "",
+            pdf: (n && n.pdf) || "",
             type: type,
             children: children,
           };
@@ -1027,6 +1054,7 @@
       function adoptRoot(rootData) {
         treeData.root.label = rootData.label || treeData.root.label;
         treeData.root.url = "";
+        treeData.root.pdf = "";
         treeData.root.type = NODE;
         treeData.root.children = reviveChildren(rootData.children, 1);
         normalizeTypes(treeData.root);
@@ -1354,6 +1382,13 @@
           icon.setAttribute("aria-hidden", "true");
           icon.setAttribute("width", "19");
           icon.setAttribute("height", "19");
+          button.appendChild(icon);
+        } else if (node.pdf) {
+          const icon = document.createElement("i");
+          icon.setAttribute("data-lucide", "file-text");
+          icon.setAttribute("aria-hidden", "true");
+          icon.setAttribute("width", "16");
+          icon.setAttribute("height", "16");
           button.appendChild(icon);
         } else if (node.url) {
           const icon = document.createElement("i");
@@ -1877,10 +1912,10 @@
         else autoFit(420);
       }
 
-      function addChild(parentNode, label, url, type) {
+      function addChild(parentNode, label, url, pdf, type) {
         const allowed = type === SUBNODE ? canAddSub(parentNode) : canAddNode(parentNode);
         if (!allowed) return false;
-        const node = { id: newNodeId(), label: label, url: url || "", type: type, children: [] };
+        const node = { id: newNodeId(), label: label, url: url || "", pdf: pdf || "", type: type, children: [] };
         parentNode.children.push(node);
         rebuildPreservingExpanded(parentNode.id, parentNode.id);
         saveState();
@@ -1915,9 +1950,10 @@
           : "Mapa de POPs recolhido.";
       }
 
-      function saveNodeEdits(node, label, url) {
+      function saveNodeEdits(node, label, url, pdf) {
         node.label = label;
         node.url = url || "";
+        node.pdf = pdf || "";
         if (node === treeData.root) {
           coreLabel.textContent = label;
         } else {
@@ -1939,9 +1975,10 @@
         if (!node) return;
 
         const clickedToggle = event.target.closest(".branch-toggle-icon");
+        const linkHref = node.pdf ? "pdfs/" + node.pdf : (node.url || "");
 
-        if (node.url && !clickedToggle) {
-          window.open(node.url, "_blank", "noopener,noreferrer");
+        if (linkHref && !clickedToggle) {
+          window.open(linkHref, "_blank", "noopener,noreferrer");
           return;
         }
         if (node.children.length === 0) return;
@@ -2072,6 +2109,26 @@
         };
       }
 
+      // Campo de PDF: só aparece para subnós. O arquivo precisa estar salvo
+      // em pdfs/ na raiz do projeto; a <datalist> só sugere nomes já
+      // listados em pdfs/manifest.json, mas o campo aceita qualquer nome
+      // digitado.
+      function pdfFieldMarkup() {
+        return `
+            <label class="dev-label">PDF do projeto (opcional)
+              <input id="dev-node-pdf" class="dev-input" type="text" list="pdf-library-list" placeholder="ex.: manual-operacional.pdf" />
+            </label>
+            <p class="dev-modal-desc" style="margin:-0.3rem 0 0;">Arquivo deve estar salvo na pasta pdfs/ do projeto. Se preenchido, clicar no subnó abre o PDF em vez de expandir (tem prioridade sobre o link externo).</p>
+        `;
+      }
+
+      function readPdfInput() {
+        const input = document.getElementById("dev-node-pdf");
+        if (!input) return "";
+        const raw = input.value.trim();
+        return raw ? raw.split(/[\\/]/).pop() : "";
+      }
+
       function renderNodeEditForm(node) {
         const isRoot = node === treeData.root;
         const forSub = !isRoot && isSub(node);
@@ -2087,13 +2144,17 @@
             </label>
             <p class="dev-modal-desc" style="margin:-0.3rem 0 0;">Se preenchido, clicar abre o link em vez de expandir.</p>
             `}
+            ${forSub ? pdfFieldMarkup() : ""}
             <button type="submit" class="dev-btn dev-btn-primary">Salvar</button>
           </form>
         `;
+        refreshPdfDatalist();
         const textarea = document.getElementById("dev-node-text");
         const urlInput = document.getElementById("dev-node-url");
+        const pdfInput = document.getElementById("dev-node-pdf");
         textarea.value = node.label;
         if (urlInput) urlInput.value = node.url || "";
+        if (pdfInput) pdfInput.value = node.pdf || "";
         const withinLimit = wireWordCounter(textarea, forSub);
 
         document.getElementById("dev-node-form").addEventListener("submit", (event) => {
@@ -2102,7 +2163,8 @@
           if (!text || !withinLimit()) return;
           let url = urlInput ? urlInput.value.trim() : "";
           if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
-          saveNodeEdits(node, text, url);
+          const pdf = readPdfInput();
+          saveNodeEdits(node, text, url, pdf);
           closeDevOverlay();
         });
         textarea.focus();
@@ -2122,9 +2184,11 @@
               <input id="dev-node-url" class="dev-input" type="url" placeholder="https://exemplo.com" />
             </label>
             <p class="dev-modal-desc" style="margin:-0.3rem 0 0;">Se preenchido, clicar abre o link em vez de expandir.</p>
+            ${isSubCreate ? pdfFieldMarkup() : ""}
             <button type="submit" class="dev-btn dev-btn-primary">Criar</button>
           </form>
         `;
+        refreshPdfDatalist();
         const textarea = document.getElementById("dev-node-text");
         const urlInput = document.getElementById("dev-node-url");
         const withinLimit = wireWordCounter(textarea, isSubCreate);
@@ -2134,7 +2198,8 @@
           if (!text || !withinLimit()) return;
           let url = urlInput.value.trim();
           if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
-          addChild(parentNode, text, url, type);
+          const pdf = readPdfInput();
+          addChild(parentNode, text, url, pdf, type);
           closeDevOverlay();
         });
         textarea.focus();
