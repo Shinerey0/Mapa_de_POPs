@@ -1,17 +1,12 @@
 <!doctype html>
-<html lang="pt-BR">
-
-<head>
+<html lang="pt-BR" style="--line: rgba(160, 190, 255, 0.56); --blob-a: rgba(25, 183, 187, 0.24); --blob-b: rgba(245, 177, 75, 0.18);"><head>
   <script>window["__codeletBootstrap__"] = JSON.parse('{"A":"A","B":"20260902-06-6f520ec","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YAHO2-t-jNE,0","Arial":"YAGyDvJ_4Ts,0","Bebas Neue":"YACgESME5ew,0","Bricolage Grotesque":"YAFyMcdwzpc,0","Canva Sans":"YAFLd8sKbwc,2","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAHO2VMiyZo,0","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAEul-FRQw4,0","Georgia":"YAGzXkO0pEM,0","Helvetica Neue":"YAFcf6CtJfI,0","Impact":"YAFcfnjI7Vk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YAHO2a5g66Q,0","JetBrains Mono":"YAFdJksXcAk,0","Libre Baskerville":"YACgEUFdPdA,0","Manrope":"YAHO2b2feC4,0","Merriweather":"YACgEXvHxxs,0","Montserrat":"YADLjI9qxTA,0","Nunito":"YACgEX8C5Gg,0","Oleo Script":"YACgEQQ14jI,0","Phantom Sans":"YAHO2E8Pb88,0","Playfair Display":"YACgEYmuCJE,0","Poppins":"YAFdJjbTu24,1","Press Start 2P":"YAFyGr-8pmQ,0","Quicksand":"YADWjpfPmdk,0","Raleway":"YACgEVg3xZg,0","Segoe UI":"YAHNdRD1Klw,0","Source Sans 3":"YAG4lO1Mj10,0","Spectral":"YAHO2rVUHIM,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Ubuntu":"YACgERDU--Q,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0","ui-monospace":"YADlN8CFZ8Q,0","ui-sans-serif":"YACkoN-xg4g,0"}}');</script>
-  <script src="/_sdk/50d846425a1e5082.telemetry_sdk.js"
-    integrity="sha512-Otbex+ztlVbcEGql0rXGd/3E3ee/hqAntg6DeuUEMG6pIPbXGOSvZbFZVzknAXi1tH/itQ+ijEhOTr2aWj6CXg=="></script>
+  <script src="/_sdk/50d846425a1e5082.telemetry_sdk.js" integrity="sha512-Otbex+ztlVbcEGql0rXGd/3E3ee/hqAntg6DeuUEMG6pIPbXGOSvZbFZVzknAXi1tH/itQ+ijEhOTr2aWj6CXg=="></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Organização de POPs</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <style>
     :root {
@@ -19,6 +14,10 @@
       --paper: #edf3ff;
       --line: rgba(160, 190, 255, 0.56);
       --focus: #ffffff;
+      /* Os dois borrões decorativos do fundo. Viram variáveis porque moram
+         em pseudo-elementos, onde não dá para escrever estilo inline. */
+      --blob-a: rgba(25, 183, 187, 0.24);
+      --blob-b: rgba(245, 177, 75, 0.18);
     }
 
     * {
@@ -65,7 +64,7 @@
       height: 29rem;
       top: -16rem;
       right: -10rem;
-      background: radial-gradient(circle, rgba(25, 183, 187, 0.24), transparent 69%);
+      background: radial-gradient(circle, var(--blob-a), transparent 69%);
     }
 
     .mindmap-shell::after {
@@ -73,7 +72,38 @@
       height: 26rem;
       bottom: -14rem;
       left: -9rem;
-      background: radial-gradient(circle, rgba(245, 177, 75, 0.18), transparent 69%);
+      background: radial-gradient(circle, var(--blob-b), transparent 69%);
+    }
+
+    body.no-blobs .mindmap-shell::before,
+    body.no-blobs .mindmap-shell::after {
+      display: none;
+    }
+
+    /* Fundo claro: o que é escrito diretamente sobre o fundo troca de cor
+       para não sumir. A instrução do tronco carrega cor inline vinda do
+       template, e por isso precisa do !important. */
+    body.on-light .eyebrow {
+      color: rgba(11, 23, 54, 0.75);
+    }
+
+    body.on-light .instruction {
+      color: rgba(11, 23, 54, 0.72) !important;
+    }
+
+    body.on-light .camera-legend {
+      color: rgba(11, 23, 54, 0.6);
+    }
+
+    body.on-light .dev-toggle {
+      color: rgba(11, 23, 54, 0.8);
+      border-color: rgba(11, 23, 54, 0.22);
+      background: rgba(11, 23, 54, 0.06);
+    }
+
+    body.on-light .dev-toggle:hover,
+    body.on-light .dev-toggle:focus-visible {
+      background: rgba(11, 23, 54, 0.12);
     }
 
     .eyebrow {
@@ -187,6 +217,19 @@
       border-color: rgba(255, 120, 120, 0.45);
     }
 
+    /* --- Religar galho: arrastar um nó por cima de outro troca o pai. ---
+       Só existe no modo dev. */
+    body.dev-mode .branch-button {
+      cursor: grab;
+    }
+
+    /* Enquanto arrasta, o texto não deve ser selecionado em lugar nenhum
+       (o gesto passa por cima de rótulos longos de subnó). */
+    body.is-reparenting,
+    body.is-reparenting .branch-button {
+      user-select: none;
+    }
+
     .core-button,
     .branch-button {
       border: 0;
@@ -262,6 +305,83 @@
       opacity: 1;
       pointer-events: auto;
       transform: scale(1);
+    }
+
+    /* --- Nó em arrasto (religar galho) ---------------------------------
+       Precisa vir DEPOIS de .branch.is-visible: as duas regras têm a mesma
+       especificidade, então quem ganha o pointer-events é a última escrita.
+       O nó arrastado tem de ficar transparente ao ponteiro para que o
+       elementFromPoint enxergue o alvo embaixo dele, e sai das transições
+       para acompanhar o cursor em vez de deslizar atrás dele. */
+    .branch.is-dragging {
+      z-index: 40;
+      pointer-events: none;
+      transition: none !important;
+      cursor: grabbing;
+    }
+
+    /* pointer-events:none no pai não alcança um filho que pede "auto" — e
+       os botões de edição pedem. */
+    .branch.is-dragging .dev-node-controls {
+      pointer-events: none;
+    }
+
+    .branch.is-dragging .branch-button {
+      transform: scale(1.04);
+      box-shadow: 0 18px 38px rgba(2, 9, 31, 0.55);
+      opacity: 0.9;
+    }
+
+    .branch.is-drop-ok .branch-button,
+    .core-area.is-drop-ok .core-button {
+      outline: 3px solid rgb(120, 235, 170);
+      outline-offset: 3px;
+    }
+
+    .branch.is-drop-blocked .branch-button,
+    .core-area.is-drop-blocked .core-button {
+      outline: 3px solid rgb(255, 120, 120);
+      outline-offset: 3px;
+    }
+
+    /* Ordem: a barra na borda de cima ou de baixo diz em que posição entre
+       os irmãos o nó vai entrar. Usa box-shadow inset para acompanhar o
+       arredondamento da caixa sem mexer no layout. */
+    .branch.is-drop-before .branch-button {
+      box-shadow: inset 0 6px 0 rgb(120, 235, 170), 0 8px 18px rgba(1, 10, 31, 0.18);
+    }
+
+    .branch.is-drop-after .branch-button {
+      box-shadow: inset 0 -6px 0 rgb(120, 235, 170), 0 8px 18px rgba(1, 10, 31, 0.18);
+    }
+
+    /* Legenda do arrasto: diz o que vai acontecer ao soltar. Fica presa ao
+       topo da viewport e é transparente ao ponteiro, para nunca virar ela
+       própria o alvo do elementFromPoint. */
+    .drag-hint {
+      position: absolute;
+      top: 0.9rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      pointer-events: none;
+      max-width: min(90%, 460px);
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(10, 20, 48, 0.9);
+      border: 1px solid rgba(120, 235, 170, 0.55);
+      color: rgb(231, 240, 255);
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 10px 24px rgba(2, 9, 31, 0.45);
+    }
+
+    .drag-hint.is-blocked {
+      border-color: rgba(255, 120, 120, 0.65);
+      color: rgb(255, 197, 197);
     }
 
     .branch-button {
@@ -634,6 +754,16 @@
       display: grid;
     }
 
+    /* Aparência: mesmo padrão do botão de dados, uma posição adiante. */
+    .theme-toggle {
+      right: 7.3rem;
+      display: none;
+    }
+
+    body.dev-mode .theme-toggle {
+      display: grid;
+    }
+
     .dev-btn-ghost {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(160, 190, 255, 0.35);
@@ -674,6 +804,102 @@
       display: none;
     }
 
+    /* --- Painel de aparência: uma linha por item colorível. O <input
+       type=color> é pequeno e sem moldura em quase todo navegador, então
+       ganha uma caixa própria para virar um alvo de clique decente. --- */
+    .dev-color-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.32rem 0;
+    }
+
+    .dev-color-row .dev-color-name {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 0.82rem;
+      color: rgba(230, 238, 255, 0.9);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dev-color-swatch {
+      width: 40px;
+      height: 26px;
+      flex: none;
+      padding: 0;
+      border: 1px solid rgba(160, 190, 255, 0.4);
+      border-radius: 7px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .dev-color-swatch::-webkit-color-swatch-wrapper {
+      padding: 2px;
+    }
+
+    .dev-color-swatch::-webkit-color-swatch {
+      border: 0;
+      border-radius: 4px;
+    }
+
+    .dev-color-swatch::-moz-color-swatch {
+      border: 0;
+      border-radius: 4px;
+    }
+
+    .dev-reset-btn {
+      flex: none;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.7rem;
+      border-radius: 6px;
+      border: 1px solid rgba(160, 190, 255, 0.3);
+      background: transparent;
+      color: rgba(230, 238, 255, 0.65);
+      cursor: pointer;
+    }
+
+    .dev-reset-btn:hover:not(:disabled),
+    .dev-reset-btn:focus-visible:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgb(255, 255, 255);
+    }
+
+    .dev-reset-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .dev-section-title {
+      margin: 1rem 0 0.2rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: rgba(230, 238, 255, 0.55);
+    }
+
+    .dev-check {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      color: rgba(230, 238, 255, 0.9);
+      cursor: pointer;
+      padding: 0.32rem 0;
+    }
+
+    /* A lista de galhos pode passar de uma dezena: rola por dentro em vez
+       de esticar o modal para fora da tela. */
+    .dev-branch-list {
+      max-height: 240px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      margin: 0;
+      padding-right: 0.2rem;
+    }
+
     @media (max-width: 720px) {
       .mindmap-shell {
         min-height: auto;
@@ -698,66 +924,64 @@
       }
     }
   </style>
-  <script src="/_sdk/b3bf9e8ac58e6ad6.data_sdk.js" type="text/javascript"
-    integrity="sha512-otc1u9NYq9Ms5Jt//7vmhrrqR5CLPr8Jdgs6741gqniClfLMcfmC+jK/cKuQdhLv6G0esJ/FzaMS9tv0T/vj/Q=="></script>
-  <script src="/_sdk/85d8138ba0e9799c.resizing_sdk.js" type="text/javascript"
-    integrity="sha512-8dt8XK3OsxyrL/A/AlNWHjY+utLvSBcXg410ejaLzAIOVGDj1jNmEYRbymhdzToKhNo0uO9dxAmMLwHQseh3Lw=="></script>
-</head>
+  <script src="/_sdk/b3bf9e8ac58e6ad6.data_sdk.js" type="text/javascript" integrity="sha512-otc1u9NYq9Ms5Jt//7vmhrrqR5CLPr8Jdgs6741gqniClfLMcfmC+jK/cKuQdhLv6G0esJ/FzaMS9tv0T/vj/Q=="></script>
+  <script src="/_sdk/85d8138ba0e9799c.resizing_sdk.js" type="text/javascript" integrity="sha512-8dt8XK3OsxyrL/A/AlNWHjY+utLvSBcXg410ejaLzAIOVGDj1jNmEYRbymhdzToKhNo0uO9dxAmMLwHQseh3Lw=="></script>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}</style><style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}</style></head>
 
-<body data-template-id="__page-root" style="background: rgb(11, 23, 54);">
+<body data-template-id="__page-root" style="background: rgb(11, 23, 54);" class="">
   <main class="mindmap-shell" aria-label="Organização de POPs">
     <p class="eyebrow">Mapa de POPs</p>
     <button id="dev-toggle" class="dev-toggle" type="button" aria-haspopup="dialog" aria-label="Modo desenvolvedor" title="Modo desenvolvedor">
-      <i data-lucide="lock" class="dev-toggle-icon-locked" aria-hidden="true" width="17" height="17"></i>
-      <i data-lucide="unlock" class="dev-toggle-icon-unlocked" aria-hidden="true" width="17" height="17"></i>
+      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" class="lucide lucide-lock dev-toggle-icon-locked" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="unlock" class="lucide lucide-unlock dev-toggle-icon-unlocked" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
     </button>
     <button id="data-toggle" class="dev-toggle data-toggle" type="button" aria-haspopup="dialog" aria-label="Dados do mapa" title="Exportar ou importar o mapa">
-      <i data-lucide="database" aria-hidden="true" width="16" height="16"></i>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="database" aria-hidden="true" class="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>
     </button>
-    <input id="import-file" class="dev-file-input" type="file" accept="application/json,.json" />
+    <button id="theme-toggle" class="dev-toggle theme-toggle" type="button" aria-haspopup="dialog" aria-label="Aparência do mapa" title="Cores do mapa">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="palette" aria-hidden="true" class="lucide lucide-palette"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>
+    </button>
+    <input id="import-file" class="dev-file-input" type="file" accept="application/json,.json">
     <datalist id="pdf-library-list"></datalist>
     <section id="map-stage" class="map-stage" aria-label="Área do mapa de POPs">
      <div id="camera-viewport" class="camera-viewport">
       <div id="world" class="world">
        <svg class="connectors" aria-hidden="true"></svg>
-      <div id="core-area" class="core-area"><button id="core-button" data-template-id="core-button" class="canva-button core-button"
-          type="button" aria-expanded="false" aria-controls=""
-          style="background: linear-gradient(135deg, rgb(246, 190, 88), rgb(239, 136, 84)); color: rgb(11, 23, 54);">
-          <span data-template-id="core-label" class="canva-text node-label"
-            style="color: rgb(11, 23, 54); font-weight: 700; font-style: normal; font-size: 22px; line-height: 1.1;">BUCAREIN</span> </button>
+      <div id="core-area" class="core-area"><button id="core-button" data-template-id="core-button" class="canva-button core-button" type="button" aria-expanded="false" aria-controls="node-node-mtn8lx2v-1 node-node-mtn8m3lj-2 node-node-mtn8malb-3 node-node-mtn8mg92-4 node-node-mtn8mn94-5 node-node-mtn8mxk5-6 node-node-mtn8n5tn-7 node-node-mtn8n9ek-8 node-node-mtn8ndm4-9 node-node-mtn8nhsu-10 node-node-mtn8npws-11 node-node-mtn8nxgh-12 node-node-mtn8o2us-13 node-node-mtn8o8bf-14" style="background: linear-gradient(135deg, rgb(246, 190, 88), rgb(239, 136, 84)); color: rgb(11, 23, 54);">
+          <span data-template-id="core-label" class="canva-text node-label" style="color: rgb(11, 23, 54); font-weight: 700; font-style: normal; font-size: 22px; line-height: 1.1;">BUCAREIN</span> </button>
         <div class="dev-node-controls">
-          <button type="button" class="dev-node-btn" data-dev-action="edit" data-node-id="root" title="Editar nó central" aria-label="Editar nó central"><i data-lucide="pencil" width="13" height="13" aria-hidden="true"></i></button>
-          <button type="button" class="dev-node-btn" data-dev-action="add-node" data-node-id="root" title="Novo nó (continua o galho)" aria-label="Novo nó"><i data-lucide="git-branch" width="13" height="13" aria-hidden="true"></i></button>
+          <button type="button" class="dev-node-btn" data-dev-action="edit" data-node-id="root" title="Editar nó central" aria-label="Editar nó central"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="pencil" aria-hidden="true" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg></button>
+          <button type="button" class="dev-node-btn" data-dev-action="add-node" data-node-id="root" title="Novo nó (continua o galho)" aria-label="Novo nó"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="git-branch" aria-hidden="true" class="lucide lucide-git-branch"><line x1="6" x2="6" y1="3" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg></button>
         </div>
-        <p id="instruction" data-template-id="initial-instruction" class="canva-text instruction"
-          style="color: rgb(220, 233, 255); font-weight: 500; font-style: normal; font-size: 13px;">Clique para expandir
+        <p id="instruction" data-template-id="initial-instruction" class="canva-text instruction" style="color: rgb(220, 233, 255); font-weight: 500; font-style: normal; font-size: 13px;">Clique para expandir
         </p>
       </div>
       <div id="branches-layer"></div>
       </div>
+      <div id="drag-hint" class="drag-hint" aria-hidden="true" hidden="">Reordenar antes de PEQUENOS PROCEDIMENTOS NA…</div>
       <div class="camera-legend" aria-hidden="true">
         <span><b></b>Nó</span>
         <span class="legend-sub"><b></b>Subnó</span>
       </div>
       <div class="camera-controls" role="group" aria-label="Controles da câmera">
         <button id="camera-zoom-out" class="camera-btn" type="button" title="Afastar (tecla −)" aria-label="Afastar">
-          <i data-lucide="minus" width="16" height="16" aria-hidden="true"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="minus" aria-hidden="true" class="lucide lucide-minus"><path d="M5 12h14"></path></svg>
         </button>
         <span id="camera-zoom-readout" class="camera-zoom-readout" aria-live="off">100%</span>
         <button id="camera-zoom-in" class="camera-btn" type="button" title="Aproximar (tecla +)" aria-label="Aproximar">
-          <i data-lucide="plus" width="16" height="16" aria-hidden="true"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" aria-hidden="true" class="lucide lucide-plus"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
         </button>
         <button id="camera-fit" class="camera-btn" type="button" title="Recentrar o mapa (tecla 0)" aria-label="Recentrar o mapa">
-          <i data-lucide="maximize" width="15" height="15" aria-hidden="true"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="maximize" aria-hidden="true" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg>
         </button>
       </div>
      </div>
     </section>
     <p id="map-status" class="screen-reader-status" aria-live="polite"></p>
 
-    <div id="dev-overlay" class="dev-overlay" hidden>
+    <div id="dev-overlay" class="dev-overlay" hidden="">
       <div class="dev-modal" role="dialog" aria-modal="true" aria-labelledby="dev-modal-title">
-        <button id="dev-modal-close" class="dev-modal-close" type="button" aria-label="Fechar">&times;</button>
+        <button id="dev-modal-close" class="dev-modal-close" type="button" aria-label="Fechar">×</button>
         <div id="dev-modal-body"></div>
       </div>
     </div>
@@ -765,9 +989,8 @@
   <!-- Estado embutido pela exportação "HTML autocontido". Vazio no arquivo
        original: quem exporta preenche este bloco com o mapa serializado, e
        o arquivo baixado passa a abrir já montado em qualquer computador. -->
-  <script id="map-seed" type="application/json">{"format":"mapaPOPs","version":2,"exportedAt":"2026-09-04T18:55:17.000Z","root":{"id":"root","label":"BUCAREIN","url":"","type":"node","children":[{"id":"node-mtn8lx2v-1","label":"RECEPÇÃO","url":"","type":"node","children":[]},{"id":"node-mtn8m3lj-2","label":"ENFERMEIROS","url":"","type":"node","children":[]},{"id":"node-mtn8malb-3","label":"PROCEDIMENTOS","url":"","type":"node","children":[{"id":"node-mtn8pbtu-15","label":"SINAIS VITAIS","url":"","type":"node","children":[{"id":"node-mtn8qvjr-22","label":"OXIMETRIA DIGITAL","url":"","type":"subnode","children":[]},{"id":"node-mtn8reqg-23","label":"COMO AFERIR E INTERPRETAR OS VALORES DE P.A EM CRIANÇAS E ADOLECENTES","url":"","type":"subnode","children":[]},{"id":"node-mtn8scpy-25","label":"COMO VERIFICAR OS SSUV E REALIZAR EXAME FÍSICO EM CRIANÇA E ADOLESCENTE","url":"","type":"subnode","children":[]}]},{"id":"node-mtn8pj84-16","label":"TESTE DO PEZINHO","url":"","type":"node","children":[]},{"id":"node-mtn8pnyn-17","label":"CURATIVOS","url":"","type":"node","children":[{"id":"node-mtn8smcr-26","label":"RETIRADA DE PONTOS","url":"","type":"subnode","children":[]},{"id":"node-mtn8t1z8-27","label":"COMO REALIZAR TÉCNICA DE CURATIVOS EM LESÕES ABERTAS","url":"","type":"subnode","children":[]},{"id":"node-mtn8tcne-28","label":"PROGRAMA DE CURATIVOS ESPECIAIS","url":"","type":"subnode","children":[]}]},{"id":"node-mtn8pr9r-18","label":"ECG","url":"","type":"node","children":[]},{"id":"node-mtn8pwnv-19","label":"PLANILHAS","url":"","type":"node","children":[{"id":"node-mtn8ufd6-29","label":"COMO UTILIZAR A PLANILHA DE MONITORAMENTO DO CUIDADO  A PESSOA COM SIFILIS","url":"","type":"subnode","children":[]}]},{"id":"node-mtn8q5jv-20","label":"HIGIENIZAÇÃO DAS MÃOS","url":"","type":"node","children":[]},{"id":"node-mtn8qjmo-21","label":"FORMULÁRIO DE CONSUMO ALIMENTAR","url":"","type":"node","children":[]}]},{"id":"node-mtn8mg92-4","label":"MÉDICOS","url":"","type":"node","children":[]},{"id":"node-mtn8mn94-5","label":"SALA DE VACINA","url":"","type":"node","children":[]},{"id":"node-mtn8mxk5-6","label":"E-MULT","url":"","type":"node","children":[]},{"id":"node-mtn8n5tn-7","label":"BIOSSEGURANÇA","url":"","type":"node","children":[]},{"id":"node-mtn8n9ek-8","label":"CME","url":"","type":"node","children":[]},{"id":"node-mtn8ndm4-9","label":"ACS","url":"","type":"node","children":[]},{"id":"node-mtn8nhsu-10","label":"ODONTO","url":"","type":"node","children":[]},{"id":"node-mtn8npws-11","label":"CNAR","url":"","type":"node","children":[]},{"id":"node-mtn8nxgh-12","label":"LABORATÓRIO","url":"","type":"node","children":[]},{"id":"node-mtn8o2us-13","label":"FARMÁCIA","url":"","type":"node","children":[]},{"id":"node-mtn8o8bf-14","label":"COORDENAÇÃO","url":"","type":"node","children":[]}]}}</script>
-  <script src="/_sdk/0b5911494a4ff060.editing_sdk.js"
-    integrity="sha512-/vyQ+jNH4Q/uooDsnMcX6o3IxIcmA7RW0TJmBR88seymBCMyLn9QjvQ8qpBP5hx5JmcAoEFUTuGK9amUMyPFpA=="></script>
+  <script id="map-seed" type="application/json">{"format":"mapaPOPs","version":3,"exportedAt":"2026-09-12T14:56:18.281Z","theme":{"background":"#0b1736","core":"#f6be58","coreEnd":"#ef8854","line":"#a0beff","blobA":"#19b7bb","blobB":"#f5b14b","blobs":true,"branches":{}},"root":{"id":"root","label":"BUCAREIN","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtn8lx2v-1","label":"RECEPÇÃO","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8m3lj-2","label":"ENFERMEIROS","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtn8pr9r-18","label":"ECG","url":"","pdf":"","color":"#2c3a59","type":"node","children":[]}]},{"id":"node-mtn8malb-3","label":"PROCEDIMENTOS","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtn8pbtu-15","label":"SINAIS VITAIS","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtn8qvjr-22","label":"OXIMETRIA DIGITAL","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtn8reqg-23","label":"COMO AFERIR E INTERPRETAR OS VALORES DE P.A EM CRIANÇAS E ADOLECENTES","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtn8scpy-25","label":"COMO VERIFICAR OS SSUV E REALIZAR EXAME FÍSICO EM CRIANÇA E ADOLESCENTE","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtn8pj84-16","label":"TESTE DO PEZINHO","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8pnyn-17","label":"CURATIVOS","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtn8smcr-26","label":"RETIRADA DE PONTOS","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtn8t1z8-27","label":"COMO REALIZAR TÉCNICA DE CURATIVOS EM LESÕES ABERTAS","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtn8tcne-28","label":"PROGRAMA DE CURATIVOS ESPECIAIS","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtn8pwnv-19","label":"PLANILHAS","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtn8ufd6-29","label":"COMO UTILIZAR A PLANILHA DE MONITORAMENTO DO CUIDADO  A PESSOA COM SIFILIS","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtn8q5jv-20","label":"HIGIENIZAÇÃO DAS MÃOS","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8qjmo-21","label":"FORMULÁRIO DE CONSUMO ALIMENTAR","url":"","pdf":"","color":"","type":"node","children":[]}]},{"id":"node-mtn8mg92-4","label":"MÉDICOS","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mty9z4c3-7","label":"REDE DE ATENÇÃO PSICOSOCIAL","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mty9z9r7-8","label":"ACESSO","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtya09t0-9","label":"MANEJO CLINICO MÉDICO AOS USUÁRIOS COM ALTA SUSPEITA DE DI/ TEA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtya151x-10","label":"FLUXO DE ATENDIMENTO E ENCAMINHAMENTO NAS ÁREAS DA SAÚDE E ASSISTENCIA SOCIAL","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtya26at-11","label":"ESTABELECER E ORIENTAR ESTRATÉGIAS NO MANEJO DO USUÁRIO EM CRISE PSQUIÁTRICA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyahuu4-34","label":"ACESSO A PrEP","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtya3f07-12","label":"CONSULTAS MÉDICAS/ FONOAUDIOLOGAS","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtya42b2-13","label":"FLUXO DE ACESSO A VNI E CPAP","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtya4o47-15","label":"COVID-19","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtya516f-16","label":"NOTIFICAÇÃO E REALIZAÇÃO DE EXAMES","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtya5eaf-17","label":"RECOMENDAÇÕES PARA PREVENÇÃO","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtya5uov-18","label":"PREVENÇÃO E CONTROLE DE INFECÇÃO","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtya6ch3-19","label":"FLUXOGRAMA PARA RASTREAMENTO EM ILPI","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtya7269-20","label":"USO DE EPI'S EM CASOS SUSPEITOS DE COVID-19","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtya4eth-14","label":"MANUAL DE DILUIÇÃO DE MEDICAMENTOS","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtyaz5c3-47","label":"ADMINISTRAÇÃO DE SAIS DE FERRO","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mty9vr0q-2","label":"AVC","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mty9wqqj-4","label":"CONTRARREFERENCIA AVC","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mty9xgbe-5","label":"ACOMPANHAMENTO DO USUÁRIO PÓS ALTA HOSPITALAR COM QUADRO DE AIT OU AVC","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mty9yk9w-6","label":"CONTINUIDADE DO CUIDADO","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtya7thj-21","label":"PEQUENOS PROCEDIMENTOS NA APS","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtya8kpd-22","label":"ATENDIMENTO DE CRIANÇAS E ADOLESCENTES EM SITUAÇÃO DE VIOLÊNCIA SEXUAL","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtya8wh4-23","label":"LESÃO AUTOPROVOCADA","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtyaeo3m-31","label":"PRÉ NATAL","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtyajy38-35","label":"AGENDAR TELECONSULTA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyak97a-36","label":"TELECONSULTORIA NO PRÉ NATAL","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyanpce-37","label":"COMO MANEJAR URGENCIAS HIPERTENSIVAS NA GRAVIDEZ","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyanxzj-38","label":"COVID-19 NA GESTAÇÃO","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyaoddz-39","label":"ORIENTAÇÕES DE CONTRARREFERENCIA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyaotqe-40","label":"ENCAMINHAMENTO AO AMBULATÓRIO DE GESTAÇÃO DE ALTO RISCO","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyapbzk-41","label":"RECOMENDAÇÃO PARA USO DOS CÓDIGOS DE CONSULTA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyaqawf-42","label":"FLUXO DE ENCAMINHAMENTO DA GESTANTE COM HISTÓRICO DE ALERGIA A BENZILPENICILINA BENZATINA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyar1f3-43","label":"AQUISIÇÃO DA DNV E CADERNETA DA SAÚDE DA CRIANÇA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyarqiw-44","label":"CONTRARREFERENCIA DA SIFILIS CONGENITA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyat0fc-45","label":"INTERVALO ENTRE DOSES DE BENZILPENICILINA BENZATINA NO TRATAMENTO DE SIFILIS EM GESTANTES","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyatt15-46","label":"ORIENTAÇÕES GERAIS PARA ENCAMINHAMENTO A GINECOLOGIA, OBSTETRICIA E PEDIATRIA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyb458z-54","label":"USO DO APP BIRTH DEFECTS SUSPEITA DE ANOMALIAS CONGENITAS","url":"","pdf":"","color":"","type":"subnode","children":[]}]}]},{"id":"node-mtya9nxe-24","label":"ACESSO DAS ILPI'S ÀS UBSF'S","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtyaa0sx-25","label":"SOLICITAÇÕES DE EXAMES","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtyab1b6-26","label":"PRESCRIÇÃO DE EXAMES DE GLICEMIA PRÉ PRANDIAL PARA PACIENTES PÓS BARIÁTRICA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyabni3-27","label":"SOLICITAÇÃO DE EXAMES LABORATORIAIS DE URGÊNCIA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyacf6j-28","label":"SOLICITAÇÃO DE EXAME DE IMUNOHISTOQUIMICA E EXAMES DE IMAGEM COMPLEMENTARES","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyacxt6-29","label":"SOLICITAÇÃO DE EXAME DE CURVA DE LACTOSE","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtyaeetf-30","label":"FASUS","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtyaf9cc-32","label":"CONSULTA DE ROTINA DO ADOLESCENTE NA APS\n(10 A 19 ANOS)","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtyaggh8-33","label":"ENCAMINHAMENTO PARA PUNÇÃO LOMBAR NO HOSPITAL REGIONAL","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtyb0ftm-48","label":"PROTOCOLO DE ENCAMINHAMENTO A CIRURGIA BARIATRICA","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtyb0uey-49","label":"SOLICITAÇÃO DE QUEBRA DE VINCULO","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtyb1brm-50","label":"PACIENTES ONCOLOGICOS","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtyb7v4k-61","label":"COMO ENCAMINHA E REPRIORIZAR USUÁRIOS COM SUSPEITA DE NEOPLASIA MALIGNA VIA OLOSTECH","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyb8kno-62","label":"PRIORIZAÇÃO E REPRIORIZAÇÃO DE PACIENTES ONCOLÓGICOS EM FILA DE REGULAÇÃO","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyb9iat-63","label":"PRIORIZAÇÃO E REPRIORIZAÇÃO DE PACIENTES ONCOLÓGICOS EM FILA DE REGULAÇÃO CIRURGICA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyba6d8-64","label":"DERMATOLOGIA/ GINECOLOGIA E PATOLOGIA DO COLO REGULAÇÃO","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybau0t-65","label":"SOLICITAÇÃO DE BIÓPSIA, CITOPATOLÓGICO E ANATOMOPATOLÓGICO","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtyb1m4y-51","label":"REQUISIÇÃO DE FISIOTERAPIA","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtyb2anv-52","label":"REGITRO EM PRONTUÁRIO","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtyb3ibf-53","label":"DENGUE","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtyb5nms-55","label":"MANUAL HEMO CONTROL","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyb5ur8-56","label":"DENGUE ADULTO","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyb61z0-57","label":"DENGUE INFANTIL","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyb68ur-58","label":"DENGUE UHA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyb6n31-59","label":"APP DIVE MANEJO CLINICO DA DENGUE","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyb6w31-60","label":"NOTIFICAÇÃO DE CASOS DE DENGUE","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtybgwx2-66","label":"AVALIAÇÃO DO RECÉM NASCIDO E PUÉRPERA","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtybha2e-67","label":"CALENDARIO DE CONSULTAS","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybhhq6-68","label":"TESTE DA LINGUINHA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybhnz2-69","label":"FRENECTOMIA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybhunx-70","label":"TESTE DA ORELHINHA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybigav-71","label":"CONSULTA DE ROTINA DE PUERICULTURA NA APS\n(0 A 9 ANOS)","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybj4li-72","label":"ACOMPANHAMENTO DA CRIANÇA EXPOSTA A SIFILIS MATERNA E A CRIANÇA DIAGNOSTICADA COM SIFILIS","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybjezz-73","label":"VISITA DOMICILIAR AO RN","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybjy4e-74","label":"IDADE PARA ATENDIMENTO PELO PROFISSIONAL PEDIATRA","url":"","pdf":"","color":"","type":"subnode","children":[]}]},{"id":"node-mtybkf8m-75","label":"LINHAS DE CUIDADO","url":"","pdf":"","color":"","type":"node","children":[{"id":"node-mtybl5on-76","label":"CONTROLE DOS CÂNCERES DO COLO DE ÚTERO E MAMA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyblhba-77","label":"DOENÇA INFLAMATORIA INTESTINAL","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyblpbi-78","label":"SAÚDE DA PESSOA IDOSA","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtyblvzr-79","label":"SAÚDE MENTAL","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybm1d4-80","label":"SAÚDE BUCAL","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybm6co-81","label":"AVC","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybmd8g-82","label":"COVID-19","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybmi9j-83","label":"SIFILIS","url":"","pdf":"","color":"","type":"subnode","children":[]},{"id":"node-mtybmp7z-84","label":"FIBROMIALGIA","url":"","pdf":"","color":"","type":"subnode","children":[]}]}]},{"id":"node-mtn8mn94-5","label":"SALA DE VACINA","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8mxk5-6","label":"E-MULT","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8n5tn-7","label":"BIOSSEGURANÇA","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8n9ek-8","label":"CME","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8ndm4-9","label":"ACS","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8nhsu-10","label":"ODONTO","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8npws-11","label":"CNAR","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8nxgh-12","label":"LABORATÓRIO","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8o2us-13","label":"FARMÁCIA","url":"","pdf":"","color":"","type":"node","children":[]},{"id":"node-mtn8o8bf-14","label":"COORDENAÇÃO","url":"","pdf":"","color":"","type":"node","children":[]}]}}</script>
+  <script src="/_sdk/0b5911494a4ff060.editing_sdk.js" integrity="sha512-/vyQ+jNH4Q/uooDsnMcX6o3IxIcmA7RW0TJmBR88seymBCMyLn9QjvQ8qpBP5hx5JmcAoEFUTuGK9amUMyPFpA=="></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const stage = document.getElementById("map-stage");
@@ -784,10 +1007,12 @@
       const zoomOutBtn = document.getElementById("camera-zoom-out");
       const fitBtn = document.getElementById("camera-fit");
       const zoomReadout = document.getElementById("camera-zoom-readout");
+      const dragHint = document.getElementById("drag-hint");
 
       const DEV_PASSWORD = "2387";
       const devToggle = document.getElementById("dev-toggle");
       const dataToggle = document.getElementById("data-toggle");
+      const themeToggle = document.getElementById("theme-toggle");
       const importFile = document.getElementById("import-file");
       const devOverlay = document.getElementById("dev-overlay");
       const devModalClose = document.getElementById("dev-modal-close");
@@ -847,6 +1072,146 @@
         { bg: "rgb(90, 150, 90)", fg: "rgb(255, 255, 255)", subBg: "rgb(224, 245, 224)", subFg: "rgb(30, 80, 30)" },
         { bg: "rgb(120, 90, 190)", fg: "rgb(255, 255, 255)", subBg: "rgb(232, 224, 250)", subFg: "rgb(55, 30, 100)" },
       ];
+
+      // === Aparência ======================================================
+      // O tema guarda só o que foge do padrão. Enquanto um galho não tem cor
+      // escolhida, ele segue a PALETTE pelo índice — é assim que o mapa
+      // continua com exatamente as mesmas cores de antes deste recurso.
+      // As cores dos galhos são indexadas pelo id do nó do setor, e não pela
+      // posição: apagar ou criar um setor não deve embaralhar as cores dos
+      // outros.
+      // ====================================================================
+      const DEFAULT_THEME = {
+        background: "#0b1736",
+        core: "#f6be58",       // primeira parada do gradiente do tronco
+        coreEnd: "#ef8854",    // segunda parada
+        line: "#a0beff",       // conectores (aplicados com o alfa de --line)
+        blobA: "#19b7bb",
+        blobB: "#f5b14b",
+        blobs: true,
+        branches: {},          // { [id do setor]: "#rrggbb" }
+      };
+      const LINE_ALPHA = 0.56;
+      const BLOB_A_ALPHA = 0.24;
+      const BLOB_B_ALPHA = 0.18;
+
+      let theme = Object.assign({}, DEFAULT_THEME, { branches: {} });
+
+      // --- Aritmética de cor ----------------------------------------------
+      function hexToRgb(hex) {
+        const clean = String(hex || "").trim().replace("#", "");
+        const full = clean.length === 3
+          ? clean[0] + clean[0] + clean[1] + clean[1] + clean[2] + clean[2]
+          : clean;
+        const num = parseInt(full, 16);
+        if (full.length !== 6 || isNaN(num)) return { r: 0, g: 0, b: 0 };
+        return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+      }
+
+      function rgbToHex(c) {
+        const part = (v) => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, "0");
+        return "#" + part(c.r) + part(c.g) + part(c.b);
+      }
+
+      function rgbCss(c, alpha) {
+        const r = Math.round(c.r), g = Math.round(c.g), b = Math.round(c.b);
+        return alpha === undefined
+          ? `rgb(${r}, ${g}, ${b})`
+          : `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+
+      function mixRgb(a, b, t) {
+        return {
+          r: a.r + (b.r - a.r) * t,
+          g: a.g + (b.g - a.g) * t,
+          b: a.b + (b.b - a.b) * t,
+        };
+      }
+
+      // Luminância relativa (WCAG) — decide entre texto branco e texto
+      // escuro por cima da cor escolhida, para o rótulo nunca sumir.
+      function luminance(c) {
+        const chan = (v) => {
+          const s = v / 255;
+          return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * chan(c.r) + 0.7152 * chan(c.g) + 0.0722 * chan(c.b);
+      }
+
+      const WHITE = { r: 255, g: 255, b: 255 };
+      const BLACK = { r: 0, g: 0, b: 0 };
+      const INK_RGB = { r: 11, g: 23, b: 54 };
+      const INK = rgbCss(INK_RGB);     // o azul-tinta do tema, para texto escuro
+
+      function contrast(a, b) {
+        const la = luminance(a);
+        const lb = luminance(b);
+        return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+      }
+
+      // Texto por cima de uma cor escolhida à mão. O branco tem preferência
+      // — é o que a paleta padrão usa, e trocá-lo à toa deixaria um galho
+      // personalizado destoando dos outros —, mas cede para a tinta quando
+      // não alcança 4.5:1, o mínimo legível para texto desse tamanho.
+      function textOver(bg) {
+        const onWhite = contrast(WHITE, bg);
+        if (onWhite >= 4.5) return rgbCss(WHITE);
+        return contrast(INK_RGB, bg) > onWhite ? INK : rgbCss(WHITE);
+      }
+
+      // Deriva as quatro cores de um galho a partir de uma cor só: a forte
+      // do nó, o texto que a acompanha, e o par claro usado pelos subnós.
+      function derivePalette(hex) {
+        const base = hexToRgb(hex);
+        return {
+          bg: rgbCss(base),
+          fg: textOver(base),
+          subBg: rgbCss(mixRgb(base, WHITE, 0.86)),
+          subFg: rgbCss(mixRgb(base, BLACK, 0.62)),
+        };
+      }
+
+      // Escreve o tema na página. Tudo o que o tema toca vira estilo inline
+      // ou variável CSS — nada some quando o mapa é reconstruído, e o HTML
+      // exportado já nasce com as cores certas, antes mesmo do script rodar.
+      function applyTheme() {
+        const rootStyle = document.documentElement.style;
+        const bg = hexToRgb(theme.background);
+        document.body.style.background = rgbCss(bg);
+        // Fundo claro inverte os textos que vivem por cima dele (eyebrow,
+        // legenda, instrução, botões do topo), senão eles somem.
+        document.body.classList.toggle("on-light", luminance(bg) > 0.45);
+
+        rootStyle.setProperty("--line", rgbCss(hexToRgb(theme.line), LINE_ALPHA));
+        rootStyle.setProperty("--blob-a", rgbCss(hexToRgb(theme.blobA), BLOB_A_ALPHA));
+        rootStyle.setProperty("--blob-b", rgbCss(hexToRgb(theme.blobB), BLOB_B_ALPHA));
+        document.body.classList.toggle("no-blobs", !theme.blobs);
+
+        const coreA = hexToRgb(theme.core);
+        const coreB = hexToRgb(theme.coreEnd);
+        coreButton.style.background =
+          "linear-gradient(135deg, " + rgbCss(coreA) + ", " + rgbCss(coreB) + ")";
+        const coreFg = textOver(mixRgb(coreA, coreB, 0.5));
+        coreButton.style.color = coreFg;
+        coreLabel.style.color = coreFg;
+
+        applyNodeColors();
+      }
+
+      // Repinta os nós já montados sem reconstruir a árvore: mudar cor não
+      // mexe em tamanho nem em posição, então não há por que remedir.
+      function applyNodeColors() {
+        nodeById.forEach((node) => {
+          if (node.depth === 0 || !node.el) return;
+          const button = node.el.querySelector(".branch-button");
+          if (!button) return;
+          const color = colorFor(node);
+          button.style.background = color.bg;
+          button.style.color = color.fg;
+          const name = button.querySelector(".branch-name");
+          if (name) name.style.color = color.fg;
+        });
+      }
 
       // --- Categorias ---------------------------------------------------
       // "node"    : galho. Nasce de qualquer nó e continua a árvore.
@@ -960,9 +1325,10 @@
       // cada mudança do modo dev, no mesmo navegador/perfil). O mapa
       // portátil sai por exportação, em .json ou em .html autocontido. ---
       const STORAGE_KEY = "mapaPOPs.treeData.v1";
+      const THEME_KEY = "mapaPOPs.theme.v1";
       const SEED_STAMP_KEY = "mapaPOPs.seedStamp.v1";
       const MAP_FORMAT = "mapaPOPs";
-      const MAP_FORMAT_VERSION = 2;
+      const MAP_FORMAT_VERSION = 3;
 
       function serializeNode(node) {
         return {
@@ -970,6 +1336,7 @@
           label: node.label,
           url: node.url || "",
           pdf: node.pdf || "",
+          color: node.color || "",
           type: isSub(node) ? SUBNODE : NODE,
           children: node.children.map(serializeNode),
         };
@@ -980,6 +1347,46 @@
           localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeNode(treeData.root)));
         } catch (e) {
           // localStorage indisponível (ex.: navegação privada) — ignora.
+        }
+      }
+
+      // O tema é guardado à parte da árvore: são coisas com ciclos de vida
+      // diferentes (importar um mapa não precisa levar junto as cores de
+      // quem exportou, mas pode). Só sobrevivem as chaves conhecidas.
+      function sanitizeTheme(raw) {
+        const clean = Object.assign({}, DEFAULT_THEME, { branches: {} });
+        if (!raw || typeof raw !== "object") return clean;
+        ["background", "core", "coreEnd", "line", "blobA", "blobB"].forEach((key) => {
+          if (typeof raw[key] === "string" && /^#[0-9a-f]{3,6}$/i.test(raw[key].trim())) {
+            clean[key] = rgbToHex(hexToRgb(raw[key]));
+          }
+        });
+        if (typeof raw.blobs === "boolean") clean.blobs = raw.blobs;
+        if (raw.branches && typeof raw.branches === "object") {
+          Object.keys(raw.branches).forEach((id) => {
+            const value = raw.branches[id];
+            if (typeof value === "string" && /^#[0-9a-f]{3,6}$/i.test(value.trim())) {
+              clean.branches[id] = rgbToHex(hexToRgb(value));
+            }
+          });
+        }
+        return clean;
+      }
+
+      function saveTheme() {
+        try {
+          localStorage.setItem(THEME_KEY, JSON.stringify(theme));
+        } catch (e) {
+          // sem localStorage o tema vale só para esta sessão.
+        }
+      }
+
+      function loadTheme() {
+        try {
+          const raw = localStorage.getItem(THEME_KEY);
+          return raw ? sanitizeTheme(JSON.parse(raw)) : null;
+        } catch (e) {
+          return null;
         }
       }
 
@@ -999,6 +1406,9 @@
             label: (n && n.label) || "",
             url: (n && n.url) || "",
             pdf: (n && n.pdf) || "",
+            color: (n && typeof n.color === "string" && /^#[0-9a-f]{3,6}$/i.test(n.color.trim()))
+              ? rgbToHex(hexToRgb(n.color))
+              : "",
             type: type,
             children: children,
           };
@@ -1044,8 +1454,19 @@
           format: MAP_FORMAT,
           version: MAP_FORMAT_VERSION,
           exportedAt: new Date().toISOString(),
+          theme: theme,
           root: serializeNode(treeData.root),
         };
+      }
+
+      // O tema viaja no envelope, mas só é adotado se vier de fato — mapas
+      // da v2 não têm esse campo e devem manter as cores de quem importa.
+      function adoptTheme(envelope) {
+        if (!envelope || typeof envelope !== "object" || !envelope.theme) return false;
+        theme = sanitizeTheme(envelope.theme);
+        applyTheme();
+        saveTheme();
+        return true;
       }
 
       // Substitui a árvore inteira por um nó-raiz vindo de arquivo ou do
@@ -1235,13 +1656,33 @@
         });
       }
 
+      // O setor (galho) a que o nó pertence: o ancestral logo abaixo do
+      // tronco. É ele quem carrega a cor no painel de aparência.
+      function sectorOf(node) {
+        let top = node;
+        while (top.depth > 1) top = top.parent;
+        return top;
+      }
+
+      function paletteForSector(sector) {
+        const custom = sector && theme.branches[sector.id];
+        if (custom) return derivePalette(custom);
+        const idx = Math.max(0, treeData.root.children.indexOf(sector));
+        return PALETTE[idx % PALETTE.length];
+      }
+
       // A cor vem do galho a que o nó pertence; a categoria escolhe entre a
       // versão forte (nó) e a clara (subnó) dessa mesma cor.
+      // Um nó pode ter cor própria (node.color): ela vale para ele e para os
+      // descendentes, até que outro descendente declare a sua. Ou seja, o
+      // dono da cor é o ancestral mais próximo que tiver escolhido uma —
+      // sem ninguém na linhagem, manda a paleta do setor.
       function colorFor(node) {
-        let topAncestor = node;
-        while (topAncestor.depth > 1) topAncestor = topAncestor.parent;
-        const idx = Math.max(0, treeData.root.children.indexOf(topAncestor));
-        const palette = PALETTE[idx % PALETTE.length];
+        let owner = node;
+        while (owner && owner.depth > 0 && !owner.color) owner = owner.parent;
+        const palette = owner && owner.depth > 0 && owner.color
+          ? derivePalette(owner.color)
+          : paletteForSector(sectorOf(node));
         return isSub(node)
           ? { bg: palette.subBg, fg: palette.subFg }
           : { bg: palette.bg, fg: palette.fg };
@@ -1819,6 +2260,27 @@
         if (event.target.closest(".camera-controls")) return;
         if (event.target.closest(".dev-node-btn")) return;
         activePointerId = event.pointerId;
+
+        // No modo dev, o gesto que nasce em cima de um nó pertence ao nó:
+        // arrastá-lo religa o galho. O tronco fica de fora — ele não tem
+        // para onde ser religado — e continua arrastando a câmera.
+        const branchEl = devUnlocked ? event.target.closest(".branch") : null;
+        const dragged = branchEl ? nodeById.get(branchEl.id.slice("node-".length)) : null;
+        if (dragged) {
+          nodeDrag = {
+            node: dragged,
+            px: event.clientX,
+            py: event.clientY,
+            ox: dragged.dx,
+            oy: dragged.dy,
+            threshold: event.pointerType === "mouse" ? DRAG_THRESHOLD_MOUSE : DRAG_THRESHOLD_TOUCH,
+            active: false,
+            target: null,
+            targetEl: null,
+          };
+          return;
+        }
+
         dragOrigin = {
           px: event.clientX,
           py: event.clientY,
@@ -1829,6 +2291,11 @@
       });
 
       viewport.addEventListener("pointermove", (event) => {
+        if (nodeDrag && event.pointerId === activePointerId) {
+          if (!(event.buttons & 1)) endDrag(event);
+          else moveNodeDrag(event);
+          return;
+        }
         if (!dragOrigin || event.pointerId !== activePointerId) return;
         // Antes da captura existir, um movimento rápido para fora da viewport
         // pode levar o pointerup embora junto. Sem esta guarda, o ponteiro
@@ -1859,8 +2326,141 @@
         applyCamera(0);
       });
 
+      // --- Arrasto de nó (religar galho) ------------------------------------
+      // Só vive no modo dev. O nó segue o cursor mexendo em dx/dy — as
+      // coordenadas "exibidas", as mesmas que a animação de reacomodação
+      // usa — e não num transform próprio: assim os conectores acompanham
+      // o movimento de graça, inclusive os dos filhos, que ficam esticados
+      // mostrando que a subárvore vem junto.
+      // ---------------------------------------------------------------------
+      let nodeDrag = null;
+
+      const DROP_CLASSES = ["is-drop-ok", "is-drop-blocked", "is-drop-before", "is-drop-after"];
+
+      function clearDropHighlight() {
+        if (nodeDrag && nodeDrag.targetEl) {
+          nodeDrag.targetEl.classList.remove.apply(nodeDrag.targetEl.classList, DROP_CLASSES);
+        }
+      }
+
+      // Aviso visível do que vai acontecer ao soltar. O #map-status é só
+      // para leitor de tela (fica fora da tela), então o arrasto precisa da
+      // sua própria legenda — sem ela o verde e o vermelho não explicam
+      // entre "vira filho" e "entra antes do irmão".
+      function showDragHint(texto, bloqueado) {
+        dragHint.textContent = texto;
+        dragHint.classList.toggle("is-blocked", !!bloqueado);
+        dragHint.hidden = false;
+      }
+
+      function hideDragHint() {
+        dragHint.hidden = true;
+      }
+
+      function elementUnder(event) {
+        const el = document.elementFromPoint(event.clientX, event.clientY);
+        return el ? el.closest(".branch, .core-area") : null;
+      }
+
+      function moveNodeDrag(event) {
+        const dx = event.clientX - nodeDrag.px;
+        const dy = event.clientY - nodeDrag.py;
+
+        if (!nodeDrag.active) {
+          if (Math.hypot(dx, dy) < nodeDrag.threshold) return;
+          nodeDrag.active = true;
+          didDrag = true;   // o clique que vem depois do arrasto é engolido
+          // Uma reacomodação ainda em curso reescreveria dx/dy a cada
+          // quadro e brigaria com o arrasto pelo controle do nó.
+          if (tweenFrame) { cancelAnimationFrame(tweenFrame); tweenFrame = null; }
+          document.body.classList.add("is-reparenting");
+          nodeDrag.node.el.classList.add("is-dragging");
+          try {
+            viewport.setPointerCapture(activePointerId);
+          } catch (e) {
+            // alguns navegadores recusam a captura; o arrasto ainda funciona.
+          }
+        }
+
+        // O cursor anda em pixels de tela; o mundo está sob zoom.
+        nodeDrag.node.dx = nodeDrag.ox + dx / camera.scale;
+        nodeDrag.node.dy = nodeDrag.oy + dy / camera.scale;
+        applyPositions();
+
+        const targetEl = elementUnder(event);
+        const target = !targetEl ? null
+          : targetEl.classList.contains("core-area")
+            ? treeData.root
+            : nodeById.get(targetEl.id.slice("node-".length));
+
+        // O plano muda dentro do mesmo alvo conforme o cursor sobe ou desce,
+        // então é recalculado a cada movimento — e não só quando troca de
+        // elemento, como a marcação fazia antes.
+        const plan = target ? dropPlan(nodeDrag.node, target, targetEl, event.clientY) : null;
+        const motivo = plan ? planRejection(nodeDrag.node, target, plan) : null;
+
+        clearDropHighlight();
+        nodeDrag.targetEl = targetEl;
+        if (targetEl && plan) {
+          targetEl.classList.add(
+            motivo ? "is-drop-blocked"
+              : plan.mode === "child" ? "is-drop-ok"
+                : plan.mode === "before" ? "is-drop-before" : "is-drop-after"
+          );
+          showDragHint(motivo || dropHintText(nodeDrag.node, target, plan), !!motivo);
+        } else {
+          showDragHint("Solte sobre um nó para religar ou reordenar.", false);
+        }
+
+        nodeDrag.target = target;
+        nodeDrag.plan = motivo ? null : plan;
+        nodeDrag.motivo = motivo;
+      }
+
+      function dropHintText(node, target, plan) {
+        const alvo = shortLabel(target, 26);
+        if (plan.mode === "child") return "Entrar em " + alvo + " (no fim)";
+        const mesmoPai = plan.parent === node.parent;
+        const verbo = mesmoPai ? "Reordenar" : "Mover para";
+        return verbo + (plan.mode === "before" ? " antes de " : " depois de ") + alvo;
+      }
+
+      function finishNodeDrag() {
+        const drag = nodeDrag;
+        clearDropHighlight();
+        nodeDrag = null;
+        if (!drag) return;
+
+        document.body.classList.remove("is-reparenting");
+        hideDragHint();
+        if (drag.node.el) drag.node.el.classList.remove("is-dragging");
+
+        if (!drag.active) return;   // foi só um clique que tremeu
+
+        // `plan` só chega preenchido quando o destino passou na validação.
+        if (drag.plan) {
+          reparent(drag.node, drag.plan.parent, drag.plan.before);
+          return;
+        }
+        // Sem destino válido o nó volta para o lugar de onde saiu.
+        snapDisplayed();
+        applyPositions();
+        if (drag.motivo) status.textContent = drag.motivo;
+      }
+
       function endDrag(event) {
-        if (!dragOrigin || (event && event.pointerId !== activePointerId)) return;
+        if (event && event.pointerId !== activePointerId) return;
+        if (nodeDrag) {
+          try {
+            if (viewport.hasPointerCapture(activePointerId)) viewport.releasePointerCapture(activePointerId);
+          } catch (e) {
+            // captura já liberada — nada a fazer.
+          }
+          finishNodeDrag();
+          activePointerId = null;
+          return;
+        }
+        if (!dragOrigin) return;
         try {
           if (viewport.hasPointerCapture(activePointerId)) viewport.releasePointerCapture(activePointerId);
         } catch (e) {
@@ -1912,10 +2512,13 @@
         else autoFit(420);
       }
 
-      function addChild(parentNode, label, url, pdf, type) {
+      function addChild(parentNode, label, url, pdf, type, color) {
         const allowed = type === SUBNODE ? canAddSub(parentNode) : canAddNode(parentNode);
         if (!allowed) return false;
-        const node = { id: newNodeId(), label: label, url: url || "", pdf: pdf || "", type: type, children: [] };
+        const node = {
+          id: newNodeId(), label: label, url: url || "", pdf: pdf || "",
+          color: color || "", type: type, children: [],
+        };
         parentNode.children.push(node);
         rebuildPreservingExpanded(parentNode.id, parentNode.id);
         saveState();
@@ -1935,6 +2538,116 @@
         status.textContent = (isSub(node) ? "Subnó" : "Nó") + " removido.";
       }
 
+      // --- Religar um galho -------------------------------------------------
+      // Arrastar um nó por cima de outro troca o pai. A subárvore vai junto
+      // de graça: `node.children` não é tocado, só muda de quem o nó pende.
+      // ---------------------------------------------------------------------
+      function isDescendant(possibleAncestor, node) {
+        let walker = node.parent;
+        while (walker) {
+          if (walker === possibleAncestor) return true;
+          walker = walker.parent;
+        }
+        return false;
+      }
+
+      // Onde o ponteiro está dentro da caixa do alvo decide a intenção, como
+      // num explorador de arquivos: no meio, o nó entra COMO FILHO; nas
+      // bordas de cima e de baixo, entra como IRMÃO antes ou depois — e é
+      // isso que dá o controle da ordem. A faixa da borda tem teto em
+      // pixels porque um subnó pode ter 300px de altura, e 30% dali seria
+      // uma faixa enorme.
+      const EDGE_BAND = 22;
+
+      function dropModeFor(target, targetEl, clientY) {
+        if (target === treeData.root) return "child";   // o tronco não tem irmãos
+        const rect = targetEl.getBoundingClientRect();
+        if (!rect.height) return "child";
+        const rel = (clientY - rect.top) / rect.height;
+        // Subnó não recebe filhos: a caixa inteira vira "antes ou depois",
+        // senão metade dela seria uma zona morta.
+        if (isSub(target)) return rel < 0.5 ? "before" : "after";
+        const band = Math.min(0.3, EDGE_BAND / rect.height);
+        if (rel < band) return "before";
+        if (rel > 1 - band) return "after";
+        return "child";
+      }
+
+      // O irmão que deve ficar logo DEPOIS do nó movido. Pular o próprio nó
+      // arrastado é o que faz "soltar depois do irmão de cima" devolver o
+      // nó ao mesmo lugar em vez de mandá-lo para o fim da lista.
+      function siblingAfter(target, dragged) {
+        const irmaos = target.parent ? target.parent.children : [];
+        for (let i = irmaos.indexOf(target) + 1; i < irmaos.length; i++) {
+          if (irmaos[i] !== dragged) return irmaos[i];
+        }
+        return null;
+      }
+
+      // Traduz "cursor em cima deste elemento" em "para onde o nó vai":
+      // quem será o pai e antes de qual irmão ele entra (null = no fim).
+      function dropPlan(node, target, targetEl, clientY) {
+        const mode = dropModeFor(target, targetEl, clientY);
+        if (mode === "child") return { mode: mode, parent: target, before: null };
+        return {
+          mode: mode,
+          parent: target.parent,
+          before: mode === "before" ? target : siblingAfter(target, node),
+        };
+      }
+
+      // Por que um destino recusa o nó. Devolve null quando o drop é válido
+      // — a mensagem é usada tanto no aviso quanto no motivo do bloqueio.
+      function planRejection(node, target, plan) {
+        if (!node || !target || !plan || !plan.parent) return "Destino inválido.";
+        if (target === node) return "Um nó não pode se ligar a si mesmo.";
+        if (plan.parent === node || isDescendant(node, plan.parent)) {
+          return "Um nó não pode se ligar a um descendente dele.";
+        }
+        if (isSub(plan.parent)) return "Subnós não recebem filhos.";
+        // Reordenar entre os irmãos atuais é sempre legítimo: as regras de
+        // categoria já valiam antes e continuam valendo depois.
+        if (plan.parent === node.parent) {
+          return plan.mode === "child" ? "O nó já está ligado aqui." : null;
+        }
+        if (isSub(node)) {
+          if (plan.parent === treeData.root) return "O tronco não recebe subnós direto.";
+          if (hasNodeChild(plan.parent)) return "Este galho já continua com nós: não aceita subnós.";
+        } else if (hasSubChild(plan.parent)) {
+          return "Este galho já terminou em subnós: não aceita nós.";
+        }
+        return null;
+      }
+
+      // Move o nó (com a subárvore inteira) para um novo pai, numa posição
+      // escolhida. `before` é o irmão que deve ficar logo depois dele; sem
+      // ele o nó entra no fim. A posição é resolvida DEPOIS da remoção, para
+      // não errar o índice quando origem e destino são o mesmo pai.
+      function reparent(node, newParent, before) {
+        const oldParent = node.parent;
+        if (!oldParent || !newParent) return false;
+        const mesmaPosicao = oldParent === newParent;
+        oldParent.children.splice(oldParent.children.indexOf(node), 1);
+        const at = before ? newParent.children.indexOf(before) : -1;
+        if (at === -1) newParent.children.push(node);
+        else newParent.children.splice(at, 0, node);
+        node.parent = newParent;
+        // O novo pai abre para o nó recém-chegado aparecer no lugar novo.
+        rebuildPreservingExpanded(newParent.id, node.id);
+        saveState();
+        const carga = node.children.length
+          ? " com " + node.children.length + (node.children.length > 1 ? " filhos" : " filho")
+          : "";
+        const posicao = before
+          ? " antes de " + shortLabel(before, 24)
+          : " no fim";
+        status.textContent = mesmaPosicao
+          ? shortLabel(node, 30) + " reordenado" + posicao + "."
+          : shortLabel(node, 30) + carga + " agora pende de "
+            + shortLabel(newParent, 30) + posicao + ".";
+        return true;
+      }
+
       // O nó central abre com o enquadramento geral (é a revelação do mapa
       // inteiro), e não com o foco pontual usado ao expandir um galho.
       function toggleCore() {
@@ -1950,10 +2663,11 @@
           : "Mapa de POPs recolhido.";
       }
 
-      function saveNodeEdits(node, label, url, pdf) {
+      function saveNodeEdits(node, label, url, pdf, color) {
         node.label = label;
         node.url = url || "";
         node.pdf = pdf || "";
+        node.color = color || "";
         if (node === treeData.root) {
           coreLabel.textContent = label;
         } else {
@@ -2129,6 +2843,38 @@
         return raw ? raw.split(/[\\/]/).pop() : "";
       }
 
+      // Cor própria do nó. O <input type="color"> não tem estado "vazio",
+      // então quem representa o "sem cor própria" é a caixa de herança: com
+      // ela marcada o seletor fica desabilitado e o nó volta a seguir o
+      // galho.
+      // `reference` é o nó de quem se tira a cor mostrada no seletor quando
+      // ainda não há cor própria: o próprio nó ao editar, o pai ao criar.
+      function colorFieldMarkup(node, reference) {
+        const inherits = !node || !node.color;
+        const shown = (node && node.color)
+          || rgbToHex(parseRgbString(colorFor(node || reference).bg));
+        return `
+            <p class="dev-section-title" style="margin-top:0.7rem;">Cor</p>
+            <label class="dev-check">
+              <input type="checkbox" id="dev-node-color-inherit" ${inherits ? "checked" : ""} />
+              Usar a cor do galho
+            </label>
+            <div class="dev-color-row">
+              <span class="dev-color-name">Cor própria deste nó</span>
+              <input type="color" class="dev-color-swatch" id="dev-node-color" value="${shown}" ${inherits ? "disabled" : ""} aria-label="Cor própria deste nó" />
+            </div>
+            <p class="dev-modal-desc" style="margin:-0.1rem 0 0;">A cor própria vale também para os descendentes, até que algum deles defina a sua.</p>
+        `;
+      }
+
+      function wireColorField() {
+        const check = document.getElementById("dev-node-color-inherit");
+        const input = document.getElementById("dev-node-color");
+        if (!check || !input) return () => "";
+        check.addEventListener("change", () => { input.disabled = check.checked; });
+        return () => (check.checked ? "" : input.value);
+      }
+
       function renderNodeEditForm(node) {
         const isRoot = node === treeData.root;
         const forSub = !isRoot && isSub(node);
@@ -2145,6 +2891,7 @@
             <p class="dev-modal-desc" style="margin:-0.3rem 0 0;">Se preenchido, clicar abre o link em vez de expandir.</p>
             `}
             ${forSub ? pdfFieldMarkup() : ""}
+            ${isRoot ? "" : colorFieldMarkup(node)}
             <button type="submit" class="dev-btn dev-btn-primary">Salvar</button>
           </form>
         `;
@@ -2155,6 +2902,7 @@
         textarea.value = node.label;
         if (urlInput) urlInput.value = node.url || "";
         if (pdfInput) pdfInput.value = node.pdf || "";
+        const readColor = wireColorField();
         const withinLimit = wireWordCounter(textarea, forSub);
 
         document.getElementById("dev-node-form").addEventListener("submit", (event) => {
@@ -2164,7 +2912,7 @@
           let url = urlInput ? urlInput.value.trim() : "";
           if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
           const pdf = readPdfInput();
-          saveNodeEdits(node, text, url, pdf);
+          saveNodeEdits(node, text, url, pdf, readColor());
           closeDevOverlay();
         });
         textarea.focus();
@@ -2185,12 +2933,14 @@
             </label>
             <p class="dev-modal-desc" style="margin:-0.3rem 0 0;">Se preenchido, clicar abre o link em vez de expandir.</p>
             ${isSubCreate ? pdfFieldMarkup() : ""}
+            ${colorFieldMarkup(null, parentNode)}
             <button type="submit" class="dev-btn dev-btn-primary">Criar</button>
           </form>
         `;
         refreshPdfDatalist();
         const textarea = document.getElementById("dev-node-text");
         const urlInput = document.getElementById("dev-node-url");
+        const readColor = wireColorField();
         const withinLimit = wireWordCounter(textarea, isSubCreate);
         document.getElementById("dev-node-form").addEventListener("submit", (event) => {
           event.preventDefault();
@@ -2199,7 +2949,7 @@
           let url = urlInput.value.trim();
           if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
           const pdf = readPdfInput();
-          addChild(parentNode, text, url, pdf, type);
+          addChild(parentNode, text, url, pdf, type, readColor());
           closeDevOverlay();
         });
         textarea.focus();
@@ -2359,15 +3109,18 @@
         if (!file) return;
         const reader = new FileReader();
         reader.onload = () => {
+          let envelope = null;
           let rootData = null;
           try {
-            rootData = readEnvelope(JSON.parse(String(reader.result)));
+            envelope = JSON.parse(String(reader.result));
+            rootData = readEnvelope(envelope);
           } catch (e) {
             rootData = null;
           }
           if (!rootData) {
             window.alert("Arquivo inválido: não parece um mapa exportado por esta página.");
           } else if (window.confirm("Importar substitui o mapa atual por inteiro. Continuar?")) {
+            adoptTheme(envelope);
             applyImportedRoot(rootData, file.name);
             closeDevOverlay();
           }
@@ -2401,6 +3154,141 @@
         openDevOverlay();
       });
 
+      // --- Painel de aparência ---------------------------------------------
+      // Cada linha é um <input type="color"> ligado a uma chave do tema.
+      // A prévia é imediata (evento "input") e a gravação acontece junto —
+      // o tema é pequeno e escrever no localStorage a cada arrasto do
+      // seletor não pesa.
+      // ---------------------------------------------------------------------
+      // `changed` diz se a cor está fora do padrão: é isso que habilita o
+      // botão de restaurar. O botão existe sempre, só desabilitado, para a
+      // linha não mudar de largura quando a cor volta ao padrão.
+      function colorRowMarkup(id, name, value, changed) {
+        return `
+          <div class="dev-color-row">
+            <span class="dev-color-name">${escapeHtml(name)}</span>
+            <button type="button" class="dev-reset-btn" data-reset="${id}"${changed ? "" : " disabled"}>Padrão</button>
+            <input type="color" class="dev-color-swatch" id="${id}" value="${value}" aria-label="${escapeHtml(name)}" />
+          </div>
+        `;
+      }
+
+      function renderThemeForm() {
+        const sectors = treeData.root.children;
+        const branchRows = sectors.length
+          ? sectors.map((sector) => {
+              const current = theme.branches[sector.id];
+              const shown = current || rgbToHex(parseRgbString(paletteForSector(sector).bg));
+              return colorRowMarkup(
+                "theme-branch-" + sector.id,
+                shortLabel(sector, 28),
+                shown,
+                !!current
+              );
+            }).join("")
+          : `<p class="dev-data-hint">O mapa ainda não tem galhos.</p>`;
+
+        devModalBody.innerHTML = `
+          <h2 id="dev-modal-title" class="dev-modal-title">Aparência do mapa</h2>
+          <p class="dev-data-hint">As cores valem para todo mundo que abrir esta página e viajam junto nas exportações.</p>
+
+          <p class="dev-section-title">Página</p>
+          ${colorRowMarkup("theme-background", "Fundo", theme.background, theme.background !== DEFAULT_THEME.background)}
+          ${colorRowMarkup("theme-line", "Linhas entre os nós", theme.line, theme.line !== DEFAULT_THEME.line)}
+
+          <p class="dev-section-title">Tronco</p>
+          ${colorRowMarkup("theme-core", "Cor inicial", theme.core, theme.core !== DEFAULT_THEME.core)}
+          ${colorRowMarkup("theme-coreEnd", "Cor final", theme.coreEnd, theme.coreEnd !== DEFAULT_THEME.coreEnd)}
+
+          <p class="dev-section-title">Círculos decorativos</p>
+          <label class="dev-check">
+            <input type="checkbox" id="theme-blobs" ${theme.blobs ? "checked" : ""} />
+            Mostrar os dois borrões de fundo
+          </label>
+          ${colorRowMarkup("theme-blobA", "Círculo superior", theme.blobA, theme.blobA !== DEFAULT_THEME.blobA)}
+          ${colorRowMarkup("theme-blobB", "Círculo inferior", theme.blobB, theme.blobB !== DEFAULT_THEME.blobB)}
+
+          <p class="dev-section-title">Galhos</p>
+          <p class="dev-data-hint" style="margin:0 0 0.2rem;">A cor de um galho vale para todos os seus nós e subnós, menos onde um nó tiver cor própria.</p>
+          <div class="dev-branch-list">${branchRows}</div>
+
+          <button type="button" id="theme-reset-all" class="dev-btn dev-btn-ghost" style="margin-top:1rem;">Restaurar todas as cores</button>
+        `;
+
+        // Chaves simples do tema: o id do input é "theme-" + a chave.
+        ["background", "line", "core", "coreEnd", "blobA", "blobB"].forEach((key) => {
+          const input = document.getElementById("theme-" + key);
+          input.addEventListener("input", () => {
+            theme[key] = input.value;
+            applyTheme();
+            saveTheme();
+            refreshResetButton(key, theme[key] !== DEFAULT_THEME[key]);
+          });
+        });
+
+        const blobsCheck = document.getElementById("theme-blobs");
+        blobsCheck.addEventListener("change", () => {
+          theme.blobs = blobsCheck.checked;
+          applyTheme();
+          saveTheme();
+        });
+
+        sectors.forEach((sector) => {
+          const input = document.getElementById("theme-branch-" + sector.id);
+          if (!input) return;
+          input.addEventListener("input", () => {
+            theme.branches[sector.id] = input.value;
+            applyTheme();
+            saveTheme();
+            refreshResetButton("branch-" + sector.id, true);
+          });
+        });
+
+        document.getElementById("theme-reset-all").addEventListener("click", () => {
+          theme = Object.assign({}, DEFAULT_THEME, { branches: {} });
+          applyTheme();
+          saveTheme();
+          renderThemeForm();
+          status.textContent = "Cores restauradas para o padrão.";
+        });
+      }
+
+      function refreshResetButton(key, enabled) {
+        const btn = devModalBody.querySelector('[data-reset="theme-' + key + '"]');
+        if (btn) btn.disabled = !enabled;
+      }
+
+      // As cores padrão da PALETTE vêm escritas como "rgb(r, g, b)"; o
+      // <input type="color"> só entende hexadecimal.
+      function parseRgbString(value) {
+        const match = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i.exec(String(value));
+        if (!match) return hexToRgb(value);
+        return { r: +match[1], g: +match[2], b: +match[3] };
+      }
+
+      // Delegação registrada uma única vez: renderThemeForm() se redesenha a
+      // cada restauração, e prender o listener lá dentro iria empilhando uma
+      // cópia nova a cada passagem.
+      devModalBody.addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-reset]");
+        if (!btn) return;
+        const key = btn.dataset.reset.replace(/^theme-/, "");
+        if (key.indexOf("branch-") === 0) {
+          delete theme.branches[key.slice("branch-".length)];
+        } else {
+          theme[key] = DEFAULT_THEME[key];
+        }
+        applyTheme();
+        saveTheme();
+        renderThemeForm();   // redesenha para o seletor mostrar o valor padrão
+      });
+
+      themeToggle.addEventListener("click", () => {
+        if (!devUnlocked) return;
+        renderThemeForm();
+        openDevOverlay();
+      });
+
       // --- Carregamento -----------------------------------------------------
       // Ordem: um seed embutido ainda não adotado vence (é um arquivo
       // recém-exportado, aberto talvez numa máquina que já tinha outro mapa
@@ -2412,6 +3300,7 @@
         ? String(seedEnvelope.exportedAt)
         : "sem-carimbo";
       let seedAdopted = false;
+      let seedTheme = null;
 
       if (seedRoot) {
         let lastSeed = null;
@@ -2423,6 +3312,7 @@
         if (seedStampValue !== lastSeed) {
           adoptRoot(seedRoot);
           seedAdopted = true;
+          seedTheme = seedEnvelope && seedEnvelope.theme ? seedEnvelope.theme : null;
           saveState();
           try {
             localStorage.setItem(SEED_STAMP_KEY, seedStampValue);
@@ -2439,11 +3329,24 @@
       }
       normalizeTypes(treeData.root);
 
+      // O tema segue a mesma ordem da árvore: o que veio no arquivo aberto
+      // manda sobre o rascunho local; sem nenhum dos dois, valem as cores
+      // de fábrica. applyTheme() roda depois do render() porque precisa dos
+      // nós já montados para repintá-los.
+      if (seedTheme) {
+        theme = sanitizeTheme(seedTheme);
+        saveTheme();
+      } else {
+        const savedTheme = loadTheme();
+        if (savedTheme) theme = savedTheme;
+      }
+
       render();
       updateVisibility();
+      applyTheme();
       fitCamera(0);
       remeasureOnFontsReady();
     });
   </script>
-</body>
-</html>
+
+</body></html>
