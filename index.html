@@ -27,9 +27,18 @@
     body {
       margin: 0;
       width: 100%;
+      /* No celular, 100vh conta a barra do navegador que aparece e some ao
+         rolar, e o pé do mapa fica atrás dela. dvh resolve nos navegadores
+         atuais; a linha de cima cobre o resto, com --vh escrito pelo JS a
+         cada resize. A ordem importa: se dvh não existir, a declaração é
+         descartada e a anterior volta a valer. */
       min-height: calc(100 * min(var(--vh, 1vh), 1vh));
+      min-height: 100dvh;
       font-family: "DM Sans", sans-serif;
       overflow-x: hidden;
+      /* Sem isto o "puxar para atualizar" do celular rouba o gesto de
+         arrastar o mapa, e a rolagem elástica descola o mapa da tela. */
+      overscroll-behavior: none;
     }
 
     button {
@@ -39,6 +48,7 @@
     .mindmap-shell {
       width: 100%;
       min-height: calc(100 * min(var(--vh, 1vh), 1vh));
+      min-height: 100dvh;
       position: relative;
       overflow: hidden;
       isolation: isolate;
@@ -238,8 +248,8 @@
     }
 
     .core-button {
-      width: 168px;
-      min-height: 168px;
+      width: var(--core-size, 168px);
+      min-height: var(--core-size, 168px);
       padding: 1.2rem;
       border-radius: 50%;
       display: grid;
@@ -292,7 +302,7 @@
     .branch {
       position: absolute;
       z-index: 2;
-      width: 214px;
+      width: var(--node-w, 214px);
       opacity: 0;
       pointer-events: none;
       /* Cresce a partir do próprio centro: no layout radial os galhos saem
@@ -386,7 +396,7 @@
 
     .branch-button {
       width: 100%;
-      min-height: 70px;
+      min-height: var(--node-min-h, 70px);
       border-radius: 18px;
       padding: 0.9rem 1rem;
       display: flex;
@@ -413,7 +423,7 @@
 
     .branch-name {
       font-weight: 700;
-      font-size: 1rem;
+      font-size: var(--name-size, 1rem);
       line-height: 1.15;
     }
 
@@ -694,8 +704,8 @@
        rola por dentro depois do teto; enquanto for curta mantém o formato
        de pílula, que vira um oval feio quando a caixa fica alta. --- */
     .branch.is-subnode .branch-button {
-      min-height: 54px;
-      max-height: 320px;
+      min-height: var(--sub-min-h, 54px);
+      max-height: var(--sub-max-h, 320px);
       overflow-y: auto;
       overscroll-behavior: contain;
       align-items: flex-start;
@@ -711,7 +721,7 @@
     }
 
     .branch.is-subnode .branch-name {
-      font-size: 0.92rem;
+      font-size: var(--sub-size, 0.92rem);
       font-weight: 600;
       white-space: pre-wrap;
       text-align: left;
@@ -900,17 +910,155 @@
       padding-right: 0.2rem;
     }
 
-    @media (max-width: 720px) {
-      .mindmap-shell {
-        min-height: auto;
-        padding: 4.4rem 1rem 2rem;
+    /* === Celular =======================================================
+       Pende de body.is-compact, que applyMetrics() liga junto com as
+       medidas do layout — e não de uma media query própria, que poderia
+       discordar do JS e deixar caixas de 214px com passos de 194px.
+
+       .mindmap-shell NUNCA pode ter min-height:auto aqui: todos os filhos
+       dele são absolutos, então sem altura própria o shell desabaria para a
+       altura do padding e a área do mapa ficaria com uns 100px de altura.
+       =================================================================== */
+    body.is-compact .mindmap-shell {
+      padding: 3.6rem 0.75rem 1.5rem;
+    }
+
+    body.is-compact .eyebrow {
+      top: 1.1rem;
+      left: 1.1rem;
+      font-size: 0.62rem;
+    }
+
+    /* O círculo do tronco encolheu, mas o tamanho do rótulo dele vem
+       inline do template — daí o !important, como já acontece com a
+       instrução. Sem isto o nome da unidade vaza para fora do círculo. */
+    body.is-compact .core-button {
+      padding: 0.7rem;
+    }
+
+    body.is-compact .core-button .node-label {
+      font-size: 15px !important;
+    }
+
+    body.is-compact .instruction {
+      font-size: 0.74rem;
+    }
+
+    body.is-compact .branch-button {
+      border-radius: 15px;
+      padding: 0.7rem 0.8rem;
+    }
+
+    body.is-compact .branch.is-subnode .branch-button {
+      padding: 0.5rem 0.9rem;
+    }
+
+    body.is-compact .camera-controls {
+      right: 0.6rem;
+      bottom: max(0.6rem, env(safe-area-inset-bottom, 0px));
+    }
+
+    body.is-compact .camera-legend {
+      left: 0.75rem;
+      bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
+      font-size: 0.6rem;
+      gap: 0.6rem;
+    }
+
+    body.is-compact .dev-toggle {
+      top: 1rem;
+      right: 1rem;
+    }
+
+    body.is-compact .data-toggle {
+      right: 3.9rem;
+    }
+
+    body.is-compact .theme-toggle {
+      right: 6.8rem;
+    }
+
+    body.is-compact .dev-modal {
+      width: 100%;
+      max-height: 88dvh;
+      border-radius: 18px;
+      padding: 1.4rem 1.1rem 1.2rem;
+    }
+
+    body.is-compact .dev-overlay {
+      padding: 0.75rem;
+      align-items: flex-end;
+    }
+
+    /* 16px é o mínimo que o iOS aceita sem dar zoom sozinho no campo ao
+       receber o foco — e o zoom automático deixa o mapa fora de lugar. */
+    body.is-compact .dev-input {
+      font-size: 16px;
+    }
+
+    body.is-compact .drag-hint {
+      font-size: 0.72rem;
+      max-width: calc(100% - 1.5rem);
+    }
+
+    /* Não sobra largura para os dois cantos de baixo ao mesmo tempo. */
+    @media (max-width: 460px) {
+      .camera-legend {
+        display: none;
+      }
+    }
+
+    /* === Ponteiro grosso (dedo) =======================================
+       Vale para o tablet também, onde a largura não denuncia o toque. Alvo
+       de 44px é o mínimo confortável; os botões desenhados continuam do
+       mesmo tamanho, o que cresce é a área que responde ao toque.
+       ================================================================== */
+    @media (pointer: coarse) {
+      .camera-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
       }
 
-      .eyebrow {
-        top: 1.35rem;
-        left: 1.2rem;
+      .dev-toggle {
+        width: 44px;
+        height: 44px;
       }
 
+      .dev-node-btn {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+      }
+
+      /* O "+" decide entre abrir o galho e abrir o PDF: com 19px de ícone,
+         o dedo erra. A área cresce para fora sem mexer no desenho. */
+      .branch-toggle-icon {
+        padding: 10px;
+        margin: -10px;
+        box-sizing: content-box;
+        overflow: visible;
+      }
+
+      /* Sem hover no toque, o realce ao passar o dedo fica grudado no
+         último nó tocado. */
+      .branch-button:hover,
+      .core-button:hover {
+        transform: none;
+        filter: none;
+      }
+
+      .branch-button:active {
+        filter: brightness(1.1);
+      }
+    }
+
+    /* Um subnó longo rola por dentro. A viewport tem touch-action:none para
+       o mapa reagir à pinça e ao arrasto, e isso mataria a rolagem do texto:
+       só a caixa que REALMENTE tem texto sobrando devolve o eixo vertical ao
+       navegador. measureNodes() liga e desliga a classe. */
+    .branch.is-subnode.is-scrollable .branch-button {
+      touch-action: pan-y;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1043,26 +1191,73 @@
         })
         .catch(() => { pdfLibrary = []; });
 
-      // Geometria: o tronco fica no centro e só os setores que saem dele se
-      // espalham em 360°. Dali para dentro, cada galho cresce na horizontal
-      // para o lado em que nasceu, com os irmãos empilhados na vertical —
-      // é o que mantém a largura do galho independente do ângulo. Só nós
-      // visíveis ocupam espaço: quem está fechado não reserva lugar nenhum.
-      const ROOT = { x: 0, y: 0, r: 84 };
-      const NODE_W = 214;
-      const NODE_H = 70;
-      const SUB_H = 54;
+      // Geometria: o tronco fica no meio e os setores se apoiam num arco à
+      // direita e à esquerda dele. Dali para dentro, cada galho cresce na
+      // horizontal para o lado em que nasceu, com os irmãos empilhados na
+      // vertical — é o que mantém a largura do galho independente de onde
+      // ele nasceu. Só nós visíveis ocupam espaço: quem está fechado não
+      // reserva lugar nenhum.
+      //
+      // As medidas vivem em METRICS e não em constantes soltas porque o
+      // celular usa um jogo menor. Encolher só o CSS ou só o layout
+      // desalinharia caixa e conector: o layout mede a caixa pelo
+      // offsetWidth (que vem do CSS) mas dá o passo pela constante, então
+      // os dois lados têm de sair do mesmo lugar. applyMetrics() escreve
+      // as variáveis que o CSS lê e atualiza ROOT.r de uma vez só.
+      const METRICS = {
+        wide: {
+          nodeW: 214, coreR: 84, nodeMinH: 70, subMinH: 54, subMaxH: 320,
+          stepX: 254,      // avanço horizontal por geração dentro do galho
+          siblingGap: 24,  // folga vertical entre irmãos dentro do galho
+          sectorGap: 40,   // folga vertical entre galhos vizinhos do mesmo lado
+          arcR: 168,       // quanto o arco dos setores se abre a partir do tronco
+          coreGap: 46,     // menor distância entre o tronco e a caixa de um setor
+          nameSize: 1, subSize: 0.92,
+        },
+        narrow: {
+          nodeW: 168, coreR: 62, nodeMinH: 58, subMinH: 46, subMaxH: 210,
+          stepX: 194, siblingGap: 16, sectorGap: 28, arcR: 110, coreGap: 28,
+          nameSize: 0.88, subSize: 0.84,
+        },
+      };
+      const NARROW_AT = 700;       // largura a partir da qual as caixas encolhem
+      const SHORT_AT = 460;        // altura idem — é o celular deitado
+      let M = METRICS.wide;
 
-      const RING_FIRST = 300;      // raio mínimo do anel dos setores
-      const RING_PAD = 34;         // folga entre setores vizinhos, no anel
-      const STEP_X = 254;          // avanço horizontal por geração dentro do galho
-      const SIBLING_GAP = 24;      // folga vertical entre irmãos dentro do galho
+      const ROOT = { x: 0, y: 0, r: M.coreR };
       const WORLD_MARGIN = 160;
       const TWEEN_MS = 450;        // duração da reacomodação do mapa
 
       const SUB_TALL_AT = 96;      // acima disso o subnó perde o formato de pílula
       const SUB_WORD_LIMIT = 400;
       const NODE_CHAR_LIMIT = 80;
+
+      // Escolhe o jogo de medidas e publica no CSS. Devolve true quando o
+      // jogo mudou — aí o mapa precisa ser medido e desenhado de novo, e
+      // não só reenquadrado.
+      //
+      // Esta função é a ÚNICA dona do ponto de virada. O CSS compacto pende
+      // de body.is-compact e não de uma media query própria: com dois
+      // limiares independentes, um celular deitado (844x390) cairia no
+      // compacto pelo JS e no normal pelo CSS, e o layout daria passos de
+      // 194px entre caixas de 214px — colunas sobrepostas.
+      function applyMetrics() {
+        const narrow = window.innerWidth <= NARROW_AT || window.innerHeight <= SHORT_AT;
+        const next = narrow ? METRICS.narrow : METRICS.wide;
+        const changed = next !== M;
+        M = next;
+        ROOT.r = M.coreR;
+        const css = document.documentElement.style;
+        css.setProperty("--node-w", M.nodeW + "px");
+        css.setProperty("--core-size", (M.coreR * 2) + "px");
+        css.setProperty("--node-min-h", M.nodeMinH + "px");
+        css.setProperty("--sub-min-h", M.subMinH + "px");
+        css.setProperty("--sub-max-h", M.subMaxH + "px");
+        css.setProperty("--name-size", M.nameSize + "rem");
+        css.setProperty("--sub-size", M.subSize + "rem");
+        document.body.classList.toggle("is-compact", narrow);
+        return changed;
+      }
 
       const PALETTE = [
         { bg: "rgb(26, 157, 158)", fg: "rgb(255, 255, 255)", subBg: "rgb(217, 245, 241)", subFg: "rgb(18, 60, 66)" },
@@ -1283,12 +1478,12 @@
       // texto renderizado, então vem de measureNodes(); as constantes só
       // valem como estimativa antes da primeira medição.
       function halfW(node) {
-        return node.depth === 0 ? ROOT.r : (node.w || NODE_W) / 2;
+        return node.depth === 0 ? ROOT.r : (node.w || M.nodeW) / 2;
       }
 
       function halfH(node) {
         if (node.depth === 0) return ROOT.r;
-        return (node.h || (isSub(node) ? SUB_H : NODE_H)) / 2;
+        return (node.h || (isSub(node) ? M.subMinH : M.nodeMinH)) / 2;
       }
 
       function countWords(text) {
@@ -1510,18 +1705,51 @@
         return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
       }
 
-      // --- Layout: anel radial no tronco, galhos lineares ------------------
-      // Só os setores que saem do tronco se espalham em 360°. De cada setor
-      // para dentro o galho cresce na horizontal, para o lado em que nasceu,
-      // com os irmãos empilhados na vertical — assim a largura do galho não
-      // depende do ângulo (uma caixa tem 214px de largura contra 70px de
-      // altura: empilhada de lado ficaria três vezes mais larga).
+      // --- Layout: leque em arco, galhos lineares --------------------------
+      // O tronco fica no meio e os setores se apoiam num arco à direita e à
+      // esquerda dele. De cada setor para dentro o galho cresce na
+      // horizontal, para o lado em que nasceu, com os irmãos empilhados na
+      // vertical — assim a largura do galho não depende de onde ele nasceu
+      // (uma caixa tem 214px de largura contra 70px de altura: empilhada de
+      // lado ficaria três vezes mais larga).
       //
-      // Só nós VISÍVEIS ocupam espaço. Reservar lugar para galhos fechados
-      // era o que abria os buracos no anel: um setor com 7 filhos ocultos
-      // pesava sete vezes mais que o vizinho fechado e engolia um terço do
-      // círculo. Nós ocultos herdam a posição do pai, para emergirem de
-      // dentro dele quando abrem.
+      // POR QUE OS GALHOS NÃO SE SOBREPÕEM MAIS
+      // O anel de 360° escolhia o ângulo de cada setor por uma estimativa
+      // (W·|sen θ| + H·|cos θ|) e errava por um fator de cos²: o vão entre
+      // dois vizinhos vale arco·|cos θ|, mas a estimativa já tinha dividido
+      // a altura por |cos θ| — o cosseno entrava duas vezes e sobrava menos
+      // espaço do que o galho pedia. Dois galhos grandes no mesmo quadrante
+      // se invadiam, e nenhum ajuste de folga resolvia, porque o erro era da
+      // fórmula e não do tamanho da folga.
+      //
+      // Agora a garantia é estrutural, e não estimada:
+      //   1. cada galho é medido pela caixa EXATA que envolve a subárvore
+      //      visível (branchBox), percorrendo as mesmas contas que depois
+      //      posicionam os nós — medir e posicionar não podem divergir;
+      //   2. dentro de um lado os galhos são empilhados na vertical, um
+      //      abaixo do outro: as faixas de y ficam disjuntas por construção;
+      //   3. um lado nunca cruza o outro: toda caixa da direita começa em
+      //      x ≥ coreGap e toda caixa da esquerda termina em x ≤ −coreGap.
+      // Duas caixas quaisquer ou estão em lados opostos (separadas em x) ou
+      // no mesmo lado (separadas em y). Não existe terceiro caso — é isso
+      // que faz "nunca se sobrepõem" ser uma propriedade do algoritmo.
+      //
+      // O QUE SE MOVE
+      // Duas coisas respondem ao tamanho dos galhos. A volta continua sendo
+      // a mesma volta de sempre, mas ela é um anel: o par (por onde começa,
+      // onde troca de lado) é reescolhido a cada desenho para equilibrar a
+      // altura dos dois lados, então abrir um galho gigante gira o anel até
+      // ele caber sozinho de um lado, com os fechados juntinhos do outro.
+      // E o quanto cada setor se afasta do tronco
+      // sai da distância vertical entre a faixa dele e a linha do tronco: os
+      // de cima e os de baixo vêm para perto do eixo, os do meio se abrem —
+      // é o arco que devolve a silhueta de anel do layout antigo. O arco é
+      // só aparência e não pode criar sobreposição: empurrar um setor para
+      // dentro ou para fora não muda a faixa de y dele.
+      //
+      // Só nós VISÍVEIS ocupam espaço: quem está fechado não reserva lugar,
+      // e nós ocultos herdam a posição do pai para emergirem de dentro dele
+      // quando abrem.
       //
       // As caixas não giram: rótulo inclinado seria ilegível.
       // ---------------------------------------------------------------------
@@ -1539,92 +1767,157 @@
 
         computeVisibility();
 
-        const sectors = treeData.root.children.filter((node) => node.visible);
-        if (!sectors.length) {
-          treeData.root.x = WORLD_MARGIN + ROOT.r;
-          treeData.root.y = WORLD_MARGIN + ROOT.r;
-          nodeById.forEach((node) => {
-            if (node.depth === 0) return;
-            node.x = treeData.root.x;
-            node.y = treeData.root.y;
-          });
-          return;
-        }
-
         function visibleChildren(node) {
           return node.children.filter((child) => child.visible);
         }
 
         // Altura que o galho ocupa na vertical, empilhando irmãos visíveis.
+        // O cache existe porque cada galho é percorrido duas vezes (uma para
+        // medir, outra para posicionar) e sem ele a recursão viraria
+        // quadrática num mapa de centenas de nós.
+        const heightCache = new Map();
         function branchHeight(node) {
+          const cached = heightCache.get(node);
+          if (cached !== undefined) return cached;
           const kids = visibleChildren(node);
-          if (!kids.length) return node.h || (isSub(node) ? SUB_H : NODE_H);
-          const total = kids.reduce((sum, kid) => sum + branchHeight(kid), 0)
-            + SIBLING_GAP * (kids.length - 1);
-          return Math.max(node.h || NODE_H, total);
+          const own = node.h || (isSub(node) ? M.subMinH : M.nodeMinH);
+          let value = own;
+          if (kids.length) {
+            const total = kids.reduce((sum, kid) => sum + branchHeight(kid), 0)
+              + M.siblingGap * (kids.length - 1);
+            value = Math.max(own, total);
+          }
+          heightCache.set(node, value);
+          return value;
         }
 
-        // Quantas gerações visíveis o galho tem, para saber sua largura.
-        function branchDepth(node) {
-          const kids = visibleChildren(node);
-          if (!kids.length) return 1;
-          return 1 + Math.max.apply(null, kids.map(branchDepth));
+        // Percorre o galho inteiro entregando a posição RELATIVA ao nó de
+        // origem, que fica em (0,0). Medir e posicionar saem daqui, das
+        // mesmas contas — é o que impede a medida de um galho de discordar
+        // de onde os nós dele realmente vão parar.
+        function eachInBranch(node, dir, visit) {
+          (function walk(n, rx, ry) {
+            visit(n, rx, ry);
+            const kids = visibleChildren(n);
+            if (!kids.length) return;
+            const heights = kids.map(branchHeight);
+            const total = heights.reduce((a, b) => a + b, 0)
+              + M.siblingGap * (kids.length - 1);
+            let cursor = ry - total / 2;
+            kids.forEach((kid, i) => {
+              walk(kid, rx + dir * M.stepX, cursor + heights[i] / 2);
+              cursor += heights[i] + M.siblingGap;
+            });
+          })(node, 0, 0);
         }
 
-        // Posiciona um galho inteiro no eixo horizontal, a partir do setor.
-        // `dir` é +1 para a metade direita do anel e -1 para a esquerda.
+        // Caixa exata que envolve a subárvore visível, relativa ao setor.
+        function branchBox(node, dir) {
+          const box = { l: Infinity, r: -Infinity, t: Infinity, b: -Infinity };
+          eachInBranch(node, dir, (n, rx, ry) => {
+            box.l = Math.min(box.l, rx - halfW(n));
+            box.r = Math.max(box.r, rx + halfW(n));
+            box.t = Math.min(box.t, ry - halfH(n));
+            box.b = Math.max(box.b, ry + halfH(n));
+          });
+          return box;
+        }
+
+        // Escreve as posições do galho, agora que o setor já tem a sua.
         function placeBranch(node, dir) {
-          const kids = visibleChildren(node);
-          if (!kids.length) return;
-          const heights = kids.map(branchHeight);
-          const total = heights.reduce((a, b) => a + b, 0) + SIBLING_GAP * (kids.length - 1);
-          let cursor = node.y - total / 2;
-          kids.forEach((kid, i) => {
-            kid.x = node.x + dir * STEP_X;
-            kid.y = cursor + heights[i] / 2;
-            cursor += heights[i] + SIBLING_GAP;
-            placeBranch(kid, dir);
+          eachInBranch(node, dir, (n, rx, ry) => {
+            if (n === node) return;
+            n.x = node.x + rx;
+            n.y = node.y + ry;
           });
         }
 
-        // Espaço que o setor ocupa na direção tangente ao anel. Um galho
-        // deitado (setor à direita ou à esquerda) gasta a própria altura;
-        // um galho no topo ou embaixo atravessa o anel de lado e gasta a
-        // largura. Daí o W·|sen θ| + H·|cos θ|.
-        function tangentialNeed(node, angle) {
-          const w = (branchDepth(node) - 1) * STEP_X + NODE_W;
-          const h = branchHeight(node);
-          return Math.abs(w * Math.sin(angle)) + Math.abs(h * Math.cos(angle)) + RING_PAD;
+        // Altura de uma pilha de galhos, com as folgas entre eles.
+        function stackHeight(list) {
+          if (!list.length) return 0;
+          return list.reduce((a, b) => a + b, 0) + M.sectorGap * (list.length - 1);
         }
 
-        // A necessidade depende do ângulo e o ângulo depende da necessidade:
-        // duas passadas resolvem — ângulos iguais como chute, mede, realoca.
-        const start = -Math.PI / 2;
-        let angles = sectors.map((_, i) => start + (Math.PI * 2 * (i + 0.5)) / sectors.length);
-        let radius = RING_FIRST;
-
-        for (let pass = 0; pass < 2; pass += 1) {
-          const needs = sectors.map((node, i) => tangentialNeed(node, angles[i]));
-          const totalNeed = needs.reduce((a, b) => a + b, 0) || 1;
-          // R·ângulo_i >= necessidade_i para todo i equivale a R >= Σ/2π,
-          // quando o ângulo é repartido proporcional à necessidade.
-          radius = Math.max(RING_FIRST, totalNeed / (Math.PI * 2));
-          let cursor = start;
-          angles = needs.map((need) => {
-            const span = (Math.PI * 2 * need) / totalNeed;
-            const mid = cursor + span / 2;
-            cursor += span;
-            return mid;
-          });
+        // Onde a caixa do setor começa, medido do centro do tronco. Quanto
+        // mais longe da linha do tronco a faixa do setor estiver, mais para
+        // dentro ele pode vir — daí o arco. O segundo termo é a garantia de
+        // que nenhuma caixa encoste no círculo do tronco, mesmo que o arco
+        // um dia seja configurado menor que ele.
+        function innerOffset(y0, y1) {
+          const dy = y0 > 0 ? y0 : (y1 < 0 ? -y1 : 0);
+          const bulge = Math.sqrt(Math.max(0, M.arcR * M.arcR - dy * dy));
+          const clear = Math.sqrt(Math.max(0, ROOT.r * ROOT.r - dy * dy));
+          return M.coreGap + Math.max(bulge, clear);
         }
 
         treeData.root.x = 0;
         treeData.root.y = 0;
-        sectors.forEach((node, i) => {
-          node.angle = angles[i];
-          node.x = Math.cos(angles[i]) * radius;
-          node.y = Math.sin(angles[i]) * radius;
-          placeBranch(node, Math.cos(angles[i]) >= 0 ? 1 : -1);
+
+        const sectors = treeData.root.children.filter((node) => node.visible);
+        const boxes = sectors.map((node) => branchBox(node, 1));
+        const heights = boxes.map((box) => box.b - box.t);
+
+        // Onde a volta troca de lado, e por qual setor ela começa. Os
+        // setores continuam na mesma volta de sempre — desce por um lado e
+        // sobe pelo outro —, mas a volta é um ANEL e não uma fila: pode
+        // começar em qualquer um deles. Escolher o começo junto com o ponto
+        // de corte é o que deixa um galho gigante ficar sozinho de um lado,
+        // com os fechados todos juntinhos do outro. Preso ao começo fixo, o
+        // corte só sabia cortar depois do gigante, e arrastava os vizinhos
+        // de antes dele para o alto do mapa, longe do tronco e ligados por
+        // conectores que atravessavam tudo.
+        //
+        // É daqui que vem o movimento: abrir ou fechar um galho muda as
+        // alturas, o par (começo, corte) é reescolhido, e os setores giram
+        // no anel para acomodar quem cresceu.
+        const n = sectors.length;
+        let bestStart = 0;
+        let bestCut = Math.ceil(n / 2);
+        if (n > 1) {
+          // As duas pilhas juntas somam sempre a mesma coisa, então basta
+          // acumular a da direita e subtrair.
+          const totalBoth = heights.reduce((a, b) => a + b, 0) + M.sectorGap * (n - 2);
+          let best = Infinity;
+          for (let start = 0; start < n; start += 1) {
+            let acc = 0;
+            for (let k = 1; k < n; k += 1) {
+              acc += heights[(start + k - 1) % n] + (k > 1 ? M.sectorGap : 0);
+              const diff = Math.abs(acc - (totalBoth - acc));
+              // Só troca por uma melhora de verdade: no empate — que é o
+              // caso de todo mundo fechado — vence o começo canônico, e o
+              // anel fica exatamente onde o usuário está acostumado a vê-lo.
+              if (diff < best - 0.5) { best = diff; bestStart = start; bestCut = k; }
+            }
+          }
+        }
+
+        const right = [];
+        const left = [];
+        for (let i = 0; i < n; i += 1) {
+          const idx = (bestStart + i) % n;
+          (i < bestCut ? right : left).push(idx);
+        }
+        left.reverse();
+
+        [[1, right], [-1, left]].forEach((entry) => {
+          const dir = entry[0];
+          const idxs = entry[1];
+          if (!idxs.length) return;
+          let cursor = -stackHeight(idxs.map((i) => heights[i])) / 2;
+          idxs.forEach((i) => {
+            const node = sectors[i];
+            // A caixa foi medida crescendo para a direita; do lado esquerdo
+            // ela é a mesma, espelhada — a altura não muda com o lado.
+            const box = dir > 0 ? boxes[i]
+              : { l: -boxes[i].r, r: -boxes[i].l, t: boxes[i].t, b: boxes[i].b };
+            const top = cursor;
+            const bottom = cursor + heights[i];
+            const inner = innerOffset(top, bottom);
+            node.x = dir > 0 ? inner - box.l : -inner - box.r;
+            node.y = top - box.t;
+            placeBranch(node, dir);
+            cursor = bottom + M.sectorGap;
+          });
         });
 
         // Quem está oculto nasce e morre na posição do pai.
@@ -1862,13 +2155,32 @@
       // ====================================================================
 
       function measureNodes() {
+        // Duas passadas de propósito: primeiro só leituras, depois só
+        // escritas. Intercalar as duas obriga o navegador a refazer o
+        // layout a cada nó para responder à medida seguinte, e aqui são
+        // centenas de nós.
+        //
+        // As duas classes são puramente cosméticas ou de gesto: nenhuma
+        // muda a altura da caixa, então escrevê-las não obriga a remedir.
+        const marcas = [];
         nodeById.forEach((node) => {
           if (node.depth === 0 || !node.el) return;
-          node.w = node.el.offsetWidth || NODE_W;
-          node.h = node.el.offsetHeight || (isSub(node) ? SUB_H : NODE_H);
-          // Puramente cosmético: não altera a altura, então não obriga a
-          // remedir. Se algum dia mudar tamanho, medir de novo.
-          if (isSub(node)) node.el.classList.toggle("is-tall", node.h > SUB_TALL_AT);
+          node.w = node.el.offsetWidth || M.nodeW;
+          node.h = node.el.offsetHeight || (isSub(node) ? M.subMinH : M.nodeMinH);
+          if (!isSub(node)) return;
+          const box = node.el.querySelector(".branch-button");
+          marcas.push([
+            node.el,
+            node.h > SUB_TALL_AT,
+            // Só a caixa com texto sobrando devolve o eixo vertical ao
+            // navegador (ver .is-scrollable no CSS); nas outras o dedo
+            // continua arrastando o mapa.
+            !!box && box.scrollHeight - box.clientHeight > 1,
+          ]);
+        });
+        marcas.forEach((m) => {
+          m[0].classList.toggle("is-tall", m[1]);
+          m[0].classList.toggle("is-scrollable", m[2]);
         });
       }
 
@@ -2026,10 +2338,28 @@
       // fechar; no primeiro gesto (roda, arrasto ou +/−) o enquadramento
       // automático se desliga e só volta pelo botão "recentrar".
       // =====================================================================
+      // O piso de escala é menor no celular porque lá a tela é que é
+      // pequena: com 0.2 um mapa inteiro aberto simplesmente não cabe, e o
+      // enquadramento automático desistia cortando metade dele.
       const MIN_SCALE = 0.2;
+      const MOBILE_MIN_SCALE = 0.08;
       const MAX_SCALE = 2.5;
       const FIT_MAX_SCALE = 1.2;
-      const KEEP_ON_SCREEN = 120;
+
+      function minScale() {
+        return M === METRICS.narrow ? MOBILE_MIN_SCALE : MIN_SCALE;
+      }
+
+      // Folga do enquadramento e quanto do mapa é obrigado a ficar na tela.
+      // Ambas em fração da viewport: 120px fixos comem um terço da largura
+      // de um celular e deixavam o mapa preso longe da borda.
+      function fitPad() {
+        return Math.max(18, Math.min(60, viewport.clientWidth * 0.06));
+      }
+
+      function keepOnScreen() {
+        return Math.max(56, Math.min(120, Math.min(viewport.clientWidth, viewport.clientHeight) * 0.22));
+      }
 
       // Limiar para o gesto virar arrasto. O toque-para-clicar do touchpad
       // se apresenta como "mouse" no Windows e tem pouco tremor; dedo e
@@ -2073,7 +2403,7 @@
       }
 
       function getActiveBox(pad) {
-        const p = pad === undefined ? 60 : pad;
+        const p = pad === undefined ? fitPad() : pad;
         const root = treeData.root;
         const boxes = [{
           l: root.x - ROOT.r, r: root.x + ROOT.r,
@@ -2097,8 +2427,9 @@
         const box = getActiveBox(0);
         const vw = viewport.clientWidth;
         const vh = viewport.clientHeight;
-        camera.x = clamp(camera.x, KEEP_ON_SCREEN - box.r * camera.scale, vw - KEEP_ON_SCREEN - box.l * camera.scale);
-        camera.y = clamp(camera.y, KEEP_ON_SCREEN - box.b * camera.scale, vh - KEEP_ON_SCREEN - box.t * camera.scale);
+        const keep = keepOnScreen();
+        camera.x = clamp(camera.x, keep - box.r * camera.scale, vw - keep - box.l * camera.scale);
+        camera.y = clamp(camera.y, keep - box.b * camera.scale, vh - keep - box.t * camera.scale);
       }
 
       function fitCamera(ms) {
@@ -2107,7 +2438,7 @@
         const vh = viewport.clientHeight;
         const scale = clamp(
           Math.min(vw / (box.r - box.l), vh / (box.b - box.t)),
-          MIN_SCALE,
+          minScale(),
           FIT_MAX_SCALE
         );
         camera.scale = scale;
@@ -2132,12 +2463,12 @@
           if (child.visible) boxes.push(boxOf(child));
         });
 
-        const box = unionBox(boxes, 90);
+        const box = unionBox(boxes, Math.max(36, fitPad() * 1.5));
         const vw = viewport.clientWidth;
         const vh = viewport.clientHeight;
         camera.scale = clamp(
           Math.min(vw / (box.r - box.l), vh / (box.b - box.t)),
-          MIN_SCALE,
+          minScale(),
           FIT_MAX_SCALE
         );
 
@@ -2150,7 +2481,7 @@
       // Zoom ancorado num ponto da viewport: o que estava sob o cursor
       // continua sob o cursor depois da mudança de escala.
       function zoomAt(px, py, factor, ms) {
-        const next = clamp(camera.scale * factor, MIN_SCALE, MAX_SCALE);
+        const next = clamp(camera.scale * factor, minScale(), MAX_SCALE);
         if (next === camera.scale) return;
         const worldX = (px - camera.x) / camera.scale;
         const worldY = (py - camera.y) / camera.scale;
@@ -2254,11 +2585,138 @@
       let dragOrigin = null;
       let didDrag = false;
 
+      // --- Pinça de dois dedos (tela sensível ao toque) --------------------
+      // A viewport tem touch-action:none para o arrasto funcionar, o que
+      // também desliga a pinça nativa do navegador — sem este bloco não
+      // existiria NENHUMA forma de dar zoom no celular além dos botões
+      // + e −. O gesto move e amplia ao mesmo tempo: o ponto do mapa que
+      // estava sob o meio dos dedos continua lá durante todo o gesto, então
+      // afastar os dedos amplia, girar a mão não faz nada, e deslizar os
+      // dois juntos arrasta o mapa — é o que o dedo espera.
+      //
+      // Os ponteiros ativos são contados aqui e não no bloco de arrasto
+      // porque o segundo dedo tem de CANCELAR o arrasto de um dedo que já
+      // estava em curso, senão o mapa ampliaria e escorregaria junto.
+      const pointers = new Map();
+      let pinch = null;
+
+      function pinchCenter() {
+        const list = Array.from(pointers.values());
+        return {
+          x: (list[0].x + list[1].x) / 2,
+          y: (list[0].y + list[1].y) / 2,
+          d: Math.hypot(list[0].x - list[1].x, list[0].y - list[1].y),
+        };
+      }
+
+      function startPinch() {
+        const rect = viewport.getBoundingClientRect();
+        const c = pinchCenter();
+        if (c.d < 1) return;
+        takeCameraControl();
+        const px = c.x - rect.left;
+        const py = c.y - rect.top;
+        pinch = {
+          d0: c.d,
+          scale0: camera.scale,
+          // Ponto do mundo sob o meio dos dedos: é ele que fica parado.
+          wx: (px - camera.x) / camera.scale,
+          wy: (py - camera.y) / camera.scale,
+        };
+        didDrag = true;   // o clique que fecha o gesto é engolido
+      }
+
+      function movePinch() {
+        if (!pinch || pointers.size < 2) return;
+        const rect = viewport.getBoundingClientRect();
+        const c = pinchCenter();
+        if (c.d < 1) return;
+        camera.scale = clamp(pinch.scale0 * (c.d / pinch.d0), minScale(), MAX_SCALE);
+        camera.x = (c.x - rect.left) - pinch.wx * camera.scale;
+        camera.y = (c.y - rect.top) - pinch.wy * camera.scale;
+        clampCamera();
+        applyCamera(0);
+      }
+
+      // Tirou um dedo. O gesto não pode continuar de onde estava — a conta
+      // da pinça parte da distância inicial entre os dois —, então ele
+      // recomeça do zero na posição atual: com dois dedos ainda na tela,
+      // volta a ser pinça; com um, o que sobrou assume o arrasto sem
+      // precisar ser levantado e tocado de novo.
+      function endPinch() {
+        pinch = null;
+        dragOrigin = null;
+        if (pointers.size === 2) {
+          startPinch();
+          return;
+        }
+        if (pointers.size !== 1) return;
+        const entry = Array.from(pointers.entries())[0];
+        activePointerId = entry[0];
+        dragOrigin = {
+          px: entry[1].x,
+          py: entry[1].y,
+          cx: camera.x,
+          cy: camera.y,
+          threshold: 0,   // o gesto já é um arrasto: não há limiar a vencer
+        };
+        didDrag = true;   // e o clique ao fim dele continua sendo engolido
+      }
+
+      // Soltar a captura do ponteiro é sempre a mesma dança, e esquecê-la
+      // deixa o mapa preso ao cursor.
+      function releaseCapture() {
+        if (activePointerId === null) return;
+        try {
+          if (viewport.hasPointerCapture(activePointerId)) {
+            viewport.releasePointerCapture(activePointerId);
+          }
+        } catch (e) {
+          // captura já liberada — nada a fazer.
+        }
+      }
+
+      // Aborta o arrasto de nó sem religar nada: o nó volta de onde saiu.
+      function cancelNodeDrag() {
+        if (!nodeDrag) return;
+        nodeDrag.plan = null;
+        nodeDrag.motivo = null;
+        finishNodeDrag();
+      }
+
       viewport.addEventListener("pointerdown", (event) => {
-        didDrag = false;
-        if (event.button !== 0) return;
+        // Gesto novo começa limpo: o clique que vem depois só é engolido se
+        // ESTE gesto virar arrasto. Precisa vir antes de qualquer saída
+        // antecipada — inclusive a dos controles de câmera. Depois de
+        // arrastar o mapa com o dedo, o navegador pode não mandar clique
+        // nenhum, e o didDrag ficaria ligado: o primeiro toque no botão de
+        // zoom seria engolido no lugar dele. Durante a pinça o sinalizador
+        // é preservado, senão um terceiro dedo o apagaria no meio do gesto.
+        if (!pinch) didDrag = false;
         if (event.target.closest(".camera-controls")) return;
         if (event.target.closest(".dev-node-btn")) return;
+
+        // O mouse fica de fora da contagem: ele não tem como pinçar, e um
+        // botão do meio ou da direita sem pointerup deixaria um ponteiro
+        // fantasma que faria o próximo clique virar pinça.
+        if (event.pointerType !== "mouse") {
+          pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        }
+
+        // Chegou o segundo dedo: o gesto deixa de ser arrasto e vira pinça.
+        // O que estava em curso é desfeito antes, senão os dois disputariam
+        // a câmera (ou o nó) a cada quadro.
+        if (pointers.size === 2) {
+          cancelNodeDrag();
+          releaseCapture();
+          dragOrigin = null;
+          viewport.classList.remove("is-panning");
+          startPinch();
+          return;
+        }
+        if (pointers.size > 2) return;
+
+        if (event.button !== 0) return;
         activePointerId = event.pointerId;
 
         // No modo dev, o gesto que nasce em cima de um nó pertence ao nó:
@@ -2291,6 +2749,13 @@
       });
 
       viewport.addEventListener("pointermove", (event) => {
+        if (pointers.has(event.pointerId)) {
+          pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        }
+        if (pinch) {
+          movePinch();
+          return;
+        }
         if (nodeDrag && event.pointerId === activePointerId) {
           if (!(event.buttons & 1)) endDrag(event);
           else moveNodeDrag(event);
@@ -2451,21 +2916,13 @@
       function endDrag(event) {
         if (event && event.pointerId !== activePointerId) return;
         if (nodeDrag) {
-          try {
-            if (viewport.hasPointerCapture(activePointerId)) viewport.releasePointerCapture(activePointerId);
-          } catch (e) {
-            // captura já liberada — nada a fazer.
-          }
+          releaseCapture();
           finishNodeDrag();
           activePointerId = null;
           return;
         }
         if (!dragOrigin) return;
-        try {
-          if (viewport.hasPointerCapture(activePointerId)) viewport.releasePointerCapture(activePointerId);
-        } catch (e) {
-          // captura já liberada — nada a fazer.
-        }
+        releaseCapture();
         dragOrigin = null;
         activePointerId = null;
         viewport.classList.remove("is-panning");
@@ -2473,8 +2930,26 @@
         // nenhum clique vier, o proximo pointerdown o desarma.
       }
 
-      viewport.addEventListener("pointerup", endDrag);
-      viewport.addEventListener("pointercancel", endDrag);
+      // Tirar um dedo da tela: a contagem vem primeiro, porque é ela que
+      // decide se o que termina é a pinça ou o arrasto.
+      function releasePointer(event) {
+        const wasPinching = !!pinch;
+        pointers.delete(event.pointerId);
+        if (!wasPinching) {
+          endDrag(event);
+          return;
+        }
+        endPinch();
+        // Enquanto sobrar dedo na tela o gesto ainda é da câmera; só quando
+        // o último sai é que o estado de arrasto é zerado.
+        if (pointers.size) return;
+        releaseCapture();
+        activePointerId = null;
+        viewport.classList.remove("is-panning");
+      }
+
+      viewport.addEventListener("pointerup", releasePointer);
+      viewport.addEventListener("pointercancel", releasePointer);
 
       viewport.addEventListener("click", (event) => {
         if (!didDrag) return;
@@ -2710,10 +3185,36 @@
         status.textContent = node.expanded ? "Nó expandido." : "Nó recolhido.";
       });
 
+      // Redimensionar pode trocar o jogo de medidas — girar o celular é o
+      // caso comum. Quando troca, o mapa precisa ser MEDIDO de novo (as
+      // caixas mudaram de largura, o texto quebra em outro lugar e a altura
+      // vem do DOM), e não só reenquadrado. --vh acompanha a barra do
+      // navegador do celular, que aparece e some durante a rolagem.
+      function setViewportUnit() {
+        document.documentElement.style.setProperty(
+          "--vh", (window.innerHeight / 100) + "px"
+        );
+      }
+
+      function handleViewportChange() {
+        setViewportUnit();
+        if (applyMetrics()) {
+          relayout(0);
+          updateVisibility();
+        }
+        autoFit(0);
+      }
+
       let resizeTimer;
       window.addEventListener("resize", () => {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => autoFit(0), 120);
+        resizeTimer = setTimeout(handleViewportChange, 120);
+      });
+      // A troca de orientação chega antes de o navegador terminar de
+      // remontar a janela: medir cedo demais devolve a altura antiga.
+      window.addEventListener("orientationchange", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(handleViewportChange, 260);
       });
 
       // Atalhos de câmera. Ficam desligados enquanto um formulário do modo
@@ -3340,6 +3841,11 @@
         const savedTheme = loadTheme();
         if (savedTheme) theme = savedTheme;
       }
+
+      // Antes do primeiro render: as medidas decidem a largura das caixas,
+      // e medir com o jogo errado obrigaria a desenhar duas vezes.
+      setViewportUnit();
+      applyMetrics();
 
       render();
       updateVisibility();
