@@ -910,6 +910,184 @@
       padding-right: 0.2rem;
     }
 
+    /* --- Pesquisa ------------------------------------------------------
+       Mora fora do #map-stage de propósito: assim nem o arrasto nem a roda
+       da câmera enxergam os gestos feitos na caixa ou na lista. --- */
+    .search {
+      position: absolute;
+      top: 3.05rem;
+      left: 1.8rem;
+      z-index: 25;
+      width: min(340px, calc(100% - 3.6rem));
+    }
+
+    .search-field {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 0.8rem;
+      height: 40px;
+      border-radius: 999px;
+      background: rgba(10, 20, 48, 0.72);
+      border: 1px solid rgba(160, 190, 255, 0.28);
+      box-shadow: 0 10px 24px rgba(2, 9, 31, 0.35);
+      backdrop-filter: blur(6px);
+      color: rgba(231, 240, 255, 0.7);
+      cursor: text;
+      transition: border-color 160ms ease, background 160ms ease;
+    }
+
+    .search-field:focus-within {
+      border-color: rgba(160, 190, 255, 0.7);
+      background: rgba(10, 20, 48, 0.9);
+    }
+
+    .search-icon {
+      flex: none;
+    }
+
+    .search-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 100%;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: rgb(240, 245, 255);
+      font: inherit;
+      font-size: 0.88rem;
+    }
+
+    .search-input::placeholder {
+      color: rgba(231, 240, 255, 0.5);
+    }
+
+    /* O "x" nativo do type=search some: Esc já limpa, e o do Chrome é
+       cinza sobre azul-escuro, quase invisível. */
+    .search-input::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+    }
+
+    .search-results {
+      list-style: none;
+      margin: 0.4rem 0 0;
+      padding: 0.3rem;
+      max-height: min(360px, 55dvh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(160, 190, 255, 0.35) transparent;
+      border-radius: 16px;
+      background: rgba(10, 20, 48, 0.94);
+      border: 1px solid rgba(160, 190, 255, 0.28);
+      box-shadow: 0 18px 38px rgba(2, 9, 31, 0.5);
+      backdrop-filter: blur(6px);
+    }
+
+    .search-results::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .search-results::-webkit-scrollbar-thumb {
+      background: rgba(160, 190, 255, 0.35);
+      border-radius: 999px;
+    }
+
+    .search-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.5rem 0.6rem;
+      border-radius: 11px;
+      cursor: pointer;
+      color: rgb(236, 242, 255);
+    }
+
+    .search-item.is-active {
+      background: rgba(160, 190, 255, 0.16);
+    }
+
+    /* A cor do galho, para reconhecer o resultado antes de ler o caminho;
+       quadrado para nó e bolinha para subnó, como na legenda. */
+    .search-dot {
+      flex: none;
+      width: 10px;
+      height: 10px;
+      margin-top: 0.3rem;
+      border-radius: 3px;
+    }
+
+    .search-item.is-sub .search-dot {
+      border-radius: 999px;
+    }
+
+    .search-text {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .search-label {
+      font-size: 0.84rem;
+      font-weight: 700;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .search-item.is-sub .search-label {
+      font-weight: 500;
+    }
+
+    .search-path {
+      font-size: 0.72rem;
+      color: rgba(231, 240, 255, 0.55);
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+
+    .search-label mark,
+    .search-path mark {
+      background: rgba(246, 190, 88, 0.3);
+      color: inherit;
+      border-radius: 3px;
+      padding: 0 1px;
+    }
+
+    .search-empty,
+    .search-more {
+      padding: 0.55rem 0.7rem;
+      font-size: 0.78rem;
+      color: rgba(231, 240, 255, 0.6);
+      cursor: default;
+    }
+
+    .search-more {
+      font-size: 0.72rem;
+      border-top: 1px solid rgba(160, 190, 255, 0.14);
+      margin-top: 0.2rem;
+    }
+
+    body.on-light .eyebrow + .search .search-field {
+      box-shadow: 0 8px 20px rgba(11, 23, 54, 0.18);
+    }
+
+    /* Nó encontrado: um contorno que pulsa algumas vezes e some sozinho,
+       para o olho achar a caixa depois que a câmera chega. */
+    /* O foco do teclado vai para o nó encontrado; sem o :focus-visible
+       aqui o anel branco do foco cobriria o destaque. */
+    .branch.is-found .branch-button,
+    .branch.is-found .branch-button:focus-visible {
+      outline: 3px solid rgb(246, 190, 88);
+      outline-offset: 4px;
+      animation: found-pulse 900ms ease-out 3;
+    }
+
+    @keyframes found-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(246, 190, 88, 0.75), 0 12px 25px rgba(1, 10, 31, 0.24); }
+      100% { box-shadow: 0 0 0 22px rgba(246, 190, 88, 0), 0 12px 25px rgba(1, 10, 31, 0.24); }
+    }
+
     /* === Celular =======================================================
        Pende de body.is-compact, que applyMetrics() liga junto com as
        medidas do layout — e não de uma media query própria, que poderia
@@ -927,6 +1105,20 @@
       top: 1.1rem;
       left: 1.1rem;
       font-size: 0.62rem;
+    }
+
+    /* No celular a caixa ocupa a largura toda, abaixo da fila do cadeado —
+       no modo dev essa fila tem três botões e não sobra canto livre. */
+    body.is-compact .search {
+      top: 4rem;
+      left: 0.75rem;
+      right: 0.75rem;
+      width: auto;
+    }
+
+    /* 16px: menos que isso e o iOS dá zoom sozinho ao focar o campo. */
+    body.is-compact .search-input {
+      font-size: 16px;
     }
 
     /* O círculo do tronco encolheu, mas o tamanho do rótulo dele vem
@@ -1079,6 +1271,13 @@
 <body data-template-id="__page-root" style="background: rgb(11, 23, 54);" class="">
   <main class="mindmap-shell" aria-label="Organização de POPs">
     <p class="eyebrow">Mapa de POPs</p>
+    <div class="search" role="search">
+      <label class="search-field">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <input id="search-input" class="search-input" type="search" placeholder="Pesquisar nó ou subnó…" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="search-results" aria-autocomplete="list" aria-label="Pesquisar nó ou subnó (atalho: /)">
+      </label>
+      <ul id="search-results" class="search-results" role="listbox" aria-label="Resultados da pesquisa" hidden></ul>
+    </div>
     <button id="dev-toggle" class="dev-toggle" type="button" aria-haspopup="dialog" aria-label="Modo desenvolvedor" title="Modo desenvolvedor">
       <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" class="lucide lucide-lock dev-toggle-icon-locked" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
       <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="unlock" class="lucide lucide-unlock dev-toggle-icon-unlocked" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
@@ -2463,10 +2662,21 @@
         camera.y = clamp(camera.y, keep - box.b * camera.scale, vh - keep - box.t * camera.scale);
       }
 
+      // A caixa de pesquisa flutua sobre o topo do mapa. Enquadrar sem
+      // descontá-la faz o nó de cima nascer embaixo dela — no celular, onde
+      // ela ocupa a largura inteira, isso escondia um setor inteiro.
+      function topInset() {
+        const field = document.querySelector(".search-field");
+        if (!field) return 0;
+        const bottom = field.getBoundingClientRect().bottom - viewport.getBoundingClientRect().top;
+        return clamp(bottom + 8, 0, viewport.clientHeight * 0.3);
+      }
+
       function fitCamera(ms) {
         const box = getActiveBox();
+        const top = topInset();
         const vw = viewport.clientWidth;
-        const vh = viewport.clientHeight;
+        const vh = viewport.clientHeight - top;
         const scale = clamp(
           Math.min(vw / (box.r - box.l), vh / (box.b - box.t)),
           minScale(),
@@ -2474,7 +2684,7 @@
         );
         camera.scale = scale;
         camera.x = vw / 2 - ((box.l + box.r) / 2) * scale;
-        camera.y = vh / 2 - ((box.t + box.b) / 2) * scale;
+        camera.y = top + vh / 2 - ((box.t + box.b) / 2) * scale;
         applyCamera(ms);
       }
 
@@ -2495,8 +2705,9 @@
         });
 
         const box = unionBox(boxes, Math.max(36, fitPad() * 1.5));
+        const top = topInset();
         const vw = viewport.clientWidth;
-        const vh = viewport.clientHeight;
+        const vh = viewport.clientHeight - top;
         camera.scale = clamp(
           Math.min(vw / (box.r - box.l), vh / (box.b - box.t)),
           minScale(),
@@ -2504,7 +2715,7 @@
         );
 
         camera.x = vw / 2 - ((box.l + box.r) / 2) * camera.scale;
-        camera.y = vh / 2 - ((box.t + box.b) / 2) * camera.scale;
+        camera.y = top + vh / 2 - ((box.t + box.b) / 2) * camera.scale;
         clampCamera();
         applyCamera(ms);
       }
@@ -3248,6 +3459,299 @@
         resizeTimer = setTimeout(handleViewportChange, 260);
       });
 
+      // =====================================================================
+      // Pesquisa
+      // ---------------------------------------------------------------------
+      // A caixa procura em todos os nós e subnós, abertos ou não. Escolher
+      // um resultado faz o mapa percorrer o caminho até ele, abrindo um
+      // nível de cada vez com a mesma animação do clique — a câmera vai
+      // junto — e marca o nó encontrado ao chegar. O que já estava aberto
+      // continua aberto: a pesquisa só abre o que falta no caminho.
+      //
+      // A comparação ignora acentos e maiúsculas, e cada palavra digitada
+      // tem de aparecer no rótulo, em qualquer ordem ("mulher saude" acha
+      // "SAÚDE DA MULHER").
+      // =====================================================================
+      const searchInput = document.getElementById("search-input");
+      const searchList = document.getElementById("search-results");
+      const SEARCH_MIN_CHARS = 2;
+      const SEARCH_MAX_SHOWN = 8;
+      const FOUND_MS = 2800;       // quanto tempo o destaque do nó dura
+
+      let searchHits = [];
+      let searchActive = -1;
+      let revealToken = 0;         // cada pesquisa nova invalida a anterior
+
+      // Dobra um caractere para a comparação: sem acento, minúsculo.
+      function foldChar(ch) {
+        return ch.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+      }
+
+      // Texto dobrado junto com o mapa de volta para o original: é o que
+      // permite marcar o trecho encontrado no rótulo COM acento, mesmo a
+      // busca tendo sido feita sem eles.
+      function foldWithMap(text) {
+        let folded = "";
+        const map = [];
+        let origin = 0;   // posição no original, em unidades de UTF-16
+        for (const ch of text) {
+          const f = foldChar(ch);
+          for (let k = 0; k < f.length; k += 1) map.push(origin);
+          folded += f;
+          origin += ch.length;
+        }
+        map.push(text.length);
+        return { folded: folded, map: map };
+      }
+
+      function searchTokens(query) {
+        return foldWithMap(query.trim()).folded.split(/\s+/).filter(Boolean);
+      }
+
+      function flatLabel(node) {
+        return String(node.label).replace(/\s+/g, " ").trim();
+      }
+
+      // Envolve em <mark> a primeira ocorrência de cada palavra buscada.
+      function highlight(text, tokens) {
+        const f = foldWithMap(text);
+        const ranges = [];
+        tokens.forEach((t) => {
+          const at = f.folded.indexOf(t);
+          if (at >= 0) ranges.push([f.map[at], f.map[at + t.length]]);
+        });
+        ranges.sort((a, b) => a[0] - b[0]);
+        let out = "";
+        let cursor = 0;
+        ranges.forEach((r) => {
+          if (r[0] < cursor) return;   // sobreposto a uma marca anterior
+          out += escapeHtml(text.slice(cursor, r[0]))
+            + "<mark>" + escapeHtml(text.slice(r[0], r[1])) + "</mark>";
+          cursor = r[1];
+        });
+        return out + escapeHtml(text.slice(cursor));
+      }
+
+      // Subnós podem ter centenas de palavras: o item mostra só o trecho
+      // em volta da primeira palavra encontrada.
+      function labelSnippet(text, tokens) {
+        const LIMIT = 90;
+        if (text.length <= LIMIT) return text;
+        const f = foldWithMap(text);
+        const at = tokens.length ? f.folded.indexOf(tokens[0]) : -1;
+        const start = at < 0 ? 0 : f.map[at];
+        if (start < 50) return text.slice(0, LIMIT - 1) + "…";
+        const from = Math.max(0, start - 30);
+        const end = Math.min(text.length, from + LIMIT);
+        return "…" + text.slice(from, end) + (end < text.length ? "…" : "");
+      }
+
+      function pathOf(node) {
+        const parts = [];
+        let walker = node.parent;
+        while (walker && walker.depth > 0) {
+          parts.unshift(shortLabel(walker, 28));
+          walker = walker.parent;
+        }
+        return parts;
+      }
+
+      // Ordem: rótulo que começa com o termo, depois termo no começo de
+      // uma palavra, depois no meio. No empate, o mais raso primeiro — é
+      // o que a pessoa mais provavelmente quis — e nós antes de subnós.
+      function runSearch(query) {
+        const tokens = searchTokens(query);
+        if (!tokens.length || query.trim().length < SEARCH_MIN_CHARS) return { tokens: tokens, hits: [] };
+        const hits = [];
+        (function walk(node) {
+          node.children.forEach((child) => {
+            const folded = foldWithMap(flatLabel(child)).folded;
+            if (tokens.every((t) => folded.includes(t))) {
+              const at = folded.indexOf(tokens[0]);
+              const rank = at === 0 ? 0 : (/[a-z0-9]/.test(folded[at - 1]) ? 2 : 1);
+              hits.push({ node: child, rank: rank });
+            }
+            walk(child);
+          });
+        })(treeData.root);
+        hits.sort((a, b) => a.rank - b.rank
+          || a.node.depth - b.node.depth
+          || Number(isSub(a.node)) - Number(isSub(b.node))
+          || flatLabel(a.node).length - flatLabel(b.node).length);
+        return { tokens: tokens, hits: hits };
+      }
+
+      function closeSearchList() {
+        searchList.hidden = true;
+        searchList.innerHTML = "";
+        searchInput.setAttribute("aria-expanded", "false");
+        searchInput.removeAttribute("aria-activedescendant");
+        searchHits = [];
+        searchActive = -1;
+      }
+
+      function setActive(i) {
+        const items = searchList.querySelectorAll(".search-item");
+        if (!items.length) return;
+        searchActive = (i + items.length) % items.length;
+        items.forEach((el, k) => {
+          el.classList.toggle("is-active", k === searchActive);
+          el.setAttribute("aria-selected", String(k === searchActive));
+        });
+        const el = items[searchActive];
+        searchInput.setAttribute("aria-activedescendant", el.id);
+        el.scrollIntoView({ block: "nearest" });
+      }
+
+      function renderSearchList() {
+        const query = searchInput.value;
+        if (query.trim().length < SEARCH_MIN_CHARS) {
+          closeSearchList();
+          return;
+        }
+        const result = runSearch(query);
+        searchHits = result.hits.slice(0, SEARCH_MAX_SHOWN).map((h) => h.node);
+        searchActive = -1;
+
+        if (!searchHits.length) {
+          searchList.innerHTML = '<li class="search-empty" role="presentation">Nenhum nó encontrado.</li>';
+        } else {
+          searchList.innerHTML = searchHits.map((node, i) => {
+            const path = pathOf(node);
+            const color = colorFor(node).bg;
+            return '<li id="search-opt-' + i + '" class="search-item' + (isSub(node) ? " is-sub" : "")
+              + '" role="option" aria-selected="false" data-index="' + i + '">'
+              + '<span class="search-dot" style="background:' + color + '"></span>'
+              + '<span class="search-text">'
+              + '<span class="search-label">' + highlight(labelSnippet(flatLabel(node), result.tokens), result.tokens) + "</span>"
+              + '<span class="search-path">' + (path.length ? escapeHtml(path.join(" › ")) : "Galho principal") + "</span>"
+              + "</span></li>";
+          }).join("")
+            + (result.hits.length > SEARCH_MAX_SHOWN
+              ? '<li class="search-more" role="presentation">+ ' + (result.hits.length - SEARCH_MAX_SHOWN)
+                + " outros — refine a pesquisa</li>"
+              : "");
+        }
+        searchList.hidden = false;
+        searchInput.setAttribute("aria-expanded", "true");
+        status.textContent = searchHits.length
+          ? result.hits.length + (result.hits.length === 1 ? " resultado." : " resultados.")
+          : "Nenhum nó encontrado.";
+      }
+
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      // Percorre o caminho até o nó, abrindo um nível por vez. Cada passo
+      // é exatamente o que o clique no nó faz (expande, reacomoda, a câmera
+      // vai até ele) e só então o próximo começa, para que a abertura seja
+      // vista em sequência e não num salto só.
+      //
+      // Um token por pesquisa: escolher outro resultado no meio do caminho
+      // (ou apertar Esc) abandona este percurso no próximo passo, em vez de
+      // dois percursos disputarem a câmera.
+      async function revealNode(target) {
+        const token = ++revealToken;
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const step = reduce ? 0 : TWEEN_MS;
+        const pause = reduce ? 0 : TWEEN_MS + 120;
+
+        // O caminho do setor até o pai do alvo.
+        const path = [];
+        for (let walker = target.parent; walker && walker.depth > 0; walker = walker.parent) {
+          path.unshift(walker);
+        }
+
+        if (!stage.classList.contains("is-open")) {
+          stage.classList.add("is-open");
+          coreButton.setAttribute("aria-expanded", "true");
+          updateVisibility();
+          relayout(step);
+          focusOn(treeData.root, step);
+          await wait(pause);
+          if (token !== revealToken) return;
+        }
+
+        for (const node of path) {
+          if (node.expanded) continue;   // já aberto: nada a animar
+          node.expanded = true;
+          const btn = node.el && node.el.querySelector(".branch-button");
+          if (btn) btn.setAttribute("aria-expanded", "true");
+          updateVisibility();
+          relayout(step);
+          focusOn(node, step);
+          await wait(pause);
+          if (token !== revealToken) return;
+        }
+
+        // Chegou: enquadra o alvo (e os filhos dele, se estiver aberto) e
+        // marca a caixa. O foco do teclado vai para o nó — Enter ali já
+        // abre o galho ou o PDF —, sem deixar o navegador rolar a viewport.
+        focusOn(target, step || 0);
+        const el = target.el;
+        if (el) {
+          el.classList.remove("is-found");
+          void el.offsetWidth;   // reinicia a animação se já estava marcado
+          el.classList.add("is-found");
+          setTimeout(() => el.classList.remove("is-found"), FOUND_MS);
+          const btn = el.querySelector(".branch-button");
+          if (btn) btn.focus({ preventScroll: true });
+        }
+        const where = pathOf(target);
+        status.textContent = shortLabel(target, 60) + " encontrado"
+          + (where.length ? " em " + where.join(", ") : "") + ".";
+      }
+
+      function chooseHit(i) {
+        const node = searchHits[i];
+        if (!node) return;
+        searchInput.value = shortLabel(node, 60);
+        closeSearchList();
+        // Tira o foco da caixa: no celular isso fecha o teclado, que de
+        // outro modo cobriria metade do mapa durante o percurso.
+        searchInput.blur();
+        revealNode(node);
+      }
+
+      searchInput.addEventListener("input", renderSearchList);
+      searchInput.addEventListener("focus", () => {
+        if (searchInput.value.trim().length >= SEARCH_MIN_CHARS) renderSearchList();
+      });
+      // A lista fecha ao sair da caixa — com um respiro, senão o clique num
+      // item perderia a corrida para o blur.
+      searchInput.addEventListener("blur", () => setTimeout(() => {
+        if (document.activeElement !== searchInput) closeSearchList();
+      }, 150));
+
+      searchInput.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          if (searchList.hidden) renderSearchList();
+          if (!searchHits.length) return;
+          event.preventDefault();
+          setActive(searchActive + (event.key === "ArrowDown" ? 1 : -1));
+        } else if (event.key === "Enter") {
+          if (!searchHits.length) return;
+          event.preventDefault();
+          chooseHit(searchActive >= 0 ? searchActive : 0);
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          revealToken += 1;              // abandona um percurso em andamento
+          if (!searchList.hidden) closeSearchList();
+          else { searchInput.value = ""; searchInput.blur(); }
+        }
+      });
+
+      // pointerdown com preventDefault mantém o foco na caixa até o clique
+      // terminar, tanto no mouse quanto no toque.
+      searchList.addEventListener("pointerdown", (event) => event.preventDefault());
+      searchList.addEventListener("click", (event) => {
+        const item = event.target.closest(".search-item");
+        if (item) chooseHit(Number(item.dataset.index));
+      });
+      searchList.addEventListener("pointermove", (event) => {
+        const item = event.target.closest(".search-item");
+        if (item && event.pointerType === "mouse") setActive(Number(item.dataset.index));
+      });
+
       // Atalhos de câmera. Ficam desligados enquanto um formulário do modo
       // dev estiver aberto, para não roubar as teclas de quem está digitando.
       document.addEventListener("keydown", (event) => {
@@ -3256,7 +3760,11 @@
         if (tag === "input" || tag === "textarea" || event.target.isContentEditable) return;
         if (event.ctrlKey || event.metaKey || event.altKey) return;
 
-        if (event.key === "+" || event.key === "=") {
+        if (event.key === "/") {
+          event.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        } else if (event.key === "+" || event.key === "=") {
           event.preventDefault();
           zoomFromCenter(1.25);
         } else if (event.key === "-" || event.key === "_") {
