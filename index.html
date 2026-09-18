@@ -1843,10 +1843,29 @@
         // dentro ele pode vir — daí o arco. O segundo termo é a garantia de
         // que nenhuma caixa encoste no círculo do tronco, mesmo que o arco
         // um dia seja configurado menor que ele.
-        function innerOffset(y0, y1) {
+        // Onde a caixa do setor começa, medido do centro do tronco.
+        //
+        // O bojo é uma meia-elipse NORMALIZADA PELA PRÓPRIA PILHA: o setor
+        // do meio se afasta o máximo do tronco e os das pontas encostam no
+        // eixo, quantos setores existam. Normalizar é o que mantém o anel
+        // redondo — com um raio de arco fixo, todo setor cuja faixa caísse
+        // além dele recebia o mesmo bojo zero, e as pontas do anel viravam
+        // uma coluna reta assim que o tronco ganhava setores novos.
+        //
+        // `span` nunca desce abaixo de M.arcR: num lado com um ou dois
+        // setores, a pilha inteira cabe dentro do arco e eles ficariam
+        // achatados contra o eixo sem esse piso.
+        //
+        // O segundo termo é a garantia dura: enquanto a FAIXA do setor
+        // cruzar a altura do tronco, a caixa começa depois dele inteiro.
+        // Ele olha a faixa, e não o centro do setor, porque é a faixa que
+        // pode encostar no tronco — um galho alto tem o nó no meio dele,
+        // longe de onde a caixa realmente passa.
+        function innerOffset(y0, y1, centerY, span) {
+          const t = centerY / span;
+          const bulge = M.arcR * Math.sqrt(Math.max(0, 1 - t * t));
           const dy = y0 > 0 ? y0 : (y1 < 0 ? -y1 : 0);
-          const bulge = Math.sqrt(Math.max(0, M.arcR * M.arcR - dy * dy));
-          const clear = Math.sqrt(Math.max(0, ROOT.r * ROOT.r - dy * dy));
+          const clear = dy < ROOT.r ? ROOT.r : 0;
           return M.coreGap + Math.max(bulge, clear);
         }
 
@@ -1903,20 +1922,32 @@
           const dir = entry[0];
           const idxs = entry[1];
           if (!idxs.length) return;
+
+          // A vertical primeiro: o empilhamento não depende do arco, e o
+          // arco precisa saber de antemão até onde a pilha vai.
+          const linha = [];
           let cursor = -stackHeight(idxs.map((i) => heights[i])) / 2;
           idxs.forEach((i) => {
-            const node = sectors[i];
             // A caixa foi medida crescendo para a direita; do lado esquerdo
             // ela é a mesma, espelhada — a altura não muda com o lado.
             const box = dir > 0 ? boxes[i]
               : { l: -boxes[i].r, r: -boxes[i].l, t: boxes[i].t, b: boxes[i].b };
             const top = cursor;
-            const bottom = cursor + heights[i];
-            const inner = innerOffset(top, bottom);
-            node.x = dir > 0 ? inner - box.l : -inner - box.r;
-            node.y = top - box.t;
-            placeBranch(node, dir);
+            const bottom = top + heights[i];
+            sectors[i].y = top - box.t;
+            linha.push({ node: sectors[i], box: box, top: top, bottom: bottom });
             cursor = bottom + M.sectorGap;
+          });
+
+          // Agora a horizontal, com a pilha inteira já conhecida.
+          const span = Math.max(
+            M.arcR,
+            linha.reduce((max, l) => Math.max(max, Math.abs(l.node.y)), 0)
+          );
+          linha.forEach((l) => {
+            const inner = innerOffset(l.top, l.bottom, l.node.y, span);
+            l.node.x = dir > 0 ? inner - l.box.l : -inner - l.box.r;
+            placeBranch(l.node, dir);
           });
         });
 
