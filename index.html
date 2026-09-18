@@ -165,11 +165,19 @@
       stroke: var(--line);
       stroke-width: 2.5px;
       opacity: 0;
-      transition: opacity 320ms ease, stroke-dashoffset 700ms cubic-bezier(.22, .8, .28, 1);
+      /* Mesma regra das caixas: a linha oculta sai da pintura de vez, só
+         que depois de a animação de recolher o traço terminar. */
+      visibility: hidden;
+      transition:
+        opacity 320ms ease,
+        stroke-dashoffset 700ms cubic-bezier(.22, .8, .28, 1),
+        visibility 0s linear 700ms;
     }
 
     .connector.is-visible {
       opacity: 1;
+      visibility: visible;
+      transition-delay: 0s, 0s, 0s;
     }
 
     .core-area {
@@ -299,8 +307,16 @@
       pointer-events: none;
     }
 
+    /* A posição vem de `translate` (escrito pelo JS a cada quadro da
+       reacomodação), e não de left/top: mover por left/top obriga o
+       navegador a refazer o layout a cada quadro, o translate não. É a
+       propriedade avulsa, e não transform, para não brigar com o scale()
+       da entrada logo abaixo — o scale continua girando em torno do
+       centro da caixa. */
     .branch {
       position: absolute;
+      left: 0;
+      top: 0;
       z-index: 2;
       width: var(--node-w, 214px);
       opacity: 0;
@@ -308,13 +324,29 @@
       /* Cresce a partir do próprio centro: no layout radial os galhos saem
          em qualquer direção, então nenhum deslocamento lateral serviria. */
       transform: scale(0.82);
-      transition: opacity 420ms ease, transform 480ms cubic-bezier(.2, .8, .2, 1);
+      /* Oculto = visibility:hidden, e não só opacity:0. Com opacidade zero
+         o navegador ainda PINTA a caixa (sombra, texto, tudo) a cada quadro
+         em que algo se mexe; num mapa com ~400 nós e só dezenas à vista,
+         isso era a maior parte do engasgo das animações. O visibility só
+         vira hidden DEPOIS que o esmaecimento termina (o atraso dele soma o
+         escalonamento por nível com a duração do scale), então a saída de
+         cena continua animada. --enter-delay é o escalonamento por nível,
+         escrito pelo JS em cada caixa. */
+      visibility: hidden;
+      transition:
+        opacity 420ms ease var(--enter-delay, 0ms),
+        transform 480ms cubic-bezier(.2, .8, .2, 1) var(--enter-delay, 0ms),
+        visibility 0s linear calc(var(--enter-delay, 0ms) + 480ms);
     }
 
     .branch.is-visible {
       opacity: 1;
       pointer-events: auto;
       transform: scale(1);
+      /* Na entrada, visível já no primeiro quadro: quem aparece aos poucos
+         é a opacidade. */
+      visibility: visible;
+      transition-delay: var(--enter-delay, 0ms), var(--enter-delay, 0ms), 0s;
     }
 
     /* --- Nó em arrasto (religar galho) ---------------------------------
@@ -2271,10 +2303,15 @@
         const start = borderPoint(parent, node.x, node.y);
         const end = borderPoint(node, parent.x, parent.y);
         const length = Math.hypot(end.x - start.x, end.y - start.y);
-        node.path.setAttribute("d", "M " + start.x + " " + start.y + " L " + end.x + " " + end.y);
+        const d = "M " + start.x + " " + start.y + " L " + end.x + " " + end.y;
+        // Mesma regra das caixas: só escreve o que mudou.
+        const path = node.path;
+        if (path.lastD !== d) { path.setAttribute("d", d); path.lastD = d; }
         node.lineLength = length;
-        node.path.style.strokeDasharray = String(length);
-        node.path.style.strokeDashoffset = node.visible ? "0" : String(length);
+        const dash = String(length);
+        const offset = node.visible ? "0" : dash;
+        if (path.lastDash !== dash) { path.style.strokeDasharray = dash; path.lastDash = dash; }
+        if (path.lastOffset !== offset) { path.style.strokeDashoffset = offset; path.lastOffset = offset; }
       }
 
       // Os botões de criação aparecem só quando a regra da categoria
@@ -2323,7 +2360,10 @@
         article.id = "node-" + node.id;
         article.className = "branch" + (isSub(node) ? " is-subnode" : "");
         article.setAttribute("aria-label", (isSub(node) ? "Subnó " : "Nó ") + shortLabel(node));
-        article.style.transitionDelay = (20 + Math.min(node.depth, 6) * 40) + "ms";
+        // Escalonamento da entrada por nível. Vai numa variável, e não em
+        // transition-delay direto: um atraso inline valeria para todas as
+        // propriedades, inclusive o visibility, que precisa do seu próprio.
+        article.style.setProperty("--enter-delay", (20 + Math.min(node.depth, 6) * 40) + "ms");
 
         const button = document.createElement("button");
         button.type = "button";
@@ -2416,23 +2456,51 @@
 
       // Escreve na tela a posição EXIBIDA (dx, dy), que durante a
       // reacomodação fica atrás da posição alvo (x, y) calculada pelo layout.
-      function applyPositions() {
+      //
+      // Só o que está NA TELA é escrito: nós visíveis e os que estão saindo
+      // de cena nesta reacomodação (node.onScreen, ainda ligado enquanto a
+      // caixa esmaece). Com um galho grande aberto são dezenas de caixas
+      // visíveis contra quase quatrocentas no mapa — escrever todas a cada
+      // quadro fazia o navegador recalcular estilo, layout e pintura de
+      // centenas de caixas invisíveis, e os conectores ocultos, cujo
+      // comprimento muda a cada quadro, reiniciavam a própria transição
+      // CSS a cada quadro. Era isso o engasgo das animações.
+      //
+      // Quem fica de fora continua com a posição certa no modelo (dx/dy):
+      // quando voltar a aparecer, o primeiro quadro da animação escreve a
+      // posição dele antes de qualquer pintura. `full` força escrever tudo
+      // — é o que render() usa, com as caixas acabadas de montar.
+      function applyPositions(full) {
         const root = treeData.root;
         coreArea.style.left = ((root.dx === undefined ? root.x : root.dx) - ROOT.r) + "px";
         coreArea.style.top = ((root.dy === undefined ? root.y : root.dy) - ROOT.r) + "px";
         coreArea.style.width = (ROOT.r * 2) + "px";
 
+        const live = [];
         nodeById.forEach((node) => {
           if (node.depth === 0 || !node.el) return;
-          node.el.style.left = (node.dx - halfW(node)) + "px";
-          node.el.style.top = (node.dy - halfH(node)) + "px";
+          if (!full && !node.visible && !node.onScreen) return;
+          live.push(node);
+          // Escreve só quando muda: uma caixa parada durante a animação
+          // dos vizinhos não deve invalidar nada. O último valor escrito
+          // fica no próprio elemento (o navegador reformata o que lê de
+          // volta, e comparar com ele nunca bateria), e some junto quando
+          // render() monta elementos novos.
+          const pos = (node.dx - halfW(node)) + "px " + (node.dy - halfH(node)) + "px";
+          if (node.el.lastPos !== pos) { node.el.style.translate = pos; node.el.lastPos = pos; }
         });
         // Os conectores leem dx/dy pelas mesmas propriedades x/y que
         // borderPoint() consulta, então a troca acontece aqui dentro.
         withDisplayedCoords(() => {
-          nodeById.forEach((node) => drawConnector(node));
+          live.forEach((node) => drawConnector(node));
         });
-        refreshWorldSize();
+      }
+
+      // Fim de uma reacomodação: quem terminou oculto sai da lista de
+      // escrita. Enquanto uma animação está em curso ninguém sai — uma
+      // caixa que esmaece precisa acompanhar o pai até o fim.
+      function settleOnScreen() {
+        nodeById.forEach((node) => { node.onScreen = !!node.visible; });
       }
 
       // borderPoint() e refreshWorldSize() falam em node.x/node.y. Durante o
@@ -2471,6 +2539,7 @@
         if (!duration) {
           snapDisplayed();
           applyPositions();
+          settleOnScreen();
           return;
         }
 
@@ -2490,6 +2559,7 @@
             tweenFrame = null;
             snapDisplayed();
             applyPositions();
+            settleOnScreen();
           }
         };
         tweenFrame = requestAnimationFrame(step);
@@ -2499,6 +2569,7 @@
       function relayout(duration) {
         measureNodes();
         layoutTree();
+        refreshWorldSize();   // sai das posições-alvo: uma vez por layout basta
         tweenTo(duration);
       }
 
@@ -2513,7 +2584,9 @@
         layoutTree();            // 2ª passada: agora com as alturas reais
         snapDisplayed();
         nodeById.forEach((node) => addConnectorFor(node));
-        applyPositions();
+        refreshWorldSize();
+        applyPositions(true);   // caixas recém-montadas: todas recebem posição
+        settleOnScreen();
         refreshAriaControls();
       }
 
@@ -2553,7 +2626,9 @@
           }
           if (node.path) {
             node.path.classList.toggle("is-visible", node.visible);
-            node.path.style.strokeDashoffset = node.visible ? "0" : String(node.lineLength || 0);
+            const offset = node.visible ? "0" : String(node.lineLength || 0);
+            node.path.style.strokeDashoffset = offset;
+            node.path.lastOffset = offset;   // mantém o cache de drawConnector em dia
           }
         });
       }
