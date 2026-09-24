@@ -123,25 +123,76 @@
       background: rgba(11, 23, 54, 0.12);
     }
 
-    /* Título e pesquisa moram juntos, empilhados: um título maior ou em
-       duas linhas empurra a caixa de pesquisa para baixo em vez de passar
-       por cima dela. O invólucro é transparente ao ponteiro — só a caixa
-       de pesquisa responde —, senão a faixa vazia ao lado dela roubaria o
-       arrasto do mapa. */
-    .masthead {
+    /* --- Elementos presos à tela ------------------------------------------
+       Nove vagas fixas (cantos, bordas e centro), cada uma uma pilha: quem é
+       posto na mesma vaga se empilha em vez de passar por cima do outro — é
+       assim que um título maior empurra a pesquisa para baixo. applyHud()
+       põe cada elemento (título, pesquisa, zoom, legenda) na vaga escolhida
+       no painel; no celular todos voltam à vaga de fábrica. As vagas cobrem
+       a largura da tela, mas são transparentes ao ponteiro — só o que é
+       clicável dentro delas responde —, senão a faixa vazia roubaria o
+       arrasto do mapa. As distâncias das bordas são as de antes das vagas
+       existirem, para o mapa de fábrica continuar idêntico. */
+    .hud-slot {
       position: absolute;
-      top: 1.65rem;
       left: 1.8rem;
       right: 1.8rem;
       z-index: 25;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
       /* Com o título padrão, 0.35rem põe a pesquisa exatamente onde ela
-         ficava antes (3.05rem do topo): a linha do título tem 1.5 de altura,
-         herdada do reset do Tailwind. */
+         sempre ficou (3.05rem do topo): a linha do título tem 1.5 de
+         altura, herdada do reset do Tailwind. */
       gap: 0.35rem;
       pointer-events: none;
+    }
+
+    .hud-slot[data-slot$="left"] {
+      align-items: flex-start;
+    }
+
+    .hud-slot[data-slot$="right"] {
+      align-items: flex-end;
+    }
+
+    .hud-slot[data-slot="top"],
+    .hud-slot[data-slot="center"],
+    .hud-slot[data-slot="bottom"] {
+      align-items: center;
+    }
+
+    .hud-slot[data-slot^="top"] {
+      top: 1.65rem;
+    }
+
+    /* O canto de cima à direita é do cadeado (e dos botões do modo dev):
+       a vaga começa logo abaixo dele. */
+    .hud-slot[data-slot="top-right"] {
+      top: calc(1.5rem + 52px);
+    }
+
+    .hud-slot[data-slot="left"],
+    .hud-slot[data-slot="center"],
+    .hud-slot[data-slot="right"] {
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .hud-slot[data-slot^="bottom"] {
+      bottom: 0.85rem;
+    }
+
+    .hud-slot[data-slot="bottom-left"] {
+      left: 1rem;
+      bottom: 1.1rem;
+    }
+
+    .hud-slot[data-slot="bottom-right"] {
+      right: 0.85rem;
+    }
+
+    .hud-item.is-off {
+      display: none !important;
     }
 
     /* Tudo aqui é só o padrão: o painel de aparência escreve fonte,
@@ -692,11 +743,10 @@
       cursor: grabbing;
     }
 
+    /* Posição: é a vaga (.hud-slot) que decide. */
     .camera-controls {
-      position: absolute;
-      right: 0.85rem;
-      bottom: 0.85rem;
-      z-index: 30;
+      position: relative;
+      pointer-events: auto;
       display: flex;
       align-items: center;
       gap: 0.2rem;
@@ -744,10 +794,6 @@
     }
 
     .camera-legend {
-      position: absolute;
-      left: 1rem;
-      bottom: 1.1rem;
-      z-index: 30;
       display: flex;
       gap: 0.9rem;
       font-size: 0.66rem;
@@ -1233,6 +1279,35 @@
       background: rgb(255, 255, 255);
     }
 
+    /* Aba Tela: um bloco por elemento preso à tela. */
+    .dev-hud-item {
+      margin-top: 0.7rem;
+      padding: 0.55rem 0.75rem 0.4rem;
+      border: 1px solid rgba(160, 190, 255, 0.18);
+      border-radius: 12px;
+    }
+
+    .dev-hud-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+    }
+
+    .dev-hud-name {
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .dev-hud-item.is-off .dev-hud-name {
+      color: rgba(230, 238, 255, 0.5);
+    }
+
+    .dev-range:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
     /* Xadrez atrás da prévia: é o que mostra se o PNG tem fundo
        transparente ou não. */
     .dev-wm-preview {
@@ -1302,8 +1377,8 @@
 
     /* --- Pesquisa ------------------------------------------------------
        Mora fora do #map-stage de propósito: assim nem o arrasto nem a roda
-       da câmera enxergam os gestos feitos na caixa ou na lista. Fica logo
-       abaixo do título, dentro do .masthead, que é quem a posiciona. --- */
+       da câmera enxergam os gestos feitos na caixa ou na lista. Quem a
+       posiciona é a vaga (.hud-slot) em que ela estiver. --- */
     .search {
       position: relative;
       width: min(340px, 100%);
@@ -1490,11 +1565,25 @@
       padding: 3.6rem 0.75rem 1.5rem;
     }
 
-    body.is-compact .masthead {
-      top: 1.1rem;
+    /* No celular as vagas são as de sempre: applyHud() devolve cada
+       elemento à vaga de fábrica e ignora posição, distância e tamanho. */
+    body.is-compact .hud-slot {
       left: 0.75rem;
       right: 0.75rem;
+    }
+
+    body.is-compact .hud-slot[data-slot^="top"] {
+      top: 1.1rem;
       gap: 0.6rem;
+    }
+
+    body.is-compact .hud-slot[data-slot="bottom-left"] {
+      bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
+    }
+
+    body.is-compact .hud-slot[data-slot="bottom-right"] {
+      right: 0.6rem;
+      bottom: max(0.6rem, env(safe-area-inset-bottom, 0px));
     }
 
     /* O min-height é o que põe a pesquisa abaixo da fila do cadeado (4rem)
@@ -1504,6 +1593,15 @@
       min-height: 2.3rem;
       max-width: calc(100% - 9.3rem);
       font-size: calc(var(--title-size, 0.7rem) * 0.62 / 0.7);
+    }
+
+    /* Título escondido no celular: some, mas guarda o lugar — sem ele a
+       pesquisa, que ocupa a largura toda, subiria para baixo do cadeado. */
+    body.is-compact .eyebrow.hud-item.is-off {
+      display: block !important;
+      visibility: hidden;
+      height: 2.3rem;
+      overflow: hidden;
     }
 
     /* No celular a caixa ocupa a largura toda, abaixo da fila do cadeado —
@@ -1550,14 +1648,7 @@
       padding: 0.5rem 0.9rem;
     }
 
-    body.is-compact .camera-controls {
-      right: 0.6rem;
-      bottom: max(0.6rem, env(safe-area-inset-bottom, 0px));
-    }
-
     body.is-compact .camera-legend {
-      left: 0.75rem;
-      bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
       font-size: 0.6rem;
       gap: 0.6rem;
     }
@@ -1675,9 +1766,9 @@
 
 <body data-template-id="__page-root" style="background: rgb(0, 51, 94);" class="no-blobs">
   <main class="mindmap-shell" aria-label="Organização de POPs">
-    <div class="masthead">
-    <p id="map-title" class="eyebrow" style="--title-size: 11.2px; font-family: &quot;DM Sans&quot;, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em;">Mapa Operacional Padrão - MOP, edição de cor da letra</p>
-    <div class="search" role="search">
+    <div class="hud-slot" data-slot="top-left">
+    <p id="map-title" class="eyebrow hud-item" data-hud="title" style="--title-size: 11.2px; font-family: &quot;DM Sans&quot;, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em;">Mapa Operacional Padrão - MOP, edição de cor da letra</p>
+    <div class="search hud-item" data-hud="search" role="search">
       <label class="search-field">
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
         <input id="search-input" class="search-input" type="search" placeholder="Pesquisar nó ou subnó…" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="search-results" aria-autocomplete="list" aria-label="Pesquisar nó ou subnó (atalho: /)">
@@ -1685,6 +1776,8 @@
       <ul id="search-results" class="search-results" role="listbox" aria-label="Resultados da pesquisa" hidden=""></ul>
     </div>
     </div>
+    <div class="hud-slot" data-slot="top"></div>
+    <div class="hud-slot" data-slot="top-right"></div>
     <button id="dev-toggle" class="dev-toggle" type="button" aria-haspopup="dialog" aria-label="Modo desenvolvedor" title="Modo desenvolvedor">
       <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" class="lucide lucide-lock dev-toggle-icon-locked" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
       <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="unlock" class="lucide lucide-unlock dev-toggle-icon-unlocked" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
@@ -1697,6 +1790,9 @@
     </button>
     <input id="import-file" class="dev-file-input" type="file" accept="application/json,.json">
     <datalist id="pdf-library-list"></datalist>
+    <div class="hud-slot" data-slot="left"></div>
+    <div class="hud-slot" data-slot="center"></div>
+    <div class="hud-slot" data-slot="right"></div>
     <section id="map-stage" class="map-stage" aria-label="Área do mapa de POPs">
      <div id="camera-viewport" class="camera-viewport">
       <div id="world" class="world">
@@ -1716,24 +1812,29 @@ POPs</span> </button>
       </div>
       <div id="watermark" class="watermark" aria-hidden="true" style="justify-content: flex-start; align-items: flex-end; padding: 55px;" hidden=""><img id="watermark-img" alt="" draggable="false" style="width: 45vmin; height: 12.0349vmin; opacity: 1;"></div>
       <div id="drag-hint" class="drag-hint" aria-hidden="true" hidden="">Solte sobre um nó para religar ou reordenar.</div>
-      <div class="camera-legend" aria-hidden="true">
-        <span><b></b>Nó</span>
-        <span class="legend-sub"><b></b>Subnó</span>
-      </div>
-      <div class="camera-controls" role="group" aria-label="Controles da câmera">
-        <button id="camera-zoom-out" class="camera-btn" type="button" title="Afastar (tecla −)" aria-label="Afastar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="minus" aria-hidden="true" class="lucide lucide-minus"><path d="M5 12h14"></path></svg>
-        </button>
-        <span id="camera-zoom-readout" class="camera-zoom-readout" aria-live="off">100%</span>
-        <button id="camera-zoom-in" class="camera-btn" type="button" title="Aproximar (tecla +)" aria-label="Aproximar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" aria-hidden="true" class="lucide lucide-plus"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-        </button>
-        <button id="camera-fit" class="camera-btn is-active" type="button" title="Recentrar o mapa e voltar ao enquadramento automático (tecla 0)" aria-label="Recentrar o mapa">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="maximize" aria-hidden="true" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg>
-        </button>
-      </div>
      </div>
     </section>
+    <div class="hud-slot" data-slot="bottom-left">
+    <div class="camera-legend hud-item" data-hud="legend" aria-hidden="true">
+      <span><b></b>Nó</span>
+      <span class="legend-sub"><b></b>Subnó</span>
+    </div>
+    </div>
+    <div class="hud-slot" data-slot="bottom"></div>
+    <div class="hud-slot" data-slot="bottom-right">
+    <div class="camera-controls hud-item" data-hud="zoom" role="group" aria-label="Controles da câmera">
+      <button id="camera-zoom-out" class="camera-btn" type="button" title="Afastar (tecla −)" aria-label="Afastar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="minus" aria-hidden="true" class="lucide lucide-minus"><path d="M5 12h14"></path></svg>
+      </button>
+      <span id="camera-zoom-readout" class="camera-zoom-readout" aria-live="off">100%</span>
+      <button id="camera-zoom-in" class="camera-btn" type="button" title="Aproximar (tecla +)" aria-label="Aproximar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" aria-hidden="true" class="lucide lucide-plus"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+      </button>
+      <button id="camera-fit" class="camera-btn is-active" type="button" title="Recentrar o mapa e voltar ao enquadramento automático (tecla 0)" aria-label="Recentrar o mapa">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="maximize" aria-hidden="true" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg>
+      </button>
+    </div>
+    </div>
     <p id="map-status" class="screen-reader-status" aria-live="polite"></p>
 
     <div id="dev-overlay" class="dev-overlay" hidden="">
@@ -1762,6 +1863,15 @@ POPs</span> </button>
       const titleEl = document.getElementById("map-title");
       const watermarkEl = document.getElementById("watermark");
       const watermarkImg = document.getElementById("watermark-img");
+
+      // Elementos presos à tela que o painel posiciona (o cadeado e os
+      // botões do modo dev ficam de fora, sempre no canto). A ordem é a da
+      // pilha quando dois dividem a mesma vaga.
+      const HUD_ORDER = ["title", "search", "zoom", "legend"];
+      const hudItems = {};
+      document.querySelectorAll(".hud-item").forEach((el) => { hudItems[el.dataset.hud] = el; });
+      const hudSlots = {};
+      document.querySelectorAll(".hud-slot").forEach((el) => { hudSlots[el.dataset.slot] = el; });
 
       const zoomInBtn = document.getElementById("camera-zoom-in");
       const zoomOutBtn = document.getElementById("camera-zoom-out");
@@ -1931,6 +2041,17 @@ POPs</span> </button>
           on: true, image: "", ratio: 1,
           transparency: 85, scale: 35, position: "center", margin: 24, rotation: 0,
         },
+        // Elementos presos à tela. `position` é uma vaga da grade 3×3,
+        // `offset` afasta da borda da vaga (em px, além da margem de
+        // fábrica) e `scale` é o tamanho, em %. Posição, afastamento e
+        // tamanho valem só no computador: no celular a tela se arruma como
+        // sempre. Mostrar/esconder vale nos dois (ver applyHud).
+        hud: {
+          title: { show: true, position: "top-left", offset: 0 },
+          search: { show: true, position: "top-left", offset: 0, scale: 100 },
+          zoom: { show: true, position: "bottom-right", offset: 0, scale: 100 },
+          legend: { show: true, position: "bottom-left", offset: 0, scale: 100 },
+        },
       };
       const LINE_ALPHA = 0.56;
       const BLOB_A_ALPHA = 0.24;
@@ -1970,11 +2091,14 @@ POPs</span> </button>
           ratio: [0.05, 20, 0.001], transparency: [0, 98, 1], scale: [5, 100, 1],
           margin: [0, 160, 1], rotation: [-180, 180, 1],
         },
+        // Valem para todos os elementos de `hud` (ver limitsFor).
+        hud: { offset: [0, 240, 2], scale: [50, 200, 5] },
       };
 
-      // Grade 3×3 de posições da marca d'água, na ordem em que o painel as
-      // desenha. x/y são o alinhamento do flex da .watermark.
-      const WM_POSITIONS = {
+      // Grade 3×3 de posições — da marca d'água e das vagas dos elementos
+      // presos à tela —, na ordem em que o painel as desenha. x/y são o
+      // alinhamento do flex da .watermark.
+      const GRID_POSITIONS = {
         "top-left": { x: "flex-start", y: "flex-start", label: "Canto superior esquerdo" },
         "top": { x: "center", y: "flex-start", label: "No alto, ao centro" },
         "top-right": { x: "flex-end", y: "flex-start", label: "Canto superior direito" },
@@ -2090,9 +2214,62 @@ POPs</span> </button>
         applyCoreShadow();
         applyTitle();
         applyWatermark();
+        const hudMoved = applyHud();
 
         applyNodeColors();
-        refreshCoreSize();
+        // Título e pesquisa entram no enquadramento (hudInsets): se mudaram
+        // de lugar ou de tamanho, a câmera reenquadra — a não ser que o
+        // tronco já tenha feito isso ao crescer.
+        if (!refreshCoreSize() && hudMoved && nodeById.size) autoFit(0);
+      }
+
+      // Põe cada elemento preso à tela na vaga escolhida, com o afastamento
+      // e o tamanho escolhidos. No celular (body.is-compact) só o
+      // mostrar/esconder vale: cada um volta à vaga e ao tamanho de
+      // fábrica, e o layout automático do celular fica como sempre foi.
+      // Devolve true quando mudou algo que pesa no enquadramento da câmera.
+      const SLOT_EDGES = {
+        "top-left": ["Top", "Left"], "top": ["Top"], "top-right": ["Top", "Right"],
+        "left": ["Left"], "center": [], "right": ["Right"],
+        "bottom-left": ["Bottom", "Left"], "bottom": ["Bottom"], "bottom-right": ["Bottom", "Right"],
+      };
+      let hudApplied = "";
+      function applyHud() {
+        const compact = document.body.classList.contains("is-compact");
+        const bySlot = {};
+        HUD_ORDER.forEach((key) => {
+          const cfg = theme.hud[key];
+          const el = hudItems[key];
+          const position = compact ? DEFAULT_THEME.hud[key].position : cfg.position;
+          el.classList.toggle("is-off", !cfg.show);
+          // zoom, e não transform: scale — o zoom muda o tamanho que o
+          // elemento ocupa, e a pilha da vaga abre espaço para ele.
+          const zoom = !compact && cfg.scale ? cfg.scale / 100 : 1;
+          el.style.zoom = zoom !== 1 ? String(zoom) : "";
+          // Afastar da borda é margem nos lados que dão para a borda da
+          // vaga; na vaga do centro não há borda, e ele não faz nada. O
+          // zoom amplia a margem junto, daí a divisão: +30px é 30px na tela
+          // em qualquer tamanho.
+          el.style.margin = "";
+          if (!compact && cfg.offset) {
+            SLOT_EDGES[position].forEach((side) => { el.style["margin" + side] = (cfg.offset / zoom) + "px"; });
+          }
+          (bySlot[position] = bySlot[position] || []).push(el);
+        });
+        // Só mexe no DOM quando a pilha de alguma vaga muda: mover um
+        // elemento tira o foco de quem estiver dentro dele (a pesquisa).
+        Object.keys(bySlot).forEach((key) => {
+          const slot = hudSlots[key];
+          const wanted = bySlot[key];
+          const current = Array.from(slot.children);
+          if (current.length !== wanted.length || wanted.some((el, i) => current[i] !== el)) {
+            wanted.forEach((el) => slot.appendChild(el));
+          }
+        });
+        const signature = JSON.stringify([compact, theme.title, theme.hud.title, theme.hud.search]);
+        const changed = signature !== hudApplied;
+        hudApplied = signature;
+        return changed;
       }
 
       // Formatação do rótulo do tronco — vale para o texto inteiro.
@@ -2174,7 +2351,7 @@ POPs</span> </button>
           watermarkImg.setAttribute("src", wm.image);
           shownWatermark = wm.image;
         }
-        const place = WM_POSITIONS[wm.position];
+        const place = GRID_POSITIONS[wm.position];
         watermarkEl.style.justifyContent = place.x;
         watermarkEl.style.alignItems = place.y;
         watermarkEl.style.padding = wm.margin + "px";
@@ -2255,11 +2432,13 @@ POPs</span> </button>
 
       // Depois de mexer no rótulo do tronco: se o círculo mudou de tamanho,
       // o mapa se reacomoda em volta dele. Antes do primeiro render não há
-      // nada montado para mover — o render já sai com o raio novo.
+      // nada montado para mover — o render já sai com o raio novo. Devolve
+      // true quando reacomodou (e, com isso, já reenquadrou a câmera).
       function refreshCoreSize() {
-        if (!fitCoreSize() || !nodeById.size) return;
+        if (!fitCoreSize() || !nodeById.size) return false;
         relayout(0);
         autoFit(0);
+        return true;
       }
 
       // Repinta os nós já montados sem reconstruir a árvore: mudar cor não
@@ -2441,7 +2620,7 @@ POPs</span> </button>
         "title.font": (v) => (hasOwn(FONTS, v) ? v : undefined),
         "title.color": (v) => (v === "" ? "" : cleanHex(v) || undefined),
         "watermark.image": (v) => (v === "" || IMAGE_DATA_URL.test(v) ? v : undefined),
-        "watermark.position": (v) => (hasOwn(WM_POSITIONS, v) ? v : undefined),
+        "watermark.position": (v) => (hasOwn(GRID_POSITIONS, v) ? v : undefined),
       };
 
       // Uma chave de grupo: número preso à faixa do controle, booleano, ou
@@ -2496,6 +2675,23 @@ POPs</span> </button>
             if (value !== undefined) clean[group][key] = value;
           });
         });
+        if (raw.hud && typeof raw.hud === "object") {
+          Object.keys(clean.hud).forEach((item) => {
+            const src = raw.hud[item];
+            if (!src || typeof src !== "object") return;
+            const cfg = clean.hud[item];
+            if (typeof src.show === "boolean") cfg.show = src.show;
+            if (typeof src.position === "string" && hasOwn(GRID_POSITIONS, src.position)) {
+              cfg.position = src.position;
+            }
+            ["offset", "scale"].forEach((key) => {
+              const lim = LIMITS.hud[key];
+              if (hasOwn(cfg, key) && typeof src[key] === "number" && isFinite(src[key])) {
+                cfg[key] = clamp(src[key], lim[0], lim[1]);
+              }
+            });
+          });
+        }
         return clean;
       }
 
@@ -2844,34 +3040,50 @@ POPs</span> </button>
         // É daqui que vem o movimento: abrir ou fechar um galho muda as
         // alturas, o par (começo, corte) é reescolhido, e os setores giram
         // no anel para acomodar quem cresceu.
-        const n = sectors.length;
-        let bestStart = 0;
-        let bestCut = Math.ceil(n / 2);
-        if (n > 1) {
-          // As duas pilhas juntas somam sempre a mesma coisa, então basta
-          // acumular a da direita e subtrair.
-          const totalBoth = heights.reduce((a, b) => a + b, 0) + M.sectorGap * (n - 2);
-          let best = Infinity;
-          for (let start = 0; start < n; start += 1) {
-            let acc = 0;
-            for (let k = 1; k < n; k += 1) {
-              acc += heights[(start + k - 1) % n] + (k > 1 ? M.sectorGap : 0);
-              const diff = Math.abs(acc - (totalBoth - acc));
-              // Só troca por uma melhora de verdade: no empate — que é o
-              // caso de todo mundo fechado — vence o começo canônico, e o
-              // anel fica exatamente onde o usuário está acostumado a vê-lo.
-              if (diff < best - 0.5) { best = diff; bestStart = start; bestCut = k; }
+        function ringSplit(list) {
+          const count = list.length;
+          let bestStart = 0;
+          let bestCut = Math.ceil(count / 2);
+          if (count > 1) {
+            // As duas pilhas juntas somam sempre a mesma coisa, então basta
+            // acumular a da direita e subtrair.
+            const totalBoth = list.reduce((a, b) => a + b, 0) + M.sectorGap * (count - 2);
+            let best = Infinity;
+            for (let start = 0; start < count; start += 1) {
+              let acc = 0;
+              for (let k = 1; k < count; k += 1) {
+                acc += list[(start + k - 1) % count] + (k > 1 ? M.sectorGap : 0);
+                const diff = Math.abs(acc - (totalBoth - acc));
+                // Só troca por uma melhora de verdade: no empate — que é o
+                // caso de todo mundo fechado — vence o começo canônico, e o
+                // anel fica exatamente onde o usuário está acostumado a vê-lo.
+                if (diff < best - 0.5) { best = diff; bestStart = start; bestCut = k; }
+              }
             }
           }
+          return { start: bestStart, cut: bestCut };
         }
 
+        const n = sectors.length;
+        const split = ringSplit(heights);
         const right = [];
         const left = [];
         for (let i = 0; i < n; i += 1) {
-          const idx = (bestStart + i) % n;
-          (i < bestCut ? right : left).push(idx);
+          const idx = (split.start + i) % n;
+          (i < split.cut ? right : left).push(idx);
         }
         left.reverse();
+
+        // Um galho por vez: com um setor só à vista, ele fica do lado em que
+        // mora quando estão todos fechados. Sozinho no anel ele iria sempre
+        // para a direita, e cada setor aberto do lado esquerdo pularia de
+        // lado — o olho perderia o galho que acabou de clicar.
+        const all = treeData.root.children;
+        if (n === 1 && all.length > 1) {
+          const home = ringSplit(all.map((s) => s.h || M.nodeMinH));
+          const turn = (all.indexOf(sectors[0]) - home.start + all.length) % all.length;
+          if (turn >= home.cut) left.push(right.pop());
+        }
 
         [[1, right], [-1, left]].forEach((entry) => {
           const dir = entry[0];
@@ -3348,12 +3560,71 @@ POPs</span> </button>
       // como reflexo, para o CSS.
       function computeVisibility() {
         const isOpen = stage.classList.contains("is-open");
+        const single = oneBranchMode();
         function walk(node, parentVisible) {
           node.visible = node.depth === 0 ? true : parentVisible;
           const childrenVisible = node.depth === 0 ? isOpen : (node.visible && !!node.expanded);
-          node.children.forEach((child) => walk(child, childrenVisible));
+          // Um galho por vez: com um filho aberto, os irmãos dele saem de
+          // cena. Um nó "aberto" sem filhos (o último filho foi apagado) não
+          // conta — não há o que mostrar no lugar dos irmãos.
+          const open = single ? node.children.find((c) => c.expanded && c.children.length) : null;
+          node.children.forEach((child) => walk(child, childrenVisible && (!open || child === open)));
         }
         walk(treeData.root, true);
+      }
+
+      // --- Um galho por vez ---------------------------------------------------
+      // Fora do modo dev, abrir um galho fecha e esconde os irmãos dele, em
+      // todos os níveis: fica na tela só o caminho do tronco até o galho
+      // aberto, mais os filhos dele. Clicar no galho aberto o fecha e devolve
+      // os irmãos. É o que impede a árvore inteira de ser aberta de uma vez.
+      // No modo dev volta o comportamento livre, com vários galhos abertos:
+      // religar um nó entre galhos exige ver os dois.
+      // ---------------------------------------------------------------------
+      function oneBranchMode() {
+        return !devUnlocked;
+      }
+
+      // O último nó aberto. Quando o cadeado fecha com vários galhos abertos,
+      // é o caminho dele que sobra.
+      let lastExpanded = null;
+
+      // Fecha o nó e tudo o que estava aberto dentro dele: um galho que sai
+      // de cena e volta depois volta fechado, e não no fundo de onde parou.
+      function collapseTree(node) {
+        node.expanded = false;
+        const btn = node.el && node.el.querySelector(".branch-button");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+        node.children.forEach(collapseTree);
+      }
+
+      // Fecha os irmãos abertos do nó. Devolve true se fechou algum.
+      function closeSiblings(node) {
+        if (!node.parent) return false;
+        let closed = false;
+        node.parent.children.forEach((sibling) => {
+          if (sibling !== node && sibling.expanded) {
+            collapseTree(sibling);
+            closed = true;
+          }
+        });
+        return closed;
+      }
+
+      // Cadeado fechado: sobra só o caminho do último nó aberto, se ele ainda
+      // estiver aberto e à vista; o resto fecha. Sem caminho válido, fecha
+      // tudo — o tronco continua aberto, com todos os setores à vista.
+      function keepSinglePath() {
+        let keep = lastExpanded && nodeById.get(lastExpanded.id) === lastExpanded ? lastExpanded : null;
+        for (let n = keep; n && n.depth > 0; n = n.parent) {
+          if (!n.expanded) { keep = null; break; }
+        }
+        const path = new Set();
+        for (let n = keep; n && n.depth > 0; n = n.parent) path.add(n);
+        nodeById.forEach((node) => {
+          if (node.depth > 0 && node.expanded && !path.has(node)) collapseTree(node);
+        });
+        lastExpanded = keep;
       }
 
       function updateVisibility() {
@@ -3477,21 +3748,35 @@ POPs</span> </button>
         camera.y = clamp(camera.y, keep - box.b * camera.scale, vh - keep - box.t * camera.scale);
       }
 
-      // A caixa de pesquisa flutua sobre o topo do mapa. Enquadrar sem
-      // descontá-la faz o nó de cima nascer embaixo dela — no celular, onde
-      // ela ocupa a largura inteira, isso escondia um setor inteiro.
-      function topInset() {
-        const field = document.querySelector(".search-field");
-        if (!field) return 0;
-        const bottom = field.getBoundingClientRect().bottom - viewport.getBoundingClientRect().top;
-        return clamp(bottom + 8, 0, viewport.clientHeight * 0.3);
+      // O título e a pesquisa flutuam sobre o mapa, no alto ou embaixo,
+      // conforme a vaga. Enquadrar sem descontá-los faz o nó da ponta nascer
+      // embaixo deles — no celular, onde a pesquisa ocupa a largura inteira,
+      // isso escondia um setor inteiro. Zoom e legenda são pequenos e ficam
+      // de fora da conta, como sempre ficaram; nas vagas do meio, nada é
+      // descontado. Da pesquisa conta só o campo: a lista de resultados
+      // abre e fecha, e a câmera não deve pular junto.
+      function hudInsets() {
+        const box = viewport.getBoundingClientRect();
+        let top = 0;
+        let bottom = 0;
+        [titleEl, document.querySelector(".search-field")].forEach((el) => {
+          const item = el && el.closest(".hud-item");
+          if (!item || item.classList.contains("is-off")) return;
+          const r = el.getBoundingClientRect();
+          if (!r.height) return;
+          const slot = item.parentElement.dataset.slot || "";
+          if (slot.indexOf("top") === 0) top = Math.max(top, r.bottom - box.top + 8);
+          else if (slot.indexOf("bottom") === 0) bottom = Math.max(bottom, box.bottom - r.top + 8);
+        });
+        const cap = viewport.clientHeight * 0.3;
+        return { top: clamp(top, 0, cap), bottom: clamp(bottom, 0, cap) };
       }
 
       function fitCamera(ms) {
         const box = getActiveBox();
-        const top = topInset();
+        const inset = hudInsets();
         const vw = viewport.clientWidth;
-        const vh = viewport.clientHeight - top;
+        const vh = viewport.clientHeight - inset.top - inset.bottom;
         const scale = clamp(
           Math.min(vw / (box.r - box.l), vh / (box.b - box.t)),
           minScale(),
@@ -3499,7 +3784,7 @@ POPs</span> </button>
         );
         camera.scale = scale;
         camera.x = vw / 2 - ((box.l + box.r) / 2) * scale;
-        camera.y = top + vh / 2 - ((box.t + box.b) / 2) * scale;
+        camera.y = inset.top + vh / 2 - ((box.t + box.b) / 2) * scale;
         applyCamera(ms);
       }
 
@@ -3520,9 +3805,9 @@ POPs</span> </button>
         });
 
         const box = unionBox(boxes, Math.max(36, fitPad() * 1.5));
-        const top = topInset();
+        const inset = hudInsets();
         const vw = viewport.clientWidth;
-        const vh = viewport.clientHeight - top;
+        const vh = viewport.clientHeight - inset.top - inset.bottom;
         camera.scale = clamp(
           Math.min(vw / (box.r - box.l), vh / (box.b - box.t)),
           minScale(),
@@ -3530,7 +3815,7 @@ POPs</span> </button>
         );
 
         camera.x = vw / 2 - ((box.l + box.r) / 2) * camera.scale;
-        camera.y = top + vh / 2 - ((box.t + box.b) / 2) * camera.scale;
+        camera.y = inset.top + vh / 2 - ((box.t + box.b) / 2) * camera.scale;
         clampCamera();
         applyCamera(ms);
       }
@@ -3744,13 +4029,14 @@ POPs</span> </button>
       viewport.addEventListener("pointerdown", (event) => {
         // Gesto novo começa limpo: o clique que vem depois só é engolido se
         // ESTE gesto virar arrasto. Precisa vir antes de qualquer saída
-        // antecipada — inclusive a dos controles de câmera. Depois de
+        // antecipada — inclusive a dos botões de edição dos nós. Depois de
         // arrastar o mapa com o dedo, o navegador pode não mandar clique
-        // nenhum, e o didDrag ficaria ligado: o primeiro toque no botão de
-        // zoom seria engolido no lugar dele. Durante a pinça o sinalizador
+        // nenhum, e o didDrag ficaria ligado: o primeiro toque num desses
+        // botões seria engolido no lugar dele. Durante a pinça o sinalizador
         // é preservado, senão um terceiro dedo o apagaria no meio do gesto.
+        // (Os controles de zoom moram fora da câmera, numa vaga da tela, e
+        // nem passam por aqui.)
         if (!pinch) didDrag = false;
-        if (event.target.closest(".camera-controls")) return;
         if (event.target.closest(".dev-node-btn")) return;
 
         // O mouse fica de fora da contagem: ele não tem como pinçar, e um
@@ -4023,6 +4309,7 @@ POPs</span> </button>
           const btn = node.el && node.el.querySelector(".branch-button");
           if (btn) btn.setAttribute("aria-expanded", "false");
         });
+        lastExpanded = null;
       }
 
       // Reconstrói toda a árvore visual a partir dos dados (necessário
@@ -4033,7 +4320,11 @@ POPs</span> </button>
       function rebuildPreservingExpanded(forceExpandId, focusId) {
         if (forceExpandId) {
           const forced = nodeById.get(forceExpandId);
-          if (forced) forced.expanded = true;
+          if (forced) {
+            forced.expanded = true;
+            lastExpanded = forced;
+            if (oneBranchMode()) closeSiblings(forced);
+          }
         }
 
         render();
@@ -4231,7 +4522,20 @@ POPs</span> </button>
         }
         if (node.children.length === 0) return;
 
-        node.expanded = !node.expanded;
+        if (node.expanded) {
+          // No modo de um galho por vez, fechar fecha também o que havia
+          // aberto dentro: reabrir mostra os filhos todos, e não um caminho
+          // escondido lá no fundo.
+          if (oneBranchMode()) collapseTree(node);
+          else node.expanded = false;
+          if (lastExpanded && (lastExpanded === node || isDescendant(node, lastExpanded))) {
+            lastExpanded = node.parent && node.parent.depth > 0 ? node.parent : null;
+          }
+        } else {
+          node.expanded = true;
+          lastExpanded = node;
+          if (oneBranchMode()) closeSiblings(node);
+        }
         button.setAttribute("aria-expanded", String(node.expanded));
         updateVisibility();
         // O que abriu passou a ocupar espaço e o que fechou devolveu o seu:
@@ -4258,6 +4562,9 @@ POPs</span> </button>
       function handleViewportChange() {
         setViewportUnit();
         const metricsChanged = applyMetrics();
+        // Entrar ou sair do modo celular troca as vagas dos elementos presos
+        // à tela (no celular valem as de fábrica).
+        if (metricsChanged) applyHud();
         // Sempre depois das medidas: o piso do círculo vem delas.
         const coreChanged = fitCoreSize();
         if (metricsChanged || coreChanged) {
@@ -4494,6 +4801,10 @@ POPs</span> </button>
         for (const node of path) {
           if (node.expanded) continue;   // já aberto: nada a animar
           node.expanded = true;
+          lastExpanded = node;
+          // Um galho por vez: o caminho da pesquisa fecha os galhos que
+          // estavam abertos ao lado dele, nível a nível.
+          if (oneBranchMode()) closeSiblings(node);
           const btn = node.el && node.el.querySelector(".branch-button");
           if (btn) btn.setAttribute("aria-expanded", "true");
           updateVisibility();
@@ -4501,6 +4812,12 @@ POPs</span> </button>
           focusOn(node, step);
           await wait(pause);
           if (token !== revealToken) return;
+        }
+
+        // Um irmão aberto do alvo esconderia o próprio alvo: ele fecha antes.
+        if (oneBranchMode() && closeSiblings(target)) {
+          updateVisibility();
+          relayout(step);
         }
 
         // Chegou: enquadra o alvo (e os filhos dele, se estiver aberto) e
@@ -4581,6 +4898,7 @@ POPs</span> </button>
         if (event.ctrlKey || event.metaKey || event.altKey) return;
 
         if (event.key === "/") {
+          if (!theme.hud.search.show) return;   // pesquisa escondida no painel
           event.preventDefault();
           searchInput.focus();
           searchInput.select();
@@ -4625,6 +4943,13 @@ POPs</span> </button>
         status.textContent = unlocked
           ? "Modo desenvolvedor ativado. Os controles de edição estão visíveis nos nós."
           : "Modo desenvolvedor desativado.";
+        // O cadeado troca a regra de quem aparece (ver oneBranchMode): no
+        // modo dev os irmãos escondidos voltam à tela; fora dele, sobra um
+        // caminho só.
+        if (!unlocked) keepSinglePath();
+        updateVisibility();
+        relayout(TWEEN_MS);
+        autoFit(TWEEN_MS);
       }
 
       function renderPasswordForm(errorMsg) {
@@ -5082,6 +5407,7 @@ POPs</span> </button>
         { id: "tronco", label: "Tronco" },
         { id: "titulo", label: "Título" },
         { id: "marca", label: "Marca d'água" },
+        { id: "tela", label: "Tela" },
       ];
 
       // O que "Restaurar o padrão desta aba" devolve ao padrão. A imagem da
@@ -5092,6 +5418,7 @@ POPs</span> </button>
         tronco: ["core", "coreEnd", "coreText", "coreShadow"],
         titulo: ["title"],
         marca: ["watermark"],
+        tela: ["hud"],
       };
 
       let themeTab = "cores";
@@ -5188,6 +5515,17 @@ POPs</span> </button>
         "watermark.margin": (v) => v + "px",
         "watermark.rotation": (v) => v + "°",
       };
+      HUD_ORDER.forEach((key) => {
+        READOUTS["hud." + key + ".offset"] = (v) => "+" + v + "px";
+        READOUTS["hud." + key + ".scale"] = (v) => v + "%";
+      });
+
+      // Faixa de um controle deslizante. Os elementos presos à tela dividem
+      // as mesmas faixas (LIMITS.hud), qualquer que seja o elemento.
+      function limitsFor(path) {
+        const parts = pathParts(path);
+        return parts[0] === "hud" ? LIMITS.hud[parts[2]] : LIMITS[parts[0]][parts[1]];
+      }
 
       const ALIGN_ICONS = {
         left: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg>',
@@ -5268,14 +5606,27 @@ POPs</span> </button>
       }
 
       function rangeRowMarkup(path, name) {
-        const parts = pathParts(path);
-        const lim = LIMITS[parts[0]][parts[1]];
+        const lim = limitsFor(path);
         const value = getPath(theme, path);
         return `
           <div class="dev-range-row">
             <label for="${bindId(path)}">${escapeHtml(name)}</label>
             <input type="range" class="dev-range" id="${bindId(path)}" data-bind="${escapeHtml(path)}" min="${lim[0]}" max="${lim[1]}" step="${lim[2]}" value="${value}" />
             <output class="dev-range-value" data-out="${escapeHtml(path)}" for="${bindId(path)}">${READOUTS[path](value)}</output>
+          </div>
+        `;
+      }
+
+      // Grade 3×3 de posições (marca d'água e elementos presos à tela).
+      function positionGridMarkup(path, groupLabel) {
+        const current = getPath(theme, path);
+        const buttons = Object.keys(GRID_POSITIONS).map((key) =>
+          `<button type="button" class="dev-pos-btn" data-bind="${escapeHtml(path)}" data-value="${key}" aria-pressed="${current === key}" title="${escapeHtml(GRID_POSITIONS[key].label)}" aria-label="${escapeHtml(GRID_POSITIONS[key].label)}"></button>`
+        ).join("");
+        return `
+          <div class="dev-field-row">
+            <span class="dev-color-name">Posição</span>
+            <div class="dev-pos-grid" role="group" aria-label="${escapeHtml(groupLabel)}">${buttons}</div>
           </div>
         `;
       }
@@ -5423,7 +5774,7 @@ POPs</span> </button>
           <label class="dev-label">Texto
             <input id="theme-title-text" class="dev-input" type="text" maxlength="${TITLE_CHAR_LIMIT}" data-bind="title.text" value="${escapeHtml(theme.title.text)}" />
           </label>
-          <p class="dev-data-hint" style="margin:0.35rem 0 0.2rem;">Deixe vazio para esconder o título.</p>
+          <p class="dev-data-hint" style="margin:0.35rem 0 0.2rem;">Posição, distância da borda e mostrar ou esconder ficam na aba Tela.</p>
           ${fontRowMarkup("title.font")}
           <div class="dev-field-row">
             <span class="dev-color-name">Estilo</span>
@@ -5449,9 +5800,6 @@ POPs</span> </button>
             <p class="dev-data-hint" style="margin-top:0.6rem;">PNG com fundo transparente fica melhor. Imagens grandes são reduzidas antes de guardar.</p>
           `;
         }
-        const grid = Object.keys(WM_POSITIONS).map((key) =>
-          `<button type="button" class="dev-pos-btn" data-bind="watermark.position" data-value="${key}" aria-pressed="${wm.position === key}" title="${escapeHtml(WM_POSITIONS[key].label)}" aria-label="${escapeHtml(WM_POSITIONS[key].label)}"></button>`
-        ).join("");
         return `
           <div class="dev-wm-preview"><img id="theme-wm-thumb" alt="Imagem atual da marca d'água" /></div>
           ${picker}
@@ -5463,12 +5811,40 @@ POPs</span> </button>
           ${rangeRowMarkup("watermark.transparency", "Transparência")}
           ${rangeRowMarkup("watermark.scale", "Tamanho")}
           <p class="dev-data-hint" style="margin:-0.1rem 0 0.3rem;">O lado maior da imagem, em % do lado menor da tela.</p>
-          <div class="dev-field-row">
-            <span class="dev-color-name">Posição</span>
-            <div class="dev-pos-grid" role="group" aria-label="Posição da marca d'água">${grid}</div>
-          </div>
+          ${positionGridMarkup("watermark.position", "Posição da marca d'água")}
           ${rangeRowMarkup("watermark.margin", "Distância da borda")}
           ${rangeRowMarkup("watermark.rotation", "Rotação")}
+        `;
+      }
+
+      const HUD_LABELS = {
+        title: "Título",
+        search: "Pesquisa",
+        zoom: "Controles de zoom",
+        legend: "Legenda (Nó / Subnó)",
+      };
+
+      // Um bloco por elemento preso à tela. O título não tem "Tamanho" aqui:
+      // o dele é o tamanho da letra, na aba Título.
+      function tabTelaMarkup() {
+        const blocks = HUD_ORDER.map((key) => {
+          const cfg = theme.hud[key];
+          const name = HUD_LABELS[key];
+          return `
+            <div class="dev-hud-item${cfg.show ? "" : " is-off"}" data-hud-block="${key}">
+              <div class="dev-hud-head">
+                <span class="dev-hud-name">${escapeHtml(name)}</span>
+                ${checkRowMarkup(keyPath("hud", key, "show"), "Mostrar")}
+              </div>
+              ${positionGridMarkup(keyPath("hud", key, "position"), "Posição: " + name)}
+              ${rangeRowMarkup(keyPath("hud", key, "offset"), "Afastar da borda")}
+              ${hasOwn(cfg, "scale") ? rangeRowMarkup(keyPath("hud", key, "scale"), "Tamanho") : ""}
+            </div>
+          `;
+        }).join("");
+        return `
+          <p class="dev-data-hint">Posição, distância e tamanho valem no computador; no celular a tela se arruma sozinha, como sempre. Esconder vale nos dois. Quem divide o mesmo lugar se empilha. O cadeado e os botões do modo dev ficam sempre no canto de cima.</p>
+          ${blocks}
         `;
       }
 
@@ -5478,6 +5854,7 @@ POPs</span> </button>
         tronco: tabTroncoMarkup,
         titulo: tabTituloMarkup,
         marca: tabMarcaMarkup,
+        tela: tabTelaMarkup,
       };
 
       // `focusSelector` devolve o foco a um controle equivalente depois de
@@ -5499,6 +5876,7 @@ POPs</span> </button>
         if (thumb) thumb.src = theme.watermark.image;
         const coreField = document.getElementById("theme-core-label");
         if (coreField) coreField.addEventListener("input", () => editCoreLabel(coreField.value));
+        refreshThemeWidgets();
         if (focusSelector) {
           const target = devModalBody.querySelector(focusSelector);
           if (target) target.focus();
@@ -5570,6 +5948,14 @@ POPs</span> </button>
           if (input && input !== document.activeElement && !getPath(theme, path)) {
             input.value = effectiveHex(path);
           }
+        });
+        // Aba Tela: bloco esmaecido quando o elemento está escondido, e
+        // "Afastar da borda" desligado na vaga do centro, onde não há borda.
+        devModalBody.querySelectorAll("[data-hud-block]").forEach((block) => {
+          const cfg = theme.hud[block.dataset.hudBlock];
+          block.classList.toggle("is-off", !cfg.show);
+          const offset = block.querySelector('input[data-bind$=".offset"]');
+          if (offset) offset.disabled = cfg.position === "center";
         });
       }
 
