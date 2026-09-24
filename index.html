@@ -5228,13 +5228,32 @@ POPs</span> </button>
       // qualquer computador, sem depender do cache de navegador nenhum.
       // ---------------------------------------------------------------------
 
-      function exportJson() {
+      // Nome que o painel de dados sugere para os arquivos exportados.
+      function defaultExportName() {
+        return "MOP-" + stamp();
+      }
+
+      // O nome vem de um campo livre. A extensão quem põe é o botão, então
+      // uma digitada junto sai (senão viria "index.html.json"), e caem os
+      // caracteres que o Windows recusa em nome de arquivo. Campo vazio
+      // volta ao nome sugerido.
+      function exportFileName(typed, ext) {
+        const base = String(typed || "")
+          .trim()
+          .replace(/\.(html?|json)$/i, "")
+          .replace(/[\\/:*?"<>|\u0000-\u001f]/g, "-")
+          .replace(/[. ]+$/, "");
+        return (base || defaultExportName()) + ext;
+      }
+
+      function exportJson(name) {
+        const filename = exportFileName(name, ".json");
         downloadFile(
-          "mapa-pops-" + stamp() + ".json",
+          filename,
           "application/json",
           JSON.stringify(buildEnvelope(), null, 2)
         );
-        status.textContent = "Mapa exportado em JSON.";
+        status.textContent = "Mapa exportado em JSON: " + filename + ".";
       }
 
       // Captura o arquivo com o DOM limpo: os nós montados são removidos
@@ -5312,7 +5331,8 @@ POPs</span> </button>
         return result;
       }
 
-      function exportHtml() {
+      function exportHtml(name) {
+        const filename = exportFileName(name, ".html");
         const seedEl = document.getElementById("map-seed");
         const html = withPristineDom(() => {
           // Escapar "<" impede que um rótulo contendo uma tag de fechamento
@@ -5323,8 +5343,8 @@ POPs</span> </button>
           return "<!doctype html>\n" + document.documentElement.outerHTML;
         });
 
-        downloadFile("mapa-pops-" + stamp() + ".html", "text/html;charset=utf-8", html);
-        status.textContent = "Mapa exportado como página autocontida.";
+        downloadFile(filename, "text/html;charset=utf-8", html);
+        status.textContent = "Mapa exportado como página autocontida: " + filename + ".";
       }
 
       function applyImportedRoot(rootData, origem) {
@@ -5367,18 +5387,27 @@ POPs</span> </button>
         devModalBody.innerHTML = `
           <h2 id="dev-modal-title" class="dev-modal-title">Dados do mapa</h2>
           <p class="dev-data-hint">O navegador guarda uma cópia local automaticamente, mas ela não viaja com você. Para abrir o mapa em outro computador, exporte um arquivo.</p>
-          <div class="dev-data-actions">
-            <button id="data-export-html" type="button" class="dev-btn dev-btn-primary">Exportar página autocontida (.html)</button>
+          <form id="data-export-form" class="dev-data-actions">
+            <label class="dev-label">Nome do arquivo
+              <input id="data-export-name" class="dev-input" type="text" autocomplete="off" spellcheck="false" value="${defaultExportName()}" />
+            </label>
+            <p class="dev-data-hint" style="margin:-0.35rem 0 0.2rem;">Vale para as duas exportações; a extensão (.html ou .json) entra sozinha.</p>
+            <button id="data-export-html" type="submit" class="dev-btn dev-btn-primary">Exportar página autocontida (.html)</button>
             <p class="dev-data-hint" style="margin:-0.35rem 0 0.2rem;">Baixa uma cópia do programa com o mapa embutido: abre pronto em qualquer computador, sem importar nada.</p>
             <button id="data-export-json" type="button" class="dev-btn dev-btn-ghost">Exportar dados (.json)</button>
             <button id="data-import-json" type="button" class="dev-btn dev-btn-ghost">Importar dados (.json)</button>
-          </div>
+          </form>
         `;
-        document.getElementById("data-export-html").addEventListener("click", () => {
-          exportHtml();
+        // O nome é lido antes de exportar: exportHtml esvazia o painel para
+        // capturar a página, e o campo some junto. Enter no campo exporta o
+        // .html, que é o botão principal.
+        const nameInput = document.getElementById("data-export-name");
+        document.getElementById("data-export-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          exportHtml(nameInput.value);
           closeDevOverlay();
         });
-        document.getElementById("data-export-json").addEventListener("click", exportJson);
+        document.getElementById("data-export-json").addEventListener("click", () => exportJson(nameInput.value));
         document.getElementById("data-import-json").addEventListener("click", () => importFile.click());
       }
 
