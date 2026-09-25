@@ -1015,6 +1015,122 @@
       display: grid;
     }
 
+    /* Editar o layout do celular: mais uma posição adiante. */
+    .phone-toggle {
+      right: 10.2rem;
+      display: none;
+    }
+
+    body.dev-mode .phone-toggle {
+      display: grid;
+    }
+
+    /* A prévia é uma cópia do mapa dentro de um iframe: os botões do modo
+       dev não existem lá. */
+    body.is-preview .dev-toggle {
+      display: none !important;
+    }
+
+    /* --- Editar o layout do celular -------------------------------------
+       Uma tela cheia por cima do mapa, com uma moldura de celular no meio.
+       A moldura é um iframe do tamanho real do aparelho (a página lá dentro
+       mede a tela dele, e não a do computador), reduzido por scale quando
+       não cabe. O painel de aparência (z-index maior) continua por cima. */
+    .phone-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      background: #060b1a;
+    }
+
+    .phone-stage[hidden] {
+      display: none;
+    }
+
+    .phone-bar {
+      flex: none;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem 1rem;
+      padding: 0.8rem 1.2rem;
+      color: rgb(231, 240, 255);
+      font-size: 0.85rem;
+    }
+
+    .phone-bar-title {
+      font-weight: 700;
+      margin-right: auto;
+    }
+
+    .phone-bar .dev-btn {
+      width: auto;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.8rem;
+    }
+
+    .phone-viewport {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }
+
+    .phone-slot {
+      position: relative;
+      flex: none;
+    }
+
+    .phone-device {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform-origin: 0 0;
+      border-radius: 34px;
+      box-shadow: 0 0 0 10px #0d1430, 0 0 0 11px rgba(160, 190, 255, 0.35), 0 24px 60px rgba(0, 0, 0, 0.55);
+      overflow: hidden;
+      background: #000;
+    }
+
+    .phone-device iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* Com o painel aberto por cima da tela toda, o clique tem de passar
+       para a moldura: só a folha do painel responde. */
+    body.is-phone-edit .dev-overlay.is-side {
+      pointer-events: none;
+    }
+
+    body.is-phone-edit .dev-overlay.is-side .dev-modal {
+      pointer-events: auto;
+    }
+
+    /* Faixa do layout no painel: qual layout se edita, e a chave que o faz
+       igual ao do computador. Com a chave ligada, os controles da aba
+       ficam apagados (atributo inert: nem o teclado chega neles). */
+    .dev-layout-bar {
+      margin: 0 0 0.6rem;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid rgba(160, 190, 255, 0.4);
+      border-radius: 12px;
+      background: rgba(160, 190, 255, 0.12);
+    }
+
+    .dev-layout-bar p {
+      margin: 0;
+    }
+
+    .dev-layout-body[inert] {
+      opacity: 0.4;
+    }
+
     .dev-btn-ghost {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(160, 190, 255, 0.35);
@@ -2088,6 +2204,10 @@
       right: 6.8rem;
     }
 
+    body.is-compact .phone-toggle {
+      right: 9.7rem;
+    }
+
     body.is-compact .dev-modal {
       width: 100%;
       max-height: 88dvh;
@@ -2210,6 +2330,9 @@
     <button id="theme-toggle" class="dev-toggle theme-toggle" type="button" aria-haspopup="dialog" aria-label="Aparência do mapa" title="Cores do mapa">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="palette" aria-hidden="true" class="lucide lucide-palette"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>
     </button>
+    <button id="phone-toggle" class="dev-toggle phone-toggle" type="button" aria-haspopup="dialog" aria-label="Editar o layout do celular" title="Editar o layout do celular">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg>
+    </button>
     <input id="import-file" class="dev-file-input" type="file" accept="application/json,.json">
     <datalist id="pdf-library-list"></datalist>
     <div class="hud-slot" data-slot="left"></div>
@@ -2257,6 +2380,22 @@
     </div>
     <p id="map-status" class="screen-reader-status" aria-live="polite"></p>
 
+    <div id="phone-stage" class="phone-stage" hidden>
+      <div class="phone-bar" role="group" aria-label="Layout do celular">
+        <span class="phone-bar-title">Layout do celular</span>
+        <div class="dev-seg-group" role="group" aria-label="Posição do celular">
+          <button type="button" class="dev-seg is-text" data-phone-layout="portrait" aria-pressed="true">Em pé</button>
+          <button type="button" class="dev-seg is-text" data-phone-layout="landscape" aria-pressed="false">Deitado</button>
+        </div>
+        <button type="button" id="phone-panel" class="dev-btn dev-btn-ghost">Aparência</button>
+        <button type="button" id="phone-exit" class="dev-btn dev-btn-primary">Voltar ao computador</button>
+      </div>
+      <div class="phone-viewport" id="phone-viewport">
+        <div class="phone-slot" id="phone-slot">
+          <div class="phone-device" id="phone-device"><iframe id="phone-frame" name="mapa-preview" title="Prévia do mapa no celular"></iframe></div>
+        </div>
+      </div>
+    </div>
     <div id="dev-overlay" class="dev-overlay" hidden="">
       <div class="dev-modal" role="dialog" aria-modal="true" aria-labelledby="dev-modal-title">
         <button id="dev-modal-close" class="dev-modal-close" type="button" aria-label="Fechar">×</button>
@@ -2465,6 +2604,11 @@
         coreImage: {
           image: "", ratio: 1, shape: "contour", size: 100, text: false,
         },
+        // Enquadramento inicial: como a câmera fica ao abrir o mapa e no
+        // botão de recentrar, em relação ao enquadramento automático. `zoom`
+        // é em % da escala automática; `x` e `y` deslocam o mapa, em % da
+        // largura e da altura da tela (para valer em qualquer tela).
+        frame: { zoom: 100, x: 0, y: 0 },
         // Título do canto superior esquerdo. `color` vazio = automática
         // (clara sobre fundo escuro, tinta sobre fundo claro).
         title: {
@@ -2574,7 +2718,64 @@
         return JSON.parse(JSON.stringify(DEFAULT_THEME));
       }
 
-      let theme = defaultTheme();
+      // O mapa tem três layouts: o do computador (desktopTheme) e dois de
+      // celular, em pé e deitado. Cada layout de celular ou usa o tema do
+      // computador (`same`, o padrão) ou tem um tema próprio, que nasce como
+      // cópia do do computador (newOwnTheme). O tema próprio fica guardado
+      // mesmo com a chave desligada: ligar de novo não o apaga.
+      //
+      // `theme` é sempre o tema em uso: o do layout que a tela mostra e que o
+      // painel de aparência edita — um dos objetos abaixo, e nunca uma cópia,
+      // para que editar nele seja editar no layout.
+      const LAYOUT_KEYS = ["portrait", "landscape"];
+      const LAYOUT_NAMES = { portrait: "Celular em pé", landscape: "Celular deitado" };
+      function freshLayouts() {
+        return { portrait: { same: true, theme: null }, landscape: { same: true, theme: null } };
+      }
+      let desktopTheme = defaultTheme();
+      let layouts = freshLayouts();
+      let theme = desktopTheme;
+
+      // Layout de celular aberto na prévia ("" = fora dela) e o iframe dela.
+      // Dentro do iframe a página sabe que é prévia pelo nome da janela.
+      let editLayout = "";
+      const phoneFrame = document.getElementById("phone-frame");
+      const PREVIEW_NAME = "mapa-preview";
+      const PREVIEW_MSG = "mapa-preview-theme";
+
+      function layoutTheme(key) {
+        const own = layouts[key];
+        return own.same || !own.theme ? desktopTheme : own.theme;
+      }
+
+      function orientationNow() {
+        return window.innerWidth > window.innerHeight ? "landscape" : "portrait";
+      }
+
+      // O tema que vale agora: o do layout em edição; senão, no celular (o
+      // modo compacto, ver applyMetrics), o da posição dele; senão, o do
+      // computador.
+      function pickTheme() {
+        if (editLayout) return layoutTheme(editLayout);
+        if (document.body.classList.contains("is-compact")) return layoutTheme(orientationNow());
+        return desktopTheme;
+      }
+
+      // O tema próprio de um layout de celular parte do do computador. Posição,
+      // afastamento e tamanho dos elementos presos à tela voltam ao de
+      // fábrica do celular (é o que valia até aqui), e só mostrar/esconder
+      // segue o computador; o enquadramento também recomeça do automático.
+      function newOwnTheme() {
+        const copy = JSON.parse(JSON.stringify(desktopTheme));
+        const fresh = defaultTheme();
+        Object.keys(copy.hud).forEach((key) => {
+          const show = copy.hud[key].show;
+          copy.hud[key] = fresh.hud[key];
+          copy.hud[key].show = show;
+        });
+        copy.frame = fresh.frame;
+        return copy;
+      }
 
       // Fontes do tronco, do título, da pesquisa e das marcas de texto. As
       // duas primeiras já vêm do Google Fonts da página; as seis seguintes
@@ -2617,6 +2818,7 @@
         coreText: { size: [12, 44, 1], spacing: [-0.05, 0.3, 0.01], lineHeight: [0.8, 2, 0.05] },
         coreShadow: { transparency: [0, 100, 1], blur: [0, 80, 1], distance: [0, 60, 1], angle: [0, 355, 5] },
         coreImage: { ratio: [0.05, 20, 0.001], size: [30, 300, 1] },
+        frame: { zoom: [50, 200, 1], x: [-50, 50, 1], y: [-50, 50, 1] },
         title: { size: [8, 40, 0.2], spacing: [0, 0.4, 0.01] },
         subtitle: { size: [8, 40, 0.2], spacing: [0, 0.4, 0.01], gap: [-10, 60, 1] },
         // Passo de 0.04 para o padrão (14.08px, os 0.88rem de sempre) cair
@@ -2767,6 +2969,26 @@
         // (hudInsets): se mudaram de lugar ou de tamanho, a câmera
         // reenquadra — a não ser que o tronco já tenha feito isso ao crescer.
         if (!refreshCoreSize() && hudMoved && nodeById.size) autoFit(0);
+        // Enquadramento inicial novo: a câmera volta ao automático e o aplica.
+        const frameSig = JSON.stringify(theme.frame);
+        if (frameSig !== frameApplied) {
+          frameApplied = frameSig;
+          if (nodeById.size) {
+            releaseCameraControl();
+            fitCamera(0);
+          }
+        }
+        syncPreview();
+      }
+
+      let frameApplied = "";
+
+      // A prévia do celular recebe os temas a cada aplicação: é o iframe que
+      // desenha o layout de verdade.
+      function syncPreview() {
+        if (!editLayout || !phoneFrame.contentWindow) return;
+        phoneFrame.contentWindow.postMessage(
+          { type: PREVIEW_MSG, theme: desktopTheme, layouts: layouts }, "*");
       }
 
       // Põe cada elemento preso à tela na vaga escolhida, com o afastamento
@@ -2782,22 +3004,25 @@
       let hudApplied = "";
       function applyHud() {
         const compact = document.body.classList.contains("is-compact");
+        // No celular, o tema do computador deixa a tela se arrumar sozinha;
+        // um layout de celular com edições próprias vale como escrito.
+        const plain = compact && theme === desktopTheme;
         const bySlot = {};
         HUD_ORDER.forEach((key) => {
           const cfg = theme.hud[key];
           const el = hudItems[key];
-          const position = compact ? DEFAULT_THEME.hud[key].position : cfg.position;
+          const position = plain ? DEFAULT_THEME.hud[key].position : cfg.position;
           el.classList.toggle("is-off", !cfg.show);
           // zoom, e não transform: scale — o zoom muda o tamanho que o
           // elemento ocupa, e a pilha da vaga abre espaço para ele.
-          const zoom = !compact && cfg.scale ? cfg.scale / 100 : 1;
+          const zoom = !plain && cfg.scale ? cfg.scale / 100 : 1;
           el.style.zoom = zoom !== 1 ? String(zoom) : "";
           // Afastar da borda é margem nos lados que dão para a borda da
           // vaga; na vaga do centro não há borda, e ele não faz nada. O
           // zoom amplia a margem junto, daí a divisão: +30px é 30px na tela
           // em qualquer tamanho.
           el.style.margin = "";
-          if (!compact && cfg.offset) {
+          if (!plain && cfg.offset) {
             SLOT_EDGES[position].forEach((side) => { el.style["margin" + side] = (cfg.offset / zoom) + "px"; });
           }
           (bySlot[position] = bySlot[position] || []).push(el);
@@ -2813,7 +3038,7 @@
           }
         });
         const signature = JSON.stringify([
-          compact, theme.title, theme.subtitle, theme.hud.title, theme.hud.search,
+          compact, plain, theme.title, theme.subtitle, theme.hud.title, theme.hud.search,
           theme.searchText.size, theme.searchHint.size,
         ]);
         const changed = signature !== hudApplied;
@@ -3757,8 +3982,9 @@
       // várias marcas d'água (a `watermark` única da v4 vira a primeira da
       // lista), marcas de texto e fontes do Google Fonts. Arquivos antigos
       // abrem normalmente — o que falta neles volta ao padrão no saneamento.
-      // v6: imagem no tronco (coreImage).
-      const MAP_FORMAT_VERSION = 6;
+      // v6: imagem no tronco (coreImage). v7: layouts do celular (`layouts`,
+      // em pé e deitado) e enquadramento inicial (`frame`, no tema).
+      const MAP_FORMAT_VERSION = 7;
 
       function serializeNode(node) {
         return {
@@ -3985,7 +4211,7 @@
             if (pair.node || pair.sub) clean.branchText[id] = pair;
           });
         }
-        ["coreText", "coreShadow", "coreImage", "title", "subtitle", "searchBox", "searchText", "searchHint"].forEach((group) => {
+        ["coreText", "coreShadow", "coreImage", "frame", "title", "subtitle", "searchBox", "searchText", "searchHint"].forEach((group) => {
           const src = raw[group];
           if (!src || typeof src !== "object") return;
           Object.keys(clean[group]).forEach((key) => {
@@ -4011,6 +4237,62 @@
             });
           });
         }
+        return clean;
+      }
+
+      // O tema próprio de um layout nasce como cópia do do computador, e as
+      // imagens (marcas d'água e tronco) são centenas de KB cada: as que
+      // continuam iguais às do computador vão como referência, e não
+      // duplicadas no arquivo. sanitizeLayouts() as resolve na volta.
+      const SHARED_IMAGE = "@desktop";
+
+      function serializeLayouts() {
+        const out = {};
+        LAYOUT_KEYS.forEach((key) => {
+          const own = layouts[key];
+          let own_theme = null;
+          if (own.theme) {
+            own_theme = Object.assign({}, own.theme);
+            own_theme.watermarks = own.theme.watermarks.map((wm) => {
+              const base = desktopTheme.watermarks.find((d) => d.id === wm.id);
+              return base && wm.image && base.image === wm.image
+                ? Object.assign({}, wm, { image: SHARED_IMAGE }) : wm;
+            });
+            if (own.theme.coreImage.image && own.theme.coreImage.image === desktopTheme.coreImage.image) {
+              own_theme.coreImage = Object.assign({}, own.theme.coreImage, { image: SHARED_IMAGE });
+            }
+          }
+          out[key] = { same: own.same, theme: own_theme };
+        });
+        return out;
+      }
+
+      // Devolve às referências as imagens do computador. Um tema vindo de
+      // fora é dado, e não código: só o que é o marcador exato é trocado.
+      function resolveSharedImages(rawTheme) {
+        if (Array.isArray(rawTheme.watermarks)) {
+          rawTheme.watermarks.forEach((wm) => {
+            if (!wm || typeof wm !== "object" || wm.image !== SHARED_IMAGE) return;
+            const base = desktopTheme.watermarks.find((d) => d.id === wm.id);
+            wm.image = base ? base.image : "";
+          });
+        }
+        const ci = rawTheme.coreImage;
+        if (ci && typeof ci === "object" && ci.image === SHARED_IMAGE) ci.image = desktopTheme.coreImage.image;
+      }
+
+      // Os layouts de celular de um arquivo. Sem tema próprio válido, o
+      // layout segue o do computador; um arquivo antigo (até a v6) não os tem.
+      function sanitizeLayouts(raw) {
+        const clean = freshLayouts();
+        if (!raw || typeof raw !== "object") return clean;
+        LAYOUT_KEYS.forEach((key) => {
+          const src = raw[key];
+          if (!src || typeof src !== "object" || !src.theme || typeof src.theme !== "object") return;
+          resolveSharedImages(src.theme);
+          clean[key].theme = sanitizeTheme(src.theme);
+          clean[key].same = src.same !== false;
+        });
         return clean;
       }
 
@@ -4065,7 +4347,8 @@
           format: MAP_FORMAT,
           version: MAP_FORMAT_VERSION,
           exportedAt: new Date().toISOString(),
-          theme: theme,
+          theme: desktopTheme,
+          layouts: serializeLayouts(),
           root: serializeNode(treeData.root),
         };
       }
@@ -4074,7 +4357,9 @@
       // da v2 não têm esse campo e devem manter as cores de quem importa.
       function adoptTheme(envelope) {
         if (!envelope || typeof envelope !== "object" || !envelope.theme) return false;
-        theme = sanitizeTheme(envelope.theme);
+        desktopTheme = sanitizeTheme(envelope.theme);
+        layouts = sanitizeLayouts(envelope.layouts);
+        theme = pickTheme();
         applyTheme();
         return true;
       }
@@ -5055,14 +5340,16 @@
         const inset = hudInsets();
         const vw = viewport.clientWidth;
         const vh = viewport.clientHeight - inset.top - inset.bottom;
-        const scale = clamp(
+        const fr = theme.frame;
+        const fit = clamp(
           Math.min(vw / (box.r - box.l), vh / (box.b - box.t)),
           minScale(),
           FIT_MAX_SCALE
         );
+        const scale = clamp(fit * fr.zoom / 100, minScale(), MAX_SCALE);
         camera.scale = scale;
-        camera.x = vw / 2 - ((box.l + box.r) / 2) * scale;
-        camera.y = inset.top + vh / 2 - ((box.t + box.b) / 2) * scale;
+        camera.x = vw / 2 - ((box.l + box.r) / 2) * scale + fr.x / 100 * vw;
+        camera.y = inset.top + vh / 2 - ((box.t + box.b) / 2) * scale + fr.y / 100 * vh;
         applyCamera(ms);
       }
 
@@ -5854,9 +6141,18 @@
       function handleViewportChange() {
         setViewportUnit();
         const metricsChanged = applyMetrics();
-        // Entrar ou sair do modo celular troca as vagas dos elementos presos
-        // à tela (no celular valem as de fábrica).
-        if (metricsChanged) applyHud();
+        // Entrar ou sair do modo celular, ou girar o aparelho, pode trocar o
+        // tema em uso; applyTheme já refaz tudo o que depende dele.
+        const picked = pickTheme();
+        if (picked !== theme) {
+          theme = picked;
+          applyTheme();
+        } else if (metricsChanged) {
+          // Sem tema novo, entrar ou sair do modo celular ainda troca as vagas
+          // dos elementos presos à tela (no celular valem as de fábrica).
+          applyHud();
+        }
+        if (editLayout) layoutPhoneStage();
         // A medida dos textos das marcas d'água muda um fio com a tela.
         if (theme.watermarks.some(isTextMark)) applyWatermarks();
         // Sempre depois das medidas: o piso do círculo vem delas.
@@ -6218,11 +6514,13 @@
 
       function openDevOverlay() {
         devOverlay.hidden = false;
+        if (editLayout) layoutPhoneStage();
       }
 
       function closeDevOverlay() {
         devOverlay.hidden = true;
         devOverlay.classList.remove("is-side");
+        if (editLayout) layoutPhoneStage();
       }
 
       function setDevMode(unlocked) {
@@ -6639,10 +6937,11 @@
         return result;
       }
 
-      function exportHtml(name) {
-        const filename = exportFileName(name, ".html");
+      // A página inteira como arquivo, com o mapa de agora no seed. É o que
+      // a exportação baixa e o que a prévia do celular abre num iframe.
+      function capturePageHtml() {
         const seedEl = document.getElementById("map-seed");
-        const html = withPristineDom(() => {
+        return withPristineDom(() => {
           // Escapar "<" impede que um rótulo contendo uma tag de fechamento
           // de script encerre o bloco do seed e quebre o arquivo exportado —
           // o parser HTML fecha no primeiro que encontrar, mesmo dentro de
@@ -6650,6 +6949,11 @@
           seedEl.textContent = JSON.stringify(buildEnvelope()).replace(/</g, "\\u003c");
           return "<!doctype html>\n" + document.documentElement.outerHTML;
         });
+      }
+
+      function exportHtml(name) {
+        const filename = exportFileName(name, ".html");
+        const html = capturePageHtml();
 
         unsavedChanges = false;   // antes do download, como em exportJson
         downloadFile(filename, "text/html;charset=utf-8", html);
@@ -6759,7 +7063,7 @@
         titulo: ["title", "subtitle"],
         pesquisa: ["searchBox", "searchText", "searchHint"],
         marca: ["watermarks"],
-        tela: ["hud"],
+        tela: ["hud", "frame"],
       };
 
       let themeTab = "cores";
@@ -6861,6 +7165,9 @@
         "coreShadow.distance": (v) => v + "px",
         "coreShadow.angle": (v) => ARROWS[Math.round(v / 45) % 8] + " " + v + "°",
         "coreImage.size": (v) => v + "%",
+        "frame.zoom": (v) => v + "%",
+        "frame.x": (v) => signedPercent(v, "←", "→"),
+        "frame.y": (v) => signedPercent(v, "↑", "↓"),
         "title.size": (v) => decimal(v) + "px",
         "title.spacing": (v) => Math.round(v * 100) + "%",
         "subtitle.size": (v) => decimal(v) + "px",
@@ -7614,9 +7921,18 @@
             </div>
           `;
         }).join("");
+        const own = !!editLayout && !layouts[editLayout].same;
         return `
-          <p class="dev-data-hint">Posição, distância e tamanho valem no computador; no celular a tela se arruma sozinha, como sempre. Esconder vale nos dois. Quem divide o mesmo lugar se empilha. O cadeado e os botões do modo dev ficam sempre no canto de cima.</p>
+          <p class="dev-data-hint">${own
+            ? "Posição, distância e tamanho valem neste layout do celular."
+            : "Posição, distância e tamanho valem no computador; no celular a tela se arruma sozinha, como sempre, a não ser que o layout do celular tenha edições próprias (botão do celular, no topo)."} Esconder vale nos dois. Quem divide o mesmo lugar se empilha. O cadeado e os botões do modo dev ficam sempre no canto de cima.</p>
           ${blocks}
+
+          ${sectionTitle("Enquadramento inicial")}
+          <p class="dev-data-hint" style="margin:0 0 0.2rem;">Como o mapa aparece ao abrir e no botão de recentrar, a partir do enquadramento automático. O deslocamento é em % da largura e da altura da tela.</p>
+          ${rangeRowMarkup("frame.zoom", "Zoom")}
+          ${rangeRowMarkup("frame.x", "Deslocar na horizontal")}
+          ${rangeRowMarkup("frame.y", "Deslocar na vertical")}
         `;
       }
 
@@ -7630,6 +7946,23 @@
         tela: tabTelaMarkup,
       };
 
+      // Na prévia do celular: qual layout o painel edita, e a chave que o faz
+      // igual ao do computador.
+      function layoutBarMarkup() {
+        if (!editLayout) return "";
+        const own = layouts[editLayout];
+        const where = editLayout === "portrait" ? "em pé" : "deitado";
+        return `
+          <div class="dev-layout-bar">
+            <p><strong>Editando: ${LAYOUT_NAMES[editLayout]}</strong></p>
+            <label class="dev-check"><input type="checkbox" data-layout-same${own.same ? " checked" : ""} /> Usar as mesmas edições do computador</label>
+            <p class="dev-data-hint">${own.same
+              ? "Este layout mostra a aparência do computador, com a tela arrumada como sempre no celular. Desligue a chave para dar a ele edições próprias, que começam como uma cópia das do computador."
+              : "Este layout tem edições próprias: valem só no celular " + where + ". Ligar a chave de novo volta à aparência do computador, sem apagar o que foi editado aqui."}</p>
+          </div>
+        `;
+      }
+
       // `focusSelector` devolve o foco a um controle equivalente depois de
       // redesenhar: trocar de aba ou restaurar não pode jogar o foco do
       // teclado para o começo da página.
@@ -7638,12 +7971,16 @@
         const tabs = THEME_TABS.map((tab) =>
           `<button type="button" class="dev-tab" data-theme-tab="${tab.id}" aria-pressed="${tab.id === themeTab}">${escapeHtml(tab.label)}</button>`
         ).join("");
+        const locked = !!editLayout && layouts[editLayout].same;
         devModalBody.innerHTML = `
           <h2 id="dev-modal-title" class="dev-modal-title">Aparência do mapa</h2>
           <p class="dev-data-hint">Vale para todo mundo que abrir esta página e vai junto nas exportações.</p>
+          ${layoutBarMarkup()}
           <div class="dev-tabs" role="group" aria-label="Partes da aparência">${tabs}</div>
-          ${TAB_MARKUP[themeTab]()}
-          <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="reset-tab" style="margin-top:1rem;width:100%;">Restaurar o padrão desta aba</button>
+          <div class="dev-layout-body"${locked ? " inert" : ""}>
+            ${TAB_MARKUP[themeTab]()}
+            <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="reset-tab" style="margin-top:1rem;width:100%;">Restaurar o padrão desta aba</button>
+          </div>
         `;
         // As miniaturas recebem o src depois: data URLs de centenas de KB
         // não passam pelo innerHTML.
@@ -7761,6 +8098,10 @@
         }
         if (el.id === "theme-core-file") {
           if (event.type === "change") takeCoreImageFile(el);
+          return;
+        }
+        if (el.hasAttribute("data-layout-same")) {
+          if (event.type === "change") setLayoutSame(el.checked);
           return;
         }
         if (el.tagName === "BUTTON" || !el.dataset || !el.dataset.bind) return;
@@ -8066,6 +8407,136 @@
           });
       }
 
+      // --- Editar o layout do celular ---------------------------------------
+      // Uma prévia em tela cheia, com o mapa dentro de um iframe do tamanho
+      // de um celular (em pé ou deitado). O iframe é uma cópia da página
+      // (capturePageHtml) e sabe que é prévia pelo nome da janela; como ele
+      // mede a tela dele, o layout do celular — medidas, unidades vmin,
+      // rotação — sai igual ao do aparelho. O painel de aparência edita o
+      // tema do layout escolhido e empurra os temas para lá a cada mudança
+      // (syncPreview); é o iframe que escolhe o tema pela própria tela.
+      const phoneToggle = document.getElementById("phone-toggle");
+      const phoneStage = document.getElementById("phone-stage");
+      const phoneViewport = document.getElementById("phone-viewport");
+      const phoneSlot = document.getElementById("phone-slot");
+      const phoneDevice = document.getElementById("phone-device");
+      const PHONE_SIZES = { portrait: { w: 390, h: 844 }, landscape: { w: 844, h: 390 } };
+      const PANEL_ROOM = 450;   // a folha do painel (430px) e a margem dela
+
+      function enterPhoneEdit() {
+        if (editLayout || !devUnlocked) return;
+        const html = capturePageHtml();
+        editLayout = "portrait";
+        document.body.classList.add("is-phone-edit");
+        theme = layoutTheme(editLayout);
+        phoneStage.hidden = false;
+        phoneFrame.srcdoc = html;
+        applyTheme();
+        renderThemeForm();
+        openDevOverlay();
+        paintPhoneBar();
+        layoutPhoneStage();
+        status.textContent = "Editando o layout do celular.";
+      }
+
+      function exitPhoneEdit() {
+        if (!editLayout) return;
+        editLayout = "";
+        document.body.classList.remove("is-phone-edit");
+        phoneStage.hidden = true;
+        phoneFrame.srcdoc = "";
+        theme = pickTheme();
+        applyTheme();
+        if (!devOverlay.hidden) renderThemeForm();
+        status.textContent = "De volta ao layout do computador.";
+      }
+
+      function setEditLayout(key) {
+        if (!editLayout || editLayout === key || !hasOwn(PHONE_SIZES, key)) return;
+        editLayout = key;
+        theme = layoutTheme(key);
+        applyTheme();
+        paintPhoneBar();
+        layoutPhoneStage();
+        if (!devOverlay.hidden) renderThemeForm();
+        status.textContent = "Editando: " + LAYOUT_NAMES[key] + ".";
+      }
+
+      // A chave "usar as mesmas edições do computador" do layout em edição.
+      // Desligar pela primeira vez cria o tema próprio, como cópia do do
+      // computador; ligar de novo guarda o que foi editado.
+      function setLayoutSame(same) {
+        const own = editLayout && layouts[editLayout];
+        if (!own) return;
+        if (!same && !own.theme) own.theme = newOwnTheme();
+        own.same = same;
+        theme = layoutTheme(editLayout);
+        applyTheme();
+        markChanged();
+        renderThemeForm('[data-layout-same]');
+        status.textContent = same
+          ? LAYOUT_NAMES[editLayout] + " agora usa as edições do computador."
+          : LAYOUT_NAMES[editLayout] + " agora tem edições próprias.";
+      }
+
+      function paintPhoneBar() {
+        phoneStage.querySelectorAll("[data-phone-layout]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", String(btn.dataset.phoneLayout === editLayout));
+        });
+      }
+
+      // Põe o aparelho no meio do espaço que sobra (o painel aberto tira a
+      // largura dele) e o reduz, se preciso, para caber. A moldura tem o
+      // tamanho real do celular, e o que muda é só a escala com que ela é
+      // mostrada: o iframe continua medindo 390x844 por dentro.
+      function layoutPhoneStage() {
+        if (!editLayout || phoneStage.hidden) return;
+        const size = PHONE_SIZES[editLayout];
+        const panelOpen = !devOverlay.hidden && devOverlay.classList.contains("is-side")
+          && !document.body.classList.contains("is-compact");
+        phoneStage.style.paddingRight = panelOpen ? PANEL_ROOM + "px" : "";
+        const cs = getComputedStyle(phoneViewport);
+        const availW = phoneViewport.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        const availH = phoneViewport.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        const k = clamp(Math.min(availW / size.w, availH / size.h), 0.2, 1);
+        phoneSlot.style.width = Math.round(size.w * k) + "px";
+        phoneSlot.style.height = Math.round(size.h * k) + "px";
+        phoneDevice.style.width = size.w + "px";
+        phoneDevice.style.height = size.h + "px";
+        phoneDevice.style.transform = k < 1 ? "scale(" + k + ")" : "";
+      }
+
+      phoneToggle.addEventListener("click", () => {
+        if (devUnlocked) enterPhoneEdit();
+      });
+      phoneStage.addEventListener("click", (event) => {
+        const layoutBtn = event.target.closest("[data-phone-layout]");
+        if (layoutBtn) {
+          setEditLayout(layoutBtn.dataset.phoneLayout);
+        } else if (event.target.closest("#phone-exit")) {
+          exitPhoneEdit();
+        } else if (event.target.closest("#phone-panel")) {
+          renderThemeForm();
+          openDevOverlay();
+        }
+      });
+      // O iframe carrega depois de receber o srcdoc: só então ouve os temas.
+      phoneFrame.addEventListener("load", syncPreview);
+
+      // Do lado de dentro da prévia: recebe os temas do editor e escolhe o
+      // seu pela própria tela (pickTheme), como um celular de verdade.
+      if (window.name === PREVIEW_NAME && window.parent !== window) {
+        document.body.classList.add("is-preview");
+        window.addEventListener("message", (event) => {
+          const data = event.data;
+          if (event.source !== window.parent || !data || data.type !== PREVIEW_MSG || !data.theme) return;
+          desktopTheme = sanitizeTheme(data.theme);
+          layouts = sanitizeLayouts(data.layouts);
+          theme = pickTheme();
+          applyTheme();
+        });
+      }
+
       themeToggle.addEventListener("click", () => {
         if (!devUnlocked) return;
         renderThemeForm();
@@ -8082,7 +8553,11 @@
       const seedRoot = readEnvelope(seedEnvelope);
       if (seedRoot) {
         adoptRoot(seedRoot);
-        if (seedEnvelope.theme) theme = sanitizeTheme(seedEnvelope.theme);
+        if (seedEnvelope.theme) {
+          desktopTheme = sanitizeTheme(seedEnvelope.theme);
+          layouts = sanitizeLayouts(seedEnvelope.layouts);
+          theme = desktopTheme;
+        }
       }
       normalizeTypes(treeData.root);
 
@@ -8093,6 +8568,7 @@
       // precisam dele depois: mountNodeEl() já os monta com colorFor().
       setViewportUnit();
       applyMetrics();
+      theme = pickTheme();   // no celular, o layout dele
       applyTheme();
 
       render();
