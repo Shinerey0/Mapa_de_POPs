@@ -429,6 +429,80 @@
       text-underline-offset: 0.12em;
     }
 
+    /* --- Imagem no tronco (applyCoreImage) ------------------------------
+       No círculo, a imagem o preenche, cortada pela borda redonda. No
+       contorno ela É o tronco: a caixa ganha a proporção da imagem, perde
+       o fundo e o anel, e a sombra vira um drop-shadow na própria imagem
+       (applyCoreShadow), que acompanha só as partes opacas. O rótulo
+       ganha position para ser pintado por cima da imagem, que é absoluta:
+       sem isso ela o cobriria. */
+    .core-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .core-button.has-image .node-label {
+      position: relative;
+    }
+
+    .core-button.is-contour {
+      width: var(--core-w, 168px);
+      height: var(--core-h, 168px);
+      min-height: 0;
+      border-radius: 0;
+    }
+
+    .core-button.is-contour .core-image {
+      object-fit: fill;
+    }
+
+    .core-button.is-contour::after {
+      display: none;
+    }
+
+    /* Os botões do modo dev do tronco saem do canto da caixa, que no
+       contorno pode ser vazio e onde os galhos, encaixados na silhueta,
+       podem chegar: ficam acima da imagem, ao centro. Ali nenhum setor
+       entra — toda caixa de setor começa a M.coreGap do centro, para um
+       lado ou para o outro. */
+    .core-button.is-contour ~ .dev-node-controls {
+      top: -34px;
+      right: 50%;
+      transform: translate(50%, -4px);
+    }
+
+    body.dev-mode .core-button.is-contour ~ .dev-node-controls {
+      transform: translate(50%, 0);
+    }
+
+    /* Sobre a parte transparente do contorno o ponteiro não está no
+       tronco: nada de realce, e o cursor volta a ser o de arrastar o mapa. */
+    .core-button.is-contour.is-miss {
+      cursor: inherit;
+    }
+
+    .core-button.is-contour.is-miss:hover {
+      transform: none;
+      filter: none;
+    }
+
+    /* Texto desligado na aba Tronco: sai da tela, mas continua sendo o
+       nome do botão para o leitor de tela. */
+    .core-button.is-text-hidden .node-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+
     .instruction {
       color: rgba(235, 243, 255, 0.76);
       font-size: 0.82rem;
@@ -1454,6 +1528,19 @@
       font-size: 0.8rem;
     }
 
+    /* Aba Tronco: a miniatura da imagem ao lado dos botões dela. */
+    .dev-core-image {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .dev-core-image .dev-inline-actions {
+      flex: 1 1 auto;
+      margin-bottom: 0;
+    }
+
     /* Seções recolhíveis do editor de texto (fundo, contorno, sombra). */
     .dev-fold {
       margin-top: 0.45rem;
@@ -2260,8 +2347,9 @@ META 2</span> </button>
       // desalinharia caixa e conector: o layout mede a caixa pelo
       // offsetWidth (que vem do CSS) mas dá o passo pela constante, então
       // os dois lados têm de sair do mesmo lugar. applyMetrics() escreve
-      // as variáveis que o CSS lê; o raio do tronco (ROOT.r) é de
-      // fitCoreSize(), porque depende também do texto formatado.
+      // as variáveis que o CSS lê; o tamanho do tronco (ROOT.hw e ROOT.hh)
+      // é de fitCoreSize(), porque depende também do texto formatado e da
+      // imagem.
       const METRICS = {
         wide: {
           nodeW: 214, coreR: 84, nodeMinH: 70, subMinH: 54, subMaxH: 320,
@@ -2283,7 +2371,10 @@ META 2</span> </button>
       const SHORT_AT = 460;        // altura idem — é o celular deitado
       let M = METRICS.wide;
 
-      const ROOT = { x: 0, y: 0, r: M.coreR };
+      // Meia-largura e meia-altura do tronco: iguais no círculo, as da
+      // imagem no contorno. `shape` diz o que está dentro dessa caixa (ver
+      // fitCoreSize), para quem desenha as linhas e encaixa os galhos.
+      const ROOT = { x: 0, y: 0, hw: M.coreR, hh: M.coreR, shape: "circle" };
       const WORLD_MARGIN = 160;
       const TWEEN_MS = 450;        // duração da reacomodação do mapa
 
@@ -2361,6 +2452,19 @@ META 2</span> </button>
         // (0 = direita, 90 = baixo). O padrão é a sombra de antes.
         coreShadow: {
           on: true, color: "#02091f", transparency: 62, blur: 45, distance: 22, angle: 90,
+        },
+        // Imagem no lugar do círculo do tronco; `image` vazio = o círculo de
+        // sempre. `shape` "contour" faz do contorno da imagem o formato do
+        // tronco — as partes transparentes ficam de fora, e as linhas, o
+        // clique e o encaixe dos galhos seguem o desenho —; "circle" a põe
+        // dentro do círculo, cortada. O envio escolhe pela transparência
+        // da imagem (ver coreAutoShape). `size` é em % do círculo padrão: a
+        // imagem ocupa a área do quadrado em volta dele, e o celular a
+        // reduz junto com o círculo. `text` mostra o rótulo por cima dela.
+        // A imagem vai embutida como data URL, e `ratio` (largura/altura)
+        // é guardado no envio, como nas marcas d'água.
+        coreImage: {
+          image: "", ratio: 1, shape: "contour", size: 100, text: false,
         },
         // Título do canto superior esquerdo. `color` vazio = automática
         // (clara sobre fundo escuro, tinta sobre fundo claro).
@@ -2513,6 +2617,7 @@ META 2</span> </button>
       const LIMITS = {
         coreText: { size: [12, 44, 1], spacing: [-0.05, 0.3, 0.01], lineHeight: [0.8, 2, 0.05] },
         coreShadow: { transparency: [0, 100, 1], blur: [0, 80, 1], distance: [0, 60, 1], angle: [0, 355, 5] },
+        coreImage: { ratio: [0.05, 20, 0.001], size: [30, 300, 1] },
         title: { size: [8, 40, 0.2], spacing: [0, 0.4, 0.01] },
         subtitle: { size: [8, 40, 0.2], spacing: [0, 0.4, 0.01], gap: [-10, 60, 1] },
         // Passo de 0.04 para o padrão (14.08px, os 0.88rem de sempre) cair
@@ -2646,11 +2751,11 @@ META 2</span> </button>
         rootStyle.setProperty("--blob-b", rgbCss(hexToRgb(theme.blobB), BLOB_B_ALPHA));
         document.body.classList.toggle("no-blobs", !theme.blobs);
 
-        const coreA = hexToRgb(theme.core);
-        const coreB = hexToRgb(theme.coreEnd);
-        coreButton.style.background =
-          "linear-gradient(135deg, " + rgbCss(coreA) + ", " + rgbCss(coreB) + ")";
-        applyCoreText(textOver(mixRgb(coreA, coreB, 0.5)));
+        // No contorno o tronco não tem fundo: é só a imagem.
+        coreButton.style.background = coreIsContour() ? "none"
+          : "linear-gradient(135deg, " + rgbCss(hexToRgb(theme.core)) + ", " + rgbCss(hexToRgb(theme.coreEnd)) + ")";
+        applyCoreImage();
+        applyCoreText(textOver(coreTextBackdrop()));
         applyCoreShadow();
         loadFonts(false);
         applyTitle();
@@ -2747,21 +2852,35 @@ META 2</span> </button>
       const CORE_BASE_REACH = 18 / 22;
       const CORE_BASE_ALPHA = 0.13 / 0.38;
 
+      // No contorno, as mesmas duas camadas viram drop-shadow na imagem, e
+      // o botão fica sem box-shadow: a dele seria a do retângulo em volta.
+      // A ordem dos filtros é a das camadas: o primeiro fica por cima. O
+      // desfoque do drop-shadow é o desvio-padrão do borrão, e o do
+      // box-shadow, o dobro dele: no contorno vai a metade, para o mesmo
+      // valor do painel dar a mesma sombra nos dois formatos.
       function applyCoreShadow() {
         const sh = theme.coreShadow;
-        if (!sh.on) {
-          coreButton.style.boxShadow = "none";
-          return;
+        const contour = coreIsContour();
+        let layers = [];
+        if (sh.on) {
+          const rad = sh.angle * Math.PI / 180;
+          const dx = Math.cos(rad) * sh.distance;
+          const dy = Math.sin(rad) * sh.distance;
+          const rgb = hexToRgb(sh.color);
+          const alpha = (100 - sh.transparency) / 100;
+          const blur = contour ? sh.blur / 2 : sh.blur;
+          layers = [
+            Math.round(dx * CORE_BASE_REACH) + "px " + Math.round(dy * CORE_BASE_REACH) + "px 0 "
+              + rgbCss(rgb, Math.round(alpha * CORE_BASE_ALPHA * 100) / 100),
+            Math.round(dx) + "px " + Math.round(dy) + "px " + blur + "px " + rgbCss(rgb, alpha),
+          ];
         }
-        const rad = sh.angle * Math.PI / 180;
-        const dx = Math.cos(rad) * sh.distance;
-        const dy = Math.sin(rad) * sh.distance;
-        const rgb = hexToRgb(sh.color);
-        const alpha = (100 - sh.transparency) / 100;
-        const base = Math.round(dx * CORE_BASE_REACH) + "px " + Math.round(dy * CORE_BASE_REACH) + "px 0 "
-          + rgbCss(rgb, Math.round(alpha * CORE_BASE_ALPHA * 100) / 100);
-        const soft = Math.round(dx) + "px " + Math.round(dy) + "px " + sh.blur + "px " + rgbCss(rgb, alpha);
-        coreButton.style.boxShadow = base + ", " + soft;
+        coreButton.style.boxShadow = !contour && layers.length ? layers.join(", ") : "none";
+        if (coreImageEl) {
+          coreImageEl.style.filter = contour
+            ? layers.map((layer) => "drop-shadow(" + layer + ")").join(" ")
+            : "";
+        }
       }
 
       // Fonte, peso, estilo, caixa, espaçamento e cor de um texto que o
@@ -3162,36 +3281,66 @@ META 2</span> </button>
       //
       // Crescer pode fazer o texto requebrar em menos linhas e mais longas,
       // que pedem outro tamanho; por isso a conta se repete até assentar.
-      // Quem manda na posição do mapa é ROOT.r, então ele muda junto; a
-      // função devolve true quando o raio mudou, e quem chama decide se o
-      // mapa precisa se reacomodar.
       //
-      // A variável do CSS é escrita sempre que diverge do que foi escrito
-      // por último, e não só quando o raio muda: um HTML exportado no
-      // celular chega com o --core-size de lá embutido no <html>.
-      let coreSizeWritten = 0;
+      // Com imagem, o piso do círculo é o tamanho escolhido para ela, e
+      // com o texto desligado não há o que medir. No contorno não há
+      // círculo: a caixa é a da imagem (coreImageBox), e o texto, se
+      // aparecer, vai por cima sem mexer nela.
+      //
+      // Quem manda na posição do mapa é ROOT (a meia-largura, a
+      // meia-altura e o que há dentro da caixa), então ele muda junto; a
+      // função devolve true quando algo dele mudou, e quem chama decide se
+      // o mapa precisa se reacomodar. `shape` entra na conta porque trocar
+      // o círculo pelo contorno do mesmo tamanho, ou a grade do contorno
+      // ficar pronta, muda onde as linhas encostam sem mudar a caixa.
+      //
+      // As variáveis do CSS são escritas sempre que divergem do que foi
+      // escrito por último, e não só quando a caixa muda: um HTML exportado
+      // no celular chega com o --core-size de lá embutido no <html>.
+      let coreSizeWritten = "";
       function fitCoreSize() {
-        const base = M.coreR * 2;
-        const max = base * 3;
-        const s = coreButton.style;
-        let size = base;
-        for (let i = 0; i < 24; i += 1) {
-          // Inline só durante a medição: mexer na variável do :root a cada
-          // tentativa recalcularia o estilo da página inteira.
-          s.width = size + "px";
-          s.minHeight = size + "px";
-          const need = Math.ceil(2 * (coreTextReach() + M.coreTextPad));
-          if (need <= size || size >= max) break;
-          size = Math.min(max, Math.max(size + 2, need));
+        const css = document.documentElement.style;
+        let w;
+        let h;
+        if (coreIsContour()) {
+          const box = coreImageBox();
+          w = box.w;
+          h = box.h;
+          if (coreSizeWritten !== w + "x" + h) {
+            css.setProperty("--core-w", w + "px");
+            css.setProperty("--core-h", h + "px");
+            coreSizeWritten = w + "x" + h;
+          }
+        } else {
+          const base = theme.coreImage.image ? coreImageSide() : M.coreR * 2;
+          const max = base * 3;
+          const s = coreButton.style;
+          let size = base;
+          if (!theme.coreImage.image || theme.coreImage.text) {
+            for (let i = 0; i < 24; i += 1) {
+              // Inline só durante a medição: mexer na variável do :root a cada
+              // tentativa recalcularia o estilo da página inteira.
+              s.width = size + "px";
+              s.minHeight = size + "px";
+              const need = Math.ceil(2 * (coreTextReach() + M.coreTextPad));
+              if (need <= size || size >= max) break;
+              size = Math.min(max, Math.max(size + 2, need));
+            }
+            s.width = "";
+            s.minHeight = "";
+          }
+          if (coreSizeWritten !== String(size)) {
+            css.setProperty("--core-size", size + "px");
+            coreSizeWritten = String(size);
+          }
+          w = size;
+          h = size;
         }
-        s.width = "";
-        s.minHeight = "";
-        if (coreSizeWritten !== size) {
-          document.documentElement.style.setProperty("--core-size", size + "px");
-          coreSizeWritten = size;
-        }
-        if (ROOT.r === size / 2) return false;
-        ROOT.r = size / 2;
+        const shape = !coreIsContour() ? "circle" : coreMask || "box";
+        if (ROOT.hw === w / 2 && ROOT.hh === h / 2 && ROOT.shape === shape) return false;
+        ROOT.hw = w / 2;
+        ROOT.hh = h / 2;
+        ROOT.shape = shape;
         return true;
       }
 
@@ -3216,15 +3365,264 @@ META 2</span> </button>
         return reach;
       }
 
-      // Depois de mexer no rótulo do tronco: se o círculo mudou de tamanho,
-      // o mapa se reacomoda em volta dele. Antes do primeiro render não há
-      // nada montado para mover — o render já sai com o raio novo. Devolve
-      // true quando reacomodou (e, com isso, já reenquadrou a câmera).
+      // Depois de mexer no rótulo ou na imagem do tronco: se ele mudou de
+      // tamanho ou de formato, o mapa se reacomoda em volta dele. Antes do
+      // primeiro render não há nada montado para mover — o render já sai
+      // com o tronco novo. Devolve true quando reacomodou (e, com isso, já
+      // reenquadrou a câmera).
       function refreshCoreSize() {
         if (!fitCoreSize() || !nodeById.size) return false;
         relayout(0);
         autoFit(0);
         return true;
+      }
+
+      // --- Imagem do tronco ---------------------------------------------------
+      // Um <img> dentro do botão do tronco, criado na primeira imagem e
+      // guardado: o tema é reaplicado a cada quadro de um arrasto no painel,
+      // e o src (centenas de KB) só é reescrito quando a imagem muda. Sem
+      // imagem ele sai do botão, e a data URL vai embora junto.
+      let coreImageEl = null;
+      let coreImageShown = "";
+
+      function coreIsContour() {
+        return !!theme.coreImage.image && theme.coreImage.shape === "contour";
+      }
+
+      // O lado do quadrado que a imagem ocupa: `size` % do círculo padrão,
+      // que no celular já é menor (M.coreR).
+      function coreImageSide() {
+        return Math.round(M.coreR * 2 * theme.coreImage.size / 100);
+      }
+
+      // A caixa da imagem no contorno: a área do quadrado de
+      // coreImageSide(), na proporção da imagem. Um logo largo fica com a
+      // mesma presença de um quadrado, em vez de virar uma tira fina.
+      function coreImageBox() {
+        const side = coreImageSide();
+        const k = Math.sqrt(theme.coreImage.ratio);
+        return { w: Math.max(1, Math.round(side * k)), h: Math.max(1, Math.round(side / k)) };
+      }
+
+      function applyCoreImage() {
+        const ci = theme.coreImage;
+        coreButton.classList.toggle("has-image", !!ci.image);
+        coreButton.classList.toggle("is-contour", coreIsContour());
+        coreButton.classList.toggle("is-text-hidden", !!ci.image && !ci.text);
+        if (!coreIsContour()) coreButton.classList.remove("is-miss");
+        loadCoreMask();
+        if (!ci.image) {
+          if (coreImageEl) coreImageEl.remove();
+          coreImageEl = null;
+          coreImageShown = "";
+          return;
+        }
+        if (!coreImageEl) {
+          coreImageEl = document.createElement("img");
+          coreImageEl.className = "core-image";
+          coreImageEl.alt = "";
+          coreImageEl.draggable = false;
+        }
+        if (coreImageShown !== ci.image) {
+          coreImageEl.setAttribute("src", ci.image);
+          coreImageShown = ci.image;
+        }
+        if (coreImageEl.parentNode !== coreButton) coreButton.insertBefore(coreImageEl, coreButton.firstChild);
+      }
+
+      // A cor por baixo do texto do tronco, de onde sai a cor automática
+      // dele: a média da imagem, quando há uma (e a grade dela já saiu);
+      // senão, o meio do gradiente.
+      function coreTextBackdrop() {
+        if (theme.coreImage.image && coreMask) return coreMask.color;
+        return mixRgb(hexToRgb(theme.core), hexToRgb(theme.coreEnd), 0.5);
+      }
+
+      // --- Contorno da imagem do tronco -------------------------------------
+      // Uma grade da opacidade da imagem, com CORE_MASK_SIDE células no lado
+      // maior, feita uma vez por imagem e fora do tema: ela sai da própria
+      // imagem. É por ela que as linhas encostam no desenho
+      // (coreContourReach), que o clique na parte transparente não conta
+      // (coreMissAt) e que os galhos se encaixam em volta da silhueta
+      // (coreClearance). Os três leem a grade de ROOT.shape, a que
+      // fitCoreSize() assentou junto com a caixa, e não a mais recente:
+      // assim linhas e galhos nunca misturam a caixa de uma imagem com o
+      // desenho de outra. Enquanto a grade não fica pronta — a imagem
+      // ainda está sendo decodificada — ou se não der para ler os pixels,
+      // vale o retângulo da imagem.
+      const CORE_MASK_SIDE = 256;
+      const CORE_SOLID = 128;    // opacidade (0 a 255) a partir da qual é desenho
+      let coreMask = null;       // a grade da imagem atual, quando pronta
+      let coreMaskSrc = "";      // a imagem da grade pronta ou em preparo
+
+      // O que o envio escolhe: com fundo transparente, o contorno; sem, o
+      // círculo.
+      function coreAutoShape(mask) {
+        return mask && mask.hasAlpha ? "contour" : "circle";
+      }
+
+      function coreGrid() {
+        return ROOT.shape && typeof ROOT.shape === "object" ? ROOT.shape : null;
+      }
+
+      function loadCoreMask() {
+        const src = theme.coreImage.image;
+        if (src === coreMaskSrc) return;
+        coreMaskSrc = src;
+        coreMask = null;
+        if (!src) return;
+        buildCoreMask(src, theme.coreImage.ratio).then((mask) => {
+          if (coreMaskSrc !== src) return;   // outra imagem chegou antes
+          coreMask = mask;
+          // A cor automática do texto passa a sair da imagem, e as linhas e
+          // o encaixe dos galhos trocam o retângulo pelo contorno.
+          if (mask) applyTheme();
+        });
+      }
+
+      // Lê a opacidade da imagem numa grade na proporção guardada, a mesma
+      // da caixa na tela. Devolve null quando não dá para ler os pixels
+      // (canvas bloqueado) ou quando não sai desenho nenhum — um SVG sem
+      // tamanho próprio pode chegar vazio ao canvas.
+      function buildCoreMask(src, ratio) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onerror = () => resolve(null);
+          img.onload = () => {
+            const cols = Math.max(1, Math.round(ratio >= 1 ? CORE_MASK_SIDE : CORE_MASK_SIDE * ratio));
+            const rows = Math.max(1, Math.round(ratio >= 1 ? CORE_MASK_SIDE / ratio : CORE_MASK_SIDE));
+            let px;
+            try {
+              const canvas = document.createElement("canvas");
+              canvas.width = cols;
+              canvas.height = rows;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, cols, rows);
+              px = ctx.getImageData(0, 0, cols, rows).data;
+            } catch (e) {
+              resolve(null);
+              return;
+            }
+            const alpha = new Uint8Array(cols * rows);
+            // Primeira e última coluna com desenho em cada linha (−1: nenhuma).
+            const rowMin = new Int16Array(rows).fill(-1);
+            const rowMax = new Int16Array(rows).fill(-1);
+            let solid = 0;
+            let hasAlpha = false;
+            // Média das cores, pesada pela opacidade: é a cor que o texto
+            // por cima da imagem enxerga.
+            let weight = 0;
+            const sum = { r: 0, g: 0, b: 0 };
+            for (let y = 0; y < rows; y += 1) {
+              for (let x = 0; x < cols; x += 1) {
+                const i = y * cols + x;
+                const a = px[i * 4 + 3];
+                alpha[i] = a;
+                if (a < 250) hasAlpha = true;
+                if (a >= CORE_SOLID) {
+                  if (rowMin[y] < 0) rowMin[y] = x;
+                  rowMax[y] = x;
+                  solid += 1;
+                }
+                sum.r += px[i * 4] * a;
+                sum.g += px[i * 4 + 1] * a;
+                sum.b += px[i * 4 + 2] * a;
+                weight += a;
+              }
+            }
+            if (!solid) {
+              resolve(null);
+              return;
+            }
+            resolve({
+              cols: cols, rows: rows, alpha: alpha, rowMin: rowMin, rowMax: rowMax,
+              hasAlpha: hasAlpha,
+              color: { r: sum.r / weight, g: sum.g / weight, b: sum.b / weight },
+            });
+          };
+          img.src = src;
+        });
+      }
+
+      // Se o ponto (u, v) da imagem — frações da largura e da altura — é
+      // desenho.
+      function coreSolidAt(m, u, v) {
+        if (u < 0 || v < 0 || u >= 1 || v >= 1) return false;
+        return m.alpha[Math.floor(v * m.rows) * m.cols + Math.floor(u * m.cols)] >= CORE_SOLID;
+      }
+
+      // O ponto da tela (clientX, clientY) cai fora do desenho do tronco?
+      // Só o contorno tem um fora: no círculo — ou enquanto a grade não
+      // fica pronta —, o botão inteiro é tronco. A conta usa a caixa do
+      // botão no layout (offset*), e não a caixa dele na tela: o realce do
+      // hover levanta e amplia o botão, e o ponteiro parado na borda
+      // entraria e sairia do desenho a cada quadro da animação. O canto e
+      // o zoom da câmera vêm do #core-area, que o hover não mexe.
+      function coreMissAt(clientX, clientY) {
+        const m = coreGrid();
+        if (!m) return false;
+        const box = coreArea.getBoundingClientRect();
+        const k = coreArea.offsetWidth ? box.width / coreArea.offsetWidth : 0;
+        if (!k || !coreButton.offsetWidth || !coreButton.offsetHeight) return false;
+        const x = (clientX - box.left) / k - coreButton.offsetLeft;
+        const y = (clientY - box.top) / k - coreButton.offsetTop;
+        return !coreSolidAt(m, x / coreButton.offsetWidth, y / coreButton.offsetHeight);
+      }
+
+      // Quanto andar do centro do tronco na direção (ux, uy) — um vetor de
+      // tamanho 1 — até a borda do desenho, em px. A procura vem de fora
+      // para dentro, da saída da caixa da imagem até o centro, então a
+      // linha para no contorno mais externo, mesmo com reentrâncias. Se a
+      // direção só atravessa partes transparentes (um vão entre letras), a
+      // linha vai até o centro. Sem a grade, ela para na caixa.
+      function coreContourReach(ux, uy) {
+        const hw = ROOT.hw;
+        const hh = ROOT.hh;
+        const edge = Math.min(ux ? hw / Math.abs(ux) : Infinity, uy ? hh / Math.abs(uy) : Infinity);
+        const m = coreGrid();
+        if (!m) return edge;
+        const step = Math.min(2 * hw / m.cols, 2 * hh / m.rows) / 2;
+        for (let t = edge; t > 0; t -= step) {
+          if (coreSolidAt(m, (hw + ux * t) / (2 * hw), (hh + uy * t) / (2 * hh))) {
+            return Math.min(edge, t + step / 2);
+          }
+        }
+        return 0;
+      }
+
+      // A menor distância do centro do tronco em que pode começar a caixa
+      // de um setor do lado `dir` (1 = direita, −1 = esquerda) que ocupa a
+      // faixa vertical [y0, y1], tudo medido a partir do centro. No círculo
+      // (e no contorno sem a grade pronta), a meia-largura mais a folga,
+      // enquanto a faixa cruzar a altura do tronco, como sempre foi.
+      //
+      // No contorno, a caixa fica a M.coreGap do desenho em qualquer
+      // direção: cada linha da grade com desenho, dentro da faixa ou a
+      // menos de M.coreGap dela, empurra o setor para longe — as de dentro,
+      // a folga inteira; as de cima e de baixo, só o que falta para a
+      // diagonal chegar nela. Assim o setor encosta na silhueta, e não na
+      // caixa dela, e a ponta de um desenho logo acima ou abaixo da faixa
+      // também conta.
+      function coreClearance(y0, y1, dir) {
+        const hw = ROOT.hw;
+        const hh = ROOT.hh;
+        const gap = M.coreGap;
+        const m = coreGrid();
+        if (!m) return y1 <= -hh || y0 >= hh ? 0 : hw + gap;
+        const cellW = 2 * hw / m.cols;
+        const cellH = 2 * hh / m.rows;
+        const first = Math.max(0, Math.floor((y0 - gap + hh) / cellH));
+        const last = Math.min(m.rows - 1, Math.ceil((y1 + gap + hh) / cellH) - 1);
+        let clear = 0;
+        for (let r = first; r <= last; r += 1) {
+          if (m.rowMax[r] < 0) continue;
+          const top = r * cellH - hh;
+          const dy = Math.max(0, y0 - (top + cellH), top - y1);
+          if (dy >= gap) continue;
+          const reach = dir > 0 ? (m.rowMax[r] + 1) * cellW - hw : hw - m.rowMin[r] * cellW;
+          clear = Math.max(clear, reach + Math.sqrt(gap * gap - dy * dy));
+        }
+        return clear;
       }
 
       // Repinta os nós já montados sem reconstruir a árvore: mudar cor não
@@ -3312,11 +3710,11 @@ META 2</span> </button>
       // texto renderizado, então vem de measureNodes(); as constantes só
       // valem como estimativa antes da primeira medição.
       function halfW(node) {
-        return node.depth === 0 ? ROOT.r : (node.w || M.nodeW) / 2;
+        return node.depth === 0 ? ROOT.hw : (node.w || M.nodeW) / 2;
       }
 
       function halfH(node) {
-        if (node.depth === 0) return ROOT.r;
+        if (node.depth === 0) return ROOT.hh;
         return (node.h || (isSub(node) ? M.subMinH : M.nodeMinH)) / 2;
       }
 
@@ -3360,7 +3758,8 @@ META 2</span> </button>
       // várias marcas d'água (a `watermark` única da v4 vira a primeira da
       // lista), marcas de texto e fontes do Google Fonts. Arquivos antigos
       // abrem normalmente — o que falta neles volta ao padrão no saneamento.
-      const MAP_FORMAT_VERSION = 5;
+      // v6: imagem no tronco (coreImage).
+      const MAP_FORMAT_VERSION = 6;
 
       function serializeNode(node) {
         return {
@@ -3434,6 +3833,8 @@ META 2</span> </button>
         "coreText.color": autoColorRule,
         "coreText.align": (v) => (["left", "center", "right"].indexOf(v) >= 0 ? v : undefined),
         "coreShadow.color": (v) => cleanHex(v) || undefined,
+        "coreImage.image": (v) => (v === "" || IMAGE_DATA_URL.test(v) ? v : undefined),
+        "coreImage.shape": (v) => (v === "contour" || v === "circle" ? v : undefined),
         "title.text": (v) => v.slice(0, TITLE_CHAR_LIMIT),
         "title.font": fontRule,
         "title.color": autoColorRule,
@@ -3585,7 +3986,7 @@ META 2</span> </button>
             if (pair.node || pair.sub) clean.branchText[id] = pair;
           });
         }
-        ["coreText", "coreShadow", "title", "subtitle", "searchBox", "searchText", "searchHint"].forEach((group) => {
+        ["coreText", "coreShadow", "coreImage", "title", "subtitle", "searchBox", "searchText", "searchHint"].forEach((group) => {
           const src = raw[group];
           if (!src || typeof src !== "object") return;
           Object.keys(clean[group]).forEach((key) => {
@@ -3872,16 +4273,16 @@ META 2</span> </button>
         // achatados contra o eixo sem esse piso.
         //
         // O segundo termo é a garantia dura: enquanto a FAIXA do setor
-        // cruzar a altura do tronco, a caixa começa depois dele inteiro.
-        // Ele olha a faixa, e não o centro do setor, porque é a faixa que
-        // pode encostar no tronco — um galho alto tem o nó no meio dele,
-        // longe de onde a caixa realmente passa.
-        function innerOffset(y0, y1, centerY, span) {
+        // cruzar a altura do tronco, a caixa começa depois dele inteiro, com
+        // a folga — no contorno de uma imagem, a folga vale a partir do
+        // desenho, em qualquer direção (ver coreClearance). Ele olha a
+        // faixa, e não o centro do setor, porque é a faixa que pode encostar
+        // no tronco — um galho alto tem o nó no meio dele, longe de onde a
+        // caixa realmente passa.
+        function innerOffset(y0, y1, centerY, span, dir) {
           const t = centerY / span;
           const bulge = M.arcR * Math.sqrt(Math.max(0, 1 - t * t));
-          const dy = y0 > 0 ? y0 : (y1 < 0 ? -y1 : 0);
-          const clear = dy < ROOT.r ? ROOT.r : 0;
-          return M.coreGap + Math.max(bulge, clear);
+          return Math.max(M.coreGap + bulge, coreClearance(y0, y1, dir));
         }
 
         treeData.root.x = 0;
@@ -3976,7 +4377,7 @@ META 2</span> </button>
             linha.reduce((max, l) => Math.max(max, Math.abs(l.node.y)), 0)
           );
           linha.forEach((l) => {
-            const inner = innerOffset(l.top, l.bottom, l.node.y, span);
+            const inner = innerOffset(l.top, l.bottom, l.node.y, span, dir);
             l.node.x = dir > 0 ? inner - l.box.l : -inner - l.box.r;
             placeBranch(l.node, dir);
           });
@@ -3995,8 +4396,8 @@ META 2</span> </button>
 
         // Desloca tudo para o canvas ficar em números positivos; o centro se
         // move conforme o mapa abre e fecha.
-        let minX = -ROOT.r;
-        let minY = -ROOT.r;
+        let minX = -ROOT.hw;
+        let minY = -ROOT.hh;
         nodeById.forEach((node) => {
           if (node.depth === 0 || !node.visible) return;
           minX = Math.min(minX, node.x - halfW(node));
@@ -4065,9 +4466,14 @@ META 2</span> </button>
         const dy = towardY - node.y;
         if (!dx && !dy) return { x: node.x, y: node.y };
 
+        // O tronco: no círculo, o raio; no contorno de uma imagem, até a
+        // borda do desenho naquela direção.
         if (node.depth === 0) {
           const len = Math.hypot(dx, dy);
-          return { x: node.x + (dx / len) * ROOT.r, y: node.y + (dy / len) * ROOT.r };
+          const ux = dx / len;
+          const uy = dy / len;
+          const reach = ROOT.shape === "circle" ? ROOT.hw : coreContourReach(ux, uy);
+          return { x: node.x + ux * reach, y: node.y + uy * reach };
         }
 
         const hw = halfW(node);
@@ -4086,8 +4492,8 @@ META 2</span> </button>
       }
 
       function refreshWorldSize() {
-        let maxX = treeData.root.x + ROOT.r;
-        let maxY = treeData.root.y + ROOT.r;
+        let maxX = treeData.root.x + ROOT.hw;
+        let maxY = treeData.root.y + ROOT.hh;
         nodeById.forEach((node) => {
           if (node.depth === 0) return;
           maxX = Math.max(maxX, node.x + halfW(node));
@@ -4286,9 +4692,9 @@ META 2</span> </button>
       // — é o que render() usa, com as caixas acabadas de montar.
       function applyPositions(full) {
         const root = treeData.root;
-        coreArea.style.left = ((root.dx === undefined ? root.x : root.dx) - ROOT.r) + "px";
-        coreArea.style.top = ((root.dy === undefined ? root.y : root.dy) - ROOT.r) + "px";
-        coreArea.style.width = (ROOT.r * 2) + "px";
+        coreArea.style.left = ((root.dx === undefined ? root.x : root.dx) - ROOT.hw) + "px";
+        coreArea.style.top = ((root.dy === undefined ? root.y : root.dy) - ROOT.hh) + "px";
+        coreArea.style.width = (ROOT.hw * 2) + "px";
 
         const live = [];
         nodeById.forEach((node) => {
@@ -4597,11 +5003,7 @@ META 2</span> </button>
 
       function getActiveBox(pad) {
         const p = pad === undefined ? fitPad() : pad;
-        const root = treeData.root;
-        const boxes = [{
-          l: root.x - ROOT.r, r: root.x + ROOT.r,
-          t: root.y - ROOT.r, b: root.y + ROOT.r,
-        }];
+        const boxes = [boxOf(treeData.root)];
         nodeById.forEach((node) => {
           if (node.depth === 0 || !node.visible) return;
           boxes.push(boxOf(node));
@@ -4674,9 +5076,7 @@ META 2</span> </button>
       // explícito de atenção, diferente do reenquadramento passivo.
       function focusOn(node, ms) {
         if (!node) return;
-        const boxes = [node.depth === 0
-          ? { l: node.x - ROOT.r, r: node.x + ROOT.r, t: node.y - ROOT.r, b: node.y + ROOT.r }
-          : boxOf(node)];
+        const boxes = [boxOf(node)];
         node.children.forEach((child) => {
           if (child.visible) boxes.push(boxOf(child));
         });
@@ -5044,7 +5444,10 @@ META 2</span> </button>
 
       function elementUnder(event) {
         const el = document.elementFromPoint(event.clientX, event.clientY);
-        return el ? el.closest(".branch, .core-area") : null;
+        const hit = el ? el.closest(".branch, .core-area") : null;
+        // Soltar na parte transparente do contorno não é soltar no tronco.
+        if (hit === coreArea && coreMissAt(event.clientX, event.clientY)) return null;
+        return hit;
       }
 
       function moveNodeDrag(event) {
@@ -5378,7 +5781,20 @@ META 2</span> </button>
         markChanged();
       }
 
-      coreButton.addEventListener("click", toggleCore);
+      // No contorno de uma imagem, a parte transparente não é tronco: o
+      // clique ali não abre nem fecha o mapa, e o ponteiro por cima dela
+      // não realça nada (.is-miss). O clique pelo teclado não tem ponto
+      // (detail 0) e vale sempre.
+      coreButton.addEventListener("click", (event) => {
+        if (event.detail && coreMissAt(event.clientX, event.clientY)) return;
+        toggleCore();
+      });
+      coreButton.addEventListener("pointermove", (event) => {
+        coreButton.classList.toggle("is-miss", coreMissAt(event.clientX, event.clientY));
+      });
+      coreButton.addEventListener("pointerleave", () => {
+        coreButton.classList.remove("is-miss");
+      });
 
       stage.addEventListener("click", (event) => {
         const button = event.target.closest(".branch-button");
@@ -5988,7 +6404,7 @@ META 2</span> </button>
             ${forSub ? pdfFieldMarkup() : ""}
             ${isRoot ? "" : colorFieldMarkup(node)}
             ${isRoot ? "" : textColorFieldMarkup(node, node)}
-            ${isRoot ? `<p class="dev-modal-desc" style="margin:-0.3rem 0 0;">Enter quebra a linha. Fonte, tamanho, cor e sombra do tronco ficam no painel de aparência (paleta), aba Tronco.</p>` : ""}
+            ${isRoot ? `<p class="dev-modal-desc" style="margin:-0.3rem 0 0;">Enter quebra a linha. Imagem, fonte, tamanho, cor e sombra do tronco ficam no painel de aparência (paleta), aba Tronco.</p>` : ""}
             <button type="submit" class="dev-btn dev-btn-primary">Salvar</button>
           </form>
         `;
@@ -6162,6 +6578,7 @@ META 2</span> </button>
           overlaySide: devOverlay.classList.contains("is-side"),
           watermarkHidden: watermarkEl.hidden,
           watermarkNodes: Array.from(watermarkEl.childNodes),
+          coreImage: coreImageEl && coreImageEl.parentNode ? coreImageEl : null,
           // As fontes que o painel baixou só para mostrar a lista. As em
           // uso ficam: assim o arquivo já pede a fonte antes do script rodar.
           spareFonts: (() => {
@@ -6190,6 +6607,10 @@ META 2</span> </button>
         // ao abrir. Os mesmos elementos voltam depois, com o src intacto.
         watermarkEl.hidden = true;
         saved.watermarkNodes.forEach((node) => node.remove());
+        // A imagem do tronco, pelo mesmo motivo; e o realce do ponteiro,
+        // que o próximo movimento dele refaz.
+        if (saved.coreImage) saved.coreImage.remove();
+        coreButton.classList.remove("is-miss");
         saved.spareFonts.forEach((link) => link.remove());
 
         let result;
@@ -6210,6 +6631,7 @@ META 2</span> </button>
           zoomReadout.textContent = saved.zoomText;
           watermarkEl.hidden = saved.watermarkHidden;
           saved.watermarkNodes.forEach((node) => watermarkEl.appendChild(node));
+          if (saved.coreImage) coreButton.insertBefore(saved.coreImage, coreButton.firstChild);
           saved.spareFonts.forEach((link) => document.head.appendChild(link));
           render();
           updateVisibility();
@@ -6329,11 +6751,12 @@ META 2</span> </button>
       ];
 
       // O que "Restaurar o padrão desta aba" devolve ao padrão. As imagens
-      // das marcas d'água ficam de fora: para tirá-las existe o "Remover".
+      // (das marcas d'água e do tronco) ficam de fora: para tirá-las existe
+      // o "Remover".
       const TAB_KEYS = {
         cores: ["background", "line", "blobA", "blobB", "blobs", "branches"],
         textos: ["nodeText", "subText", "branchText"],
-        tronco: ["core", "coreEnd", "coreText", "coreShadow"],
+        tronco: ["core", "coreEnd", "coreText", "coreShadow", "coreImage"],
         titulo: ["title", "subtitle"],
         pesquisa: ["searchBox", "searchText", "searchHint"],
         marca: ["watermarks"],
@@ -6438,6 +6861,7 @@ META 2</span> </button>
         "coreShadow.blur": (v) => v + "px",
         "coreShadow.distance": (v) => v + "px",
         "coreShadow.angle": (v) => ARROWS[Math.round(v / 45) % 8] + " " + v + "°",
+        "coreImage.size": (v) => v + "%",
         "title.size": (v) => decimal(v) + "px",
         "title.spacing": (v) => Math.round(v * 100) + "%",
         "subtitle.size": (v) => decimal(v) + "px",
@@ -6530,9 +6954,7 @@ META 2</span> </button>
       ];
 
       function effectiveHex(path) {
-        if (path === "coreText.color") {
-          return toHex(textOver(mixRgb(hexToRgb(theme.core), hexToRgb(theme.coreEnd), 0.5)));
-        }
+        if (path === "coreText.color") return toHex(textOver(coreTextBackdrop()));
         if (path === "title.color") return toHex(getComputedStyle(titleEl).color);
         if (path === "subtitle.color") return toHex(getComputedStyle(subtitleEl).color);
         if (hasOwn(searchAuto, path)) return toHex(searchAuto[path]);
@@ -6738,13 +7160,65 @@ META 2</span> </button>
         `;
       }
 
-      function tabTroncoMarkup() {
+      // A parte de cima da aba Tronco: enviar, trocar e ajustar a imagem.
+      // Trocar o formato redesenha a aba (data-rerender): as cores do
+      // círculo e as dicas dependem dele.
+      function coreImageMarkup() {
+        const ci = theme.coreImage;
+        const picker = `<input type="file" id="theme-core-file" class="dev-file-input" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" />`;
+        if (!ci.image) {
+          return `
+            ${sectionTitle("Imagem")}
+            <p class="dev-data-hint" style="margin:0 0 0.4rem;">Uma imagem no lugar do círculo. Com fundo transparente (PNG), o tronco fica com o formato do desenho; sem transparência (JPG, foto), ela preenche o círculo.</p>
+            ${picker}
+            <div class="dev-inline-actions">
+              <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="core-image-pick">Enviar imagem…</button>
+            </div>
+          `;
+        }
+        const contour = ci.shape === "contour";
         return `
+          ${sectionTitle("Imagem")}
+          <div class="dev-core-image">
+            <span class="dev-wm-thumb"><img data-core-thumb alt="" /></span>
+            <div class="dev-inline-actions">
+              <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="core-image-pick">Trocar imagem…</button>
+              <button type="button" class="dev-btn dev-btn-ghost dev-btn-danger" data-theme-action="core-image-remove">Remover</button>
+            </div>
+          </div>
+          ${picker}
+          <div class="dev-field-row">
+            <span class="dev-color-name">Formato</span>
+            <div class="dev-seg-group" role="group" aria-label="Formato do tronco">
+              ${pressButtonMarkup("coreImage.shape", "contour", "Contorno", "O formato do próprio desenho", { text: true, rerender: true })}
+              ${pressButtonMarkup("coreImage.shape", "circle", "Círculo", "A imagem dentro do círculo", { text: true, rerender: true })}
+            </div>
+          </div>
+          <p class="dev-data-hint" style="margin:0 0 0.3rem;">${contour
+            ? "As partes transparentes ficam de fora: as linhas encostam no desenho, os galhos se acomodam em volta dele e o clique ali não abre o mapa."
+            : "A imagem preenche o círculo, cortada nas bordas; onde ela for transparente, aparecem as cores do círculo."}</p>
+          ${rangeRowMarkup("coreImage.size", "Tamanho")}
+          <p class="dev-data-hint" style="margin:-0.1rem 0 0.3rem;">Em % do círculo sem imagem; no celular, diminui junto com ele.</p>
+          ${checkRowMarkup("coreImage.text", "Mostrar o texto por cima da imagem")}
+        `;
+      }
+
+      function tabTroncoMarkup() {
+        const ci = theme.coreImage;
+        const contour = coreIsContour();
+        const textHint = !ci.image
+          ? "Enter quebra a linha. Se o texto não couber, o círculo cresce para acomodá-lo."
+          : "Enter quebra a linha. Com imagem, o texto só aparece com a chave “Mostrar o texto por cima da imagem”, lá em cima"
+            + (contour ? ", e vai por cima do desenho sem mudar o tamanho dele." : "; se não couber, o círculo cresce.")
+            + " Escondido, continua sendo lido pelos leitores de tela.";
+        return `
+          ${coreImageMarkup()}
+
           ${sectionTitle("Texto")}
           <label class="dev-label">Texto do tronco
             <textarea id="theme-core-label" class="dev-input" rows="2" maxlength="${NODE_CHAR_LIMIT}">${escapeHtml(treeData.root.label)}</textarea>
           </label>
-          <p class="dev-data-hint" style="margin:0.35rem 0 0.2rem;">Enter quebra a linha. Se o texto não couber, o círculo cresce para acomodá-lo.</p>
+          <p class="dev-data-hint" style="margin:0.35rem 0 0.2rem;">${textHint}</p>
           ${fontRowMarkup("coreText.font")}
           <div class="dev-field-row">
             <span class="dev-color-name">Estilo</span>
@@ -6764,9 +7238,11 @@ META 2</span> </button>
           ${rangeRowMarkup("coreText.spacing", "Espaço entre letras")}
           ${rangeRowMarkup("coreText.lineHeight", "Espaço entre linhas")}
 
+          ${contour ? "" : `
           ${sectionTitle("Círculo")}
           ${colorRowMarkup("core", "Cor inicial", theme.core)}
           ${colorRowMarkup("coreEnd", "Cor final", theme.coreEnd)}
+          `}
 
           ${sectionTitle("Sombra")}
           ${checkRowMarkup("coreShadow.on", "Mostrar sombra")}
@@ -6775,7 +7251,7 @@ META 2</span> </button>
           ${rangeRowMarkup("coreShadow.blur", "Desfoque")}
           ${rangeRowMarkup("coreShadow.distance", "Distância")}
           ${rangeRowMarkup("coreShadow.angle", "Direção")}
-          <p class="dev-data-hint" style="margin:0.2rem 0 0;">Para um brilho em volta do círculo, use uma cor clara, distância 0 e bastante desfoque.</p>
+          <p class="dev-data-hint" style="margin:0.2rem 0 0;">Para um brilho em volta do ${contour ? "desenho" : "círculo"}, use uma cor clara, distância 0 e bastante desfoque.</p>
         `;
       }
 
@@ -7176,6 +7652,8 @@ META 2</span> </button>
           const wm = watermarkById(img.dataset.wmThumb);
           if (wm) img.src = wm.image;
         });
+        const coreThumb = devModalBody.querySelector("img[data-core-thumb]");
+        if (coreThumb) coreThumb.src = theme.coreImage.image;
         loadFonts(true);
         const coreField = document.getElementById("theme-core-label");
         if (coreField) coreField.addEventListener("input", () => editCoreLabel(coreField.value));
@@ -7282,6 +7760,10 @@ META 2</span> </button>
           if (event.type === "change") takeWatermarkFile(el);
           return;
         }
+        if (el.id === "theme-core-file") {
+          if (event.type === "change") takeCoreImageFile(el);
+          return;
+        }
         if (el.tagName === "BUTTON" || !el.dataset || !el.dataset.bind) return;
         const value = el.type === "checkbox" ? el.checked
           : el.type === "range" ? Number(el.value)
@@ -7343,6 +7825,17 @@ META 2</span> </button>
           markChanged();
           renderThemeForm('[data-theme-action="reset-tab"]');
           status.textContent = "Aparência desta aba restaurada para o padrão.";
+        } else if (name === "core-image-pick") {
+          const input = document.getElementById("theme-core-file");
+          if (input) input.click();
+        } else if (name === "core-image-remove") {
+          if (!window.confirm("Tirar a imagem do tronco? Ele volta a ser o círculo.")) return;
+          theme.coreImage.image = "";
+          theme.coreImage.ratio = 1;
+          applyTheme();
+          markChanged();
+          renderThemeForm('[data-theme-action="core-image-pick"]');
+          status.textContent = "Imagem do tronco removida.";
         } else if (name === "wm-add" || name === "wm-pick") {
           if (name === "wm-add" && theme.watermarks.length >= WATERMARK_MAX) return;
           wmPickTarget = name === "wm-pick" ? wmSelected : "";
@@ -7412,6 +7905,17 @@ META 2</span> </button>
       function resetThemeTab(tabId) {
         const fresh = defaultTheme();
         TAB_KEYS[tabId].forEach((key) => {
+          if (key === "coreImage") {
+            // A imagem fica; o formato volta ao que o envio escolheria, e o
+            // resto, ao de fábrica.
+            const ci = theme.coreImage;
+            theme.coreImage = Object.assign(fresh.coreImage, {
+              image: ci.image,
+              ratio: ci.ratio,
+              shape: coreMask ? coreAutoShape(coreMask) : ci.shape,
+            });
+            return;
+          }
           if (key === "watermarks") {
             // As imagens e os textos ficam, e cada marca continua grudada
             // onde estava; o resto volta ao de fábrica.
@@ -7533,6 +8037,34 @@ META 2</span> </button>
           if (url.length <= WM_MAX_CHARS && IMAGE_DATA_URL.test(url)) return url;
         }
         return null;
+      }
+
+      // --- Imagem do tronco (envio) -----------------------------------------
+      // A mesma leitura das marcas d'água, que reduz as imagens grandes. O
+      // formato sai da grade da imagem nova (coreAutoShape), e ela já entra
+      // pronta: sem a grade, o tronco apareceria primeiro como retângulo.
+      function takeCoreImageFile(input) {
+        const file = input.files && input.files[0];
+        input.value = "";   // escolher o mesmo arquivo de novo volta a disparar
+        if (!file) return;
+        const had = !!theme.coreImage.image;
+        readWatermark(file)
+          .then((result) => buildCoreMask(result.image, result.ratio).then((mask) => {
+            const ci = theme.coreImage;
+            ci.image = result.image;
+            ci.ratio = result.ratio;
+            ci.shape = coreAutoShape(mask);
+            coreMaskSrc = ci.image;
+            coreMask = mask;
+            applyTheme();
+            markChanged();
+            if (!devOverlay.hidden) renderThemeForm('[data-theme-action="core-image-pick"]');
+            status.textContent = (had ? "Imagem do tronco trocada" : "Imagem posta no tronco")
+              + (ci.shape === "contour" ? ", com o formato dela." : ", dentro do círculo.");
+          }))
+          .catch((error) => {
+            window.alert(error.message);
+          });
       }
 
       themeToggle.addEventListener("click", () => {
