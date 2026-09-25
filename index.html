@@ -1882,9 +1882,11 @@
        segundo valor de cada var() é o de fábrica — é ele que vale enquanto
        a variável não existe. A lista de resultados segue a formatação do
        texto digitado. --- */
+    /* A largura de fábrica é a de sempre; applySearch() escreve
+       --search-width quando o painel escolhe até onde a caixa se estende. */
     .search {
       position: relative;
-      width: min(340px, 100%);
+      width: var(--search-width, min(340px, 100%));
       pointer-events: auto;
     }
 
@@ -2136,7 +2138,7 @@
     /* No celular a caixa ocupa a largura toda, abaixo da fila do cadeado —
        no modo dev essa fila tem três botões e não sobra canto livre. */
     body.is-compact .search {
-      width: 100%;
+      width: var(--search-width, 100%);
     }
 
     /* 16px: menos que isso e o iOS dá zoom sozinho ao focar o campo. Uma
@@ -2629,9 +2631,13 @@
         // lista de resultados, que segue o texto digitado. Cores vazias =
         // automáticas: as de sempre, ou tinta quando o fundo escolhido para
         // a caixa for claro. Fundo e borda vazios = os de fábrica.
+        // `width` é até onde a caixa se estende, em % da largura da tela (e
+        // nunca além da vaga em que está); `widthAuto` liga a largura de
+        // fábrica: 340px no computador, a vaga inteira no celular.
         searchBox: {
           placeholder: "Pesquisar nó ou subnó…",
           background: "", transparency: 28, border: "", icon: "",
+          widthAuto: true, width: 100,
         },
         searchText: {
           font: "dmsans", size: 14.08, color: "",
@@ -2825,7 +2831,7 @@
         // exatamente num degrau do controle.
         searchText: { size: [8, 32, 0.04], spacing: [0, 0.4, 0.01] },
         searchHint: { size: [8, 32, 0.04], spacing: [0, 0.4, 0.01] },
-        searchBox: { transparency: [0, 100, 1] },
+        searchBox: { transparency: [0, 100, 1], width: [20, 100, 1] },
         // Valem para cada entrada de `watermarks` (ver limitsFor).
         watermark: {
           ratio: [0.05, 20, 0.001], transparency: [0, 98, 1], scale: [5, 100, 1],
@@ -3002,11 +3008,23 @@
         "bottom-left": ["Bottom", "Left"], "bottom": ["Bottom"], "bottom-right": ["Bottom", "Right"],
       };
       let hudApplied = "";
+
+      function hudPlain() {
+        return document.body.classList.contains("is-compact") && theme === desktopTheme;
+      }
+
+      // O zoom do elemento preso à tela: o tamanho do painel, fora do celular
+      // "de fábrica" (ver hudPlain).
+      function hudZoom(key) {
+        const cfg = theme.hud[key];
+        return !hudPlain() && cfg.scale ? cfg.scale / 100 : 1;
+      }
+
       function applyHud() {
         const compact = document.body.classList.contains("is-compact");
         // No celular, o tema do computador deixa a tela se arrumar sozinha;
         // um layout de celular com edições próprias vale como escrito.
-        const plain = compact && theme === desktopTheme;
+        const plain = hudPlain();
         const bySlot = {};
         HUD_ORDER.forEach((key) => {
           const cfg = theme.hud[key];
@@ -3015,7 +3033,7 @@
           el.classList.toggle("is-off", !cfg.show);
           // zoom, e não transform: scale — o zoom muda o tamanho que o
           // elemento ocupa, e a pilha da vaga abre espaço para ele.
-          const zoom = !plain && cfg.scale ? cfg.scale / 100 : 1;
+          const zoom = hudZoom(key);
           el.style.zoom = zoom !== 1 ? String(zoom) : "";
           // Afastar da borda é margem nos lados que dão para a borda da
           // vaga; na vaga do centro não há borda, e ele não faz nada. O
@@ -3169,6 +3187,12 @@
           if (value) s.setProperty(name, value);
           else s.removeProperty(name);
         };
+        // O zoom do elemento (aba Tela) multiplica os comprimentos dele; a
+        // largura escolhida é a que se vê, então entra dividida por ele. O
+        // teto de 100% já sai certo: o navegador resolve percentuais no
+        // espaço do elemento, com o zoom descontado.
+        const z = hudZoom("search");
+        setVar("--search-width", box.widthAuto ? "" : "min(calc(" + box.width + "vw / " + z + "), 100%)");
         [["--search-text", theme.searchText], ["--search-hint", theme.searchHint]].forEach((pair) => {
           const prefix = pair[0];
           const t = pair[1];
@@ -7178,6 +7202,7 @@
         "searchHint.size": (v) => decimal(v) + "px",
         "searchHint.spacing": (v) => Math.round(v * 100) + "%",
         "searchBox.transparency": (v) => v + "%",
+        "searchBox.width": (v) => v + "%",
       };
       HUD_ORDER.forEach((key) => {
         READOUTS["hud." + key + ".offset"] = (v) => "+" + v + "px";
@@ -7603,6 +7628,9 @@
           ${sectionTitle("Caixa")}
           ${colorRowMarkup("searchBox.background", "Fundo", box.background || effectiveHex("searchBox.background"))}
           ${rangeRowMarkup("searchBox.transparency", "Transparência do fundo")}
+          ${checkRowMarkup("searchBox.widthAuto", "Largura automática (340px no computador, a vaga inteira no celular)")}
+          ${rangeRowMarkup("searchBox.width", "Até onde a caixa se estende")}
+          <p class="dev-data-hint" style="margin:-0.1rem 0 0.3rem;">Em % da largura da tela, e nunca além da vaga em que a caixa está: no celular, com 100% ela ocupa a vaga inteira. Onde ela fica dentro da vaga (esquerda, meio, direita) segue a posição da aba Tela.</p>
           ${colorRowMarkup("searchBox.border", "Borda", box.border || effectiveHex("searchBox.border"))}
           ${colorRowMarkup("searchBox.icon", "Ícone da lupa", box.icon || effectiveHex("searchBox.icon"), "Automática")}
           <p class="dev-data-hint" style="margin:0.2rem 0 0;">Com um fundo claro, as cores automáticas do texto e do ícone escurecem sozinhas. No celular a letra da caixa nunca fica menor que 16px: com menos que isso, o iPhone amplia a tela ao tocar nela.</p>
@@ -8053,6 +8081,10 @@
           if (input && input !== document.activeElement && !getPath(theme, path)) {
             input.value = effectiveHex(path);
           }
+        });
+        // Aba Pesquisa: a largura só se escolhe com a automática desligada.
+        devModalBody.querySelectorAll('input[data-bind="searchBox.width"]').forEach((input) => {
+          input.disabled = theme.searchBox.widthAuto;
         });
         // Aba Tela: bloco esmaecido quando o elemento está escondido, e
         // "Afastar da borda" desligado na vaga do centro, onde não há borda.
