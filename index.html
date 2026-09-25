@@ -1443,6 +1443,64 @@
       object-fit: contain;
     }
 
+    /* Miniatura de texto: um "Aa" na fonte e nas cores da marca. */
+    .dev-wm-thumb.is-text {
+      font-size: 1.05rem;
+      line-height: 1;
+      color: rgb(255, 255, 255);
+    }
+
+    .dev-wm-target .dev-wm-thumb.is-text {
+      font-size: 0.8rem;
+    }
+
+    /* Seções recolhíveis do editor de texto (fundo, contorno, sombra). */
+    .dev-fold {
+      margin-top: 0.45rem;
+      border: 1px solid rgba(160, 190, 255, 0.18);
+      border-radius: 10px;
+      padding: 0 0.6rem;
+    }
+
+    .dev-fold[open] {
+      padding-bottom: 0.35rem;
+    }
+
+    .dev-fold summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+      padding: 0.45rem 0;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .dev-fold summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .dev-fold summary::before {
+      content: "▸";
+      margin-right: -0.2rem;
+      color: rgba(230, 238, 255, 0.6);
+    }
+
+    .dev-fold[open] summary::before {
+      content: "▾";
+    }
+
+    .dev-fold summary span:first-of-type {
+      flex: 1 1 auto;
+    }
+
+    .dev-fold-state {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: rgba(230, 238, 255, 0.55);
+    }
+
     .dev-wm-info {
       min-width: 0;
       display: flex;
@@ -1597,6 +1655,18 @@
       max-width: none;
       user-select: none;
       -webkit-user-drag: none;
+    }
+
+    /* Marca de texto: só quebra linha onde a pessoa deu Enter, e a caixa
+       tem a largura da linha mais longa — é essa caixa que é medida para
+       grudar e posicionar. O resto da aparência é inline
+       (applyWatermarkText). */
+    .wm-text {
+      position: absolute;
+      width: max-content;
+      margin: 0;
+      white-space: pre;
+      user-select: none;
     }
 
     /* --- Pesquisa ------------------------------------------------------
@@ -2363,12 +2433,35 @@ META 2</span> </button>
       // forma em qualquer tela. Mostrar/esconder, transparência e giro
       // seguem a principal: o conjunto gira em volta dela, e a vaga da
       // grade posiciona o conjunto inteiro.
+      //
+      // Uma marca é imagem ou texto (`kind`). A de texto não tem imagem: o
+      // tamanho dela sai do próprio texto, medido na tela (ver
+      // measureWatermarkTexts). `size` é a altura da letra em % do lado
+      // menor da tela, como o `scale` das imagens, e as medidas da letra
+      // (espaçamento, fundo, contorno, sombra) são em em — frações da
+      // letra —, para crescerem junto com ela. As chaves de texto ficam
+      // também nas imagens, só que sem uso: assim o saneamento e o painel
+      // tratam as duas espécies com o mesmo mapa de chaves.
       const WATERMARK_DEFAULTS = {
-        id: "", name: "", image: "", ratio: 1, on: true, scale: 35,
+        id: "", kind: "image", name: "", image: "", ratio: 1, on: true, scale: 35,
         position: "center", margin: 24, dx: 0, dy: 0, transparency: 85, rotation: 0,
         to: "", side: "right", align: "center", gap: 2, shift: 0,
+        text: "", font: "dmsans", size: 4, color: "#ffffff",
+        bold: false, italic: false, underline: false, upper: false,
+        spacing: 0, lineHeight: 1.2, textAlign: "center",
+        bg: false, bgColor: "#0b1736", bgTransparency: 30, bgPadding: 0.4, bgRadius: 0.3,
+        stroke: false, strokeColor: "#0b1736", strokeWidth: 0.06,
+        shadow: false, shadowColor: "#02091f", shadowTransparency: 40,
+        shadowBlur: 0.15, shadowDistance: 0.06, shadowAngle: 90,
       };
-      const WATERMARK_MAX = 8;
+      // Um texto novo nasce legível: sem a transparência de marca d'água
+      // que uma imagem nova tem.
+      const WATERMARK_TEXT_DEFAULTS = { kind: "text", text: "Texto", transparency: 0 };
+      function watermarkDefaults(kind) {
+        return Object.assign({}, WATERMARK_DEFAULTS, kind === "text" ? WATERMARK_TEXT_DEFAULTS : null);
+      }
+      const WATERMARK_MAX = 12;
+      const WATERMARK_TEXT_LIMIT = 200;
       const WATERMARK_SIDES = ["above", "below", "left", "right"];
       const WATERMARK_ALIGNS = ["start", "center", "end"];
 
@@ -2380,9 +2473,13 @@ META 2</span> </button>
 
       let theme = defaultTheme();
 
-      // Fontes do tronco e do título. As duas primeiras já vêm do Google
-      // Fonts da página; as outras são do sistema (no Android, onde elas não
-      // existem, o navegador cai na família genérica do fim da lista).
+      // Fontes do tronco, do título, da pesquisa e das marcas de texto. As
+      // duas primeiras já vêm do Google Fonts da página; as seis seguintes
+      // são do sistema (no Android, onde elas não existem, o navegador cai
+      // na família genérica do fim da lista). As com `google` são baixadas
+      // do Google Fonts só quando alguém as usa (ver loadFonts) — o valor é
+      // o pedaço da URL com os pesos e itálicos que a família de fato tem:
+      // pedir um que não existe faz o Google recusar o pedido inteiro.
       const FONTS = {
         fraunces: { label: "Fraunces (serifada)", css: '"Fraunces", serif' },
         dmsans: { label: "DM Sans (a da página)", css: '"DM Sans", sans-serif' },
@@ -2392,6 +2489,22 @@ META 2</span> </button>
         verdana: { label: "Verdana", css: "Verdana, Geneva, sans-serif" },
         trebuchet: { label: "Trebuchet MS", css: '"Trebuchet MS", Tahoma, sans-serif' },
         courier: { label: "Courier New", css: '"Courier New", Courier, monospace' },
+        montserrat: { label: "Montserrat", css: '"Montserrat", sans-serif', google: "Montserrat:ital,wght@0,400;0,700;1,400;1,700" },
+        roboto: { label: "Roboto", css: '"Roboto", sans-serif', google: "Roboto:ital,wght@0,400;0,700;1,400;1,700" },
+        opensans: { label: "Open Sans", css: '"Open Sans", sans-serif', google: "Open+Sans:ital,wght@0,400;0,700;1,400;1,700" },
+        lato: { label: "Lato", css: '"Lato", sans-serif', google: "Lato:ital,wght@0,400;0,700;1,400;1,700" },
+        poppins: { label: "Poppins", css: '"Poppins", sans-serif', google: "Poppins:ital,wght@0,400;0,700;1,400;1,700" },
+        nunito: { label: "Nunito", css: '"Nunito", sans-serif', google: "Nunito:ital,wght@0,400;0,700;1,400;1,700" },
+        raleway: { label: "Raleway", css: '"Raleway", sans-serif', google: "Raleway:ital,wght@0,400;0,700;1,400;1,700" },
+        oswald: { label: "Oswald (estreita)", css: '"Oswald", sans-serif', google: "Oswald:wght@400;700" },
+        bebas: { label: "Bebas Neue (só maiúsculas)", css: '"Bebas Neue", sans-serif', google: "Bebas+Neue" },
+        anton: { label: "Anton (pesada)", css: '"Anton", sans-serif', google: "Anton" },
+        playfair: { label: "Playfair Display (serifada)", css: '"Playfair Display", serif', google: "Playfair+Display:ital,wght@0,400;0,700;1,400;1,700" },
+        merriweather: { label: "Merriweather (serifada)", css: '"Merriweather", serif', google: "Merriweather:ital,wght@0,400;0,700;1,400;1,700" },
+        dancing: { label: "Dancing Script (manuscrita)", css: '"Dancing Script", cursive', google: "Dancing+Script:wght@400;700" },
+        caveat: { label: "Caveat (manuscrita)", css: '"Caveat", cursive', google: "Caveat:wght@400;700" },
+        pacifico: { label: "Pacifico (manuscrita)", css: '"Pacifico", cursive', google: "Pacifico" },
+        lobster: { label: "Lobster (decorativa)", css: '"Lobster", cursive', google: "Lobster" },
       };
 
       // Faixa de cada ajuste numérico: [mínimo, máximo, passo]. Serve ao
@@ -2412,6 +2525,11 @@ META 2</span> </button>
           ratio: [0.05, 20, 0.001], transparency: [0, 98, 1], scale: [5, 100, 1],
           margin: [0, 160, 1], rotation: [-180, 180, 1],
           dx: [-50, 50, 0.5], dy: [-50, 50, 0.5], gap: [-20, 40, 0.5], shift: [-50, 50, 0.5],
+          size: [1, 30, 0.1], spacing: [-0.05, 0.5, 0.01], lineHeight: [0.8, 2.5, 0.05],
+          bgTransparency: [0, 100, 1], bgPadding: [0, 1.5, 0.05], bgRadius: [0, 1.5, 0.05],
+          strokeWidth: [0.01, 0.25, 0.01],
+          shadowTransparency: [0, 100, 1], shadowBlur: [0, 1, 0.01], shadowDistance: [0, 0.5, 0.01],
+          shadowAngle: [0, 355, 5],
         },
         // Valem para todos os elementos de `hud` (ver limitsFor).
         hud: { offset: [0, 240, 2], scale: [50, 200, 5] },
@@ -2534,6 +2652,7 @@ META 2</span> </button>
           "linear-gradient(135deg, " + rgbCss(coreA) + ", " + rgbCss(coreB) + ")";
         applyCoreText(textOver(mixRgb(coreA, coreB, 0.5)));
         applyCoreShadow();
+        loadFonts(false);
         applyTitle();
         applySearch();
         applyWatermarks();
@@ -2760,20 +2879,93 @@ META 2</span> </button>
 
       // --- Marcas d'água ------------------------------------------------------
       // Uma vaga (.wm-slot) por conjunto — a marca solta e as grudadas nela
-      // — e um <img> por marca, guardados pelo id: o tema é reaplicado a
-      // cada quadro de um arrasto de controle no painel, e recriar imagens
-      // de centenas de KB a cada quadro pesaria. O src só é reescrito
-      // quando a imagem muda. Tudo em vmin: o lado maior de cada imagem
-      // acompanha o lado menor da tela, e as marcas ficam com a mesma
-      // presença no celular em pé e no monitor.
-      const wmImgs = new Map();    // id da marca → <img>
+      // — e um elemento por marca (<img> ou .wm-text), guardados pelo id: o
+      // tema é reaplicado a cada quadro de um arrasto de controle no
+      // painel, e recriar imagens de centenas de KB a cada quadro pesaria.
+      // O src só é reescrito quando a imagem muda. Tudo em vmin: o lado
+      // maior de cada imagem e a letra de cada texto acompanham o lado
+      // menor da tela, e as marcas ficam com a mesma presença no celular em
+      // pé e no monitor.
+      const wmNodes = new Map();   // id da marca → <img> ou .wm-text
       const wmShown = new Map();   // id da marca → data URL posta no src
       const wmSlots = new Map();   // id da principal → { slot, group }
+      let wmTextSizes = new Map(); // id da marca de texto → { w, h } em vmin
+
+      function isTextMark(wm) {
+        return wm.kind === "text";
+      }
+
+      // Tem o que desenhar: imagem, ou texto que não seja só espaço.
+      function watermarkShown(wm) {
+        return wm.on && (isTextMark(wm) ? !!wm.text.trim() : !!wm.image);
+      }
 
       function watermarkSize(wm) {
+        if (isTextMark(wm)) return wmTextSizes.get(wm.id) || { w: 0, h: 0 };
         return wm.ratio >= 1
           ? { w: wm.scale, h: wm.scale / wm.ratio }
           : { w: wm.scale * wm.ratio, h: wm.scale };
+      }
+
+      // Toda a aparência de uma marca de texto. Serve ao elemento da tela,
+      // ao medidor e — sem o texto — à miniatura do painel. O contorno é
+      // pintado por baixo do preenchimento (paint-order), então só a metade
+      // de fora aparece: daí a espessura em dobro.
+      function applyWatermarkText(el, wm) {
+        const s = el.style;
+        s.fontFamily = FONTS[wm.font].css;
+        s.fontSize = wm.size + "vmin";
+        s.fontWeight = wm.bold ? "700" : "400";
+        s.fontStyle = wm.italic ? "italic" : "normal";
+        s.textDecoration = wm.underline ? "underline" : "none";
+        s.textTransform = wm.upper ? "uppercase" : "none";
+        s.letterSpacing = wm.spacing + "em";
+        s.lineHeight = String(wm.lineHeight);
+        s.textAlign = wm.textAlign;
+        s.color = wm.color;
+        s.backgroundColor = wm.bg ? rgbCss(hexToRgb(wm.bgColor), (100 - wm.bgTransparency) / 100) : "";
+        s.padding = wm.bg ? wm.bgPadding + "em" : "";
+        s.borderRadius = wm.bg ? wm.bgRadius + "em" : "";
+        s.setProperty("-webkit-text-stroke", wm.stroke ? (wm.strokeWidth * 2) + "em " + wm.strokeColor : "");
+        s.setProperty("paint-order", wm.stroke ? "stroke fill" : "");
+        if (wm.shadow) {
+          const rad = wm.shadowAngle * Math.PI / 180;
+          const dx = Math.round(Math.cos(rad) * wm.shadowDistance * 1000) / 1000;
+          const dy = Math.round(Math.sin(rad) * wm.shadowDistance * 1000) / 1000;
+          s.textShadow = dx + "em " + dy + "em " + wm.shadowBlur + "em "
+            + rgbCss(hexToRgb(wm.shadowColor), (100 - wm.shadowTransparency) / 100);
+        } else {
+          s.textShadow = "";
+        }
+      }
+
+      // O tamanho de cada texto visível, em vmin, medido num elemento à
+      // parte: o da tela pode estar numa vaga escondida ou girada, e aí
+      // não daria para medir. Letra, espaçamento e fundo são todos em
+      // vmin/em, então a medida vale para qualquer tela — só muda um fio
+      // com o desenho da fonte, e por isso é refeita ao redimensionar e
+      // quando uma fonte termina de chegar.
+      let wmMeasure = null;
+      function measureWatermarkTexts() {
+        wmTextSizes = new Map();
+        const texts = theme.watermarks.filter((wm) => isTextMark(wm) && watermarkShown(wm));
+        if (!texts.length) return;
+        if (!wmMeasure) {
+          wmMeasure = document.createElement("div");
+          wmMeasure.setAttribute("aria-hidden", "true");
+          wmMeasure.style.cssText = "position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;";
+          wmMeasure.innerHTML = '<div style="width:100vmin;height:0"></div><div class="wm-text" style="position:static"></div>';
+        }
+        document.body.appendChild(wmMeasure);
+        const unit = wmMeasure.firstChild.getBoundingClientRect().width / 100;
+        const probe = wmMeasure.lastChild;
+        texts.forEach((wm) => {
+          applyWatermarkText(probe, wm);
+          probe.textContent = wm.text;
+          const r = probe.getBoundingClientRect();
+          wmTextSizes.set(wm.id, { w: r.width / unit, h: r.height / unit });
+        });
+        wmMeasure.remove();
       }
 
       // Onde fica uma grudada, a partir da caixa da marca em que ela gruda.
@@ -2812,10 +3004,10 @@ META 2</span> </button>
             seen.add(box.wm.id);
             boxes.push(box);
             (children[box.wm.id] || []).forEach((child) => {
-              if (child.on && child.image) visit(attachBox(box, child));
+              if (watermarkShown(child)) visit(attachBox(box, child));
             });
           };
-          if (root.on && root.image) {
+          if (watermarkShown(root)) {
             const size = watermarkSize(root);
             visit({ wm: root, x: 0, y: 0, w: size.w, h: size.h });
           }
@@ -2823,24 +3015,35 @@ META 2</span> </button>
         });
       }
 
-      function watermarkImgFor(wm) {
-        let img = wmImgs.get(wm.id);
-        if (!img) {
-          img = document.createElement("img");
-          img.className = "wm-img";
-          img.alt = "";
-          img.draggable = false;
-          wmImgs.set(wm.id, img);
+      function watermarkNodeFor(wm) {
+        let node = wmNodes.get(wm.id);
+        if (isTextMark(wm)) {
+          if (!node) {
+            node = document.createElement("div");
+            node.className = "wm-text";
+            wmNodes.set(wm.id, node);
+          }
+          applyWatermarkText(node, wm);
+          if (node.textContent !== wm.text) node.textContent = wm.text;
+          return node;
+        }
+        if (!node) {
+          node = document.createElement("img");
+          node.className = "wm-img";
+          node.alt = "";
+          node.draggable = false;
+          wmNodes.set(wm.id, node);
         }
         if (wmShown.get(wm.id) !== wm.image) {
-          img.setAttribute("src", wm.image);
+          node.setAttribute("src", wm.image);
           wmShown.set(wm.id, wm.image);
         }
-        return img;
+        return node;
       }
 
       function applyWatermarks() {
         const order = new Map(theme.watermarks.map((wm, i) => [wm.id, i]));
+        measureWatermarkTexts();
         const groups = watermarkGroups();
         const roots = new Set(groups.map((g) => g.root.id));
         wmSlots.forEach((view, id) => {
@@ -2893,27 +3096,59 @@ META 2</span> </button>
 
           const kids = view.group.children;
           g.boxes.slice().sort((a, b) => order.get(a.wm.id) - order.get(b.wm.id)).forEach((b, i) => {
-            const img = watermarkImgFor(b.wm);
-            const is = img.style;
-            is.left = (b.x - minX) + "vmin";
-            is.top = (b.y - minY) + "vmin";
-            is.width = b.w + "vmin";
-            is.height = b.h + "vmin";
-            if (kids[i] !== img) view.group.insertBefore(img, kids[i] || null);
+            const node = watermarkNodeFor(b.wm);
+            const ns = node.style;
+            ns.left = (b.x - minX) + "vmin";
+            ns.top = (b.y - minY) + "vmin";
+            // O texto tem a largura do próprio conteúdo (white-space: pre).
+            if (!isTextMark(b.wm)) {
+              ns.width = b.w + "vmin";
+              ns.height = b.h + "vmin";
+            }
+            if (kids[i] !== node) view.group.insertBefore(node, kids[i] || null);
             placed.add(b.wm.id);
           });
           while (kids.length > g.boxes.length) kids[kids.length - 1].remove();
         });
-        // Marca escondida sai do DOM, mas o <img> fica guardado com o src;
-        // marca apagada solta a data URL de vez.
-        wmImgs.forEach((img, id) => {
+        // Marca escondida sai do DOM, mas o elemento fica guardado (a
+        // imagem com o src); marca apagada solta a data URL de vez.
+        wmNodes.forEach((node, id) => {
           if (placed.has(id)) return;
-          img.remove();
+          node.remove();
           if (order.has(id)) return;
-          wmImgs.delete(id);
+          wmNodes.delete(id);
           wmShown.delete(id);
         });
         watermarkEl.hidden = !placed.size;
+      }
+
+      // --- Fontes do Google Fonts --------------------------------------------
+      // Um <link> por família, só das que estão em uso em algum texto do
+      // mapa — quem só consulta o mapa não baixa o catálogo inteiro. Com o
+      // painel de aparência aberto, entram todas (`all`), para a lista de
+      // fontes mostrar cada uma no próprio desenho e a troca ser imediata.
+      // Os links só são acrescentados; a exportação leva apenas os das
+      // fontes em uso (ver withPristineDom).
+      function fontsInUse() {
+        const used = new Set([
+          theme.coreText.font, theme.title.font, theme.subtitle.font,
+          theme.searchText.font, theme.searchHint.font,
+        ]);
+        theme.watermarks.forEach((wm) => { if (isTextMark(wm)) used.add(wm.font); });
+        return used;
+      }
+
+      function loadFonts(all) {
+        const wanted = all ? new Set(Object.keys(FONTS)) : fontsInUse();
+        wanted.forEach((key) => {
+          const font = FONTS[key];
+          if (!font || !font.google || document.head.querySelector('link[data-font="' + key + '"]')) return;
+          const link = document.createElement("link");
+          link.rel = "stylesheet";
+          link.dataset.font = key;
+          link.href = "https://fonts.googleapis.com/css2?family=" + font.google + "&display=swap";
+          document.head.appendChild(link);
+        });
       }
 
       // --- Tamanho do tronco ------------------------------------------------
@@ -3127,10 +3362,10 @@ META 2</span> </button>
       const SEED_STAMP_KEY = "mapaPOPs.seedStamp.v1";
       const MAP_FORMAT = "mapaPOPs";
       // v4: cor do texto por nó (textColor) e, no tema, textos, tronco,
-      // título e marca d'água. v5: subtítulo, formatação da pesquisa e
+      // título e marca d'água. v5: subtítulo, formatação da pesquisa,
       // várias marcas d'água (a `watermark` única da v4 vira a primeira da
-      // lista). Arquivos antigos abrem normalmente — o que falta neles
-      // volta ao padrão no saneamento.
+      // lista), marcas de texto e fontes do Google Fonts. Arquivos antigos
+      // abrem normalmente — o que falta neles volta ao padrão no saneamento.
       const MAP_FORMAT_VERSION = 5;
 
       function serializeNode(node) {
@@ -3202,6 +3437,14 @@ META 2</span> </button>
         "watermark.to": (v) => (v === "" || WATERMARK_ID.test(v) ? v : undefined),
         "watermark.side": (v) => (WATERMARK_SIDES.indexOf(v) >= 0 ? v : undefined),
         "watermark.align": (v) => (WATERMARK_ALIGNS.indexOf(v) >= 0 ? v : undefined),
+        "watermark.kind": (v) => (v === "image" || v === "text" ? v : undefined),
+        "watermark.text": (v) => v.slice(0, WATERMARK_TEXT_LIMIT),
+        "watermark.font": fontRule,
+        "watermark.color": (v) => cleanHex(v) || undefined,
+        "watermark.textAlign": (v) => (["left", "center", "right"].indexOf(v) >= 0 ? v : undefined),
+        "watermark.bgColor": (v) => cleanHex(v) || undefined,
+        "watermark.strokeColor": (v) => cleanHex(v) || undefined,
+        "watermark.shadowColor": (v) => cleanHex(v) || undefined,
       };
 
       // Uma chave de grupo: número preso à faixa do controle, booleano, ou
@@ -3228,10 +3471,11 @@ META 2</span> </button>
       }
 
       // As marcas d'água de um tema vindo de fora. Um tema da v4 traz uma
-      // `watermark` só, que vira a primeira da lista. Marca sem imagem
-      // válida sai (as grudadas nela ocupam o lugar dela), `to` que não
-      // aponta para outra marca vira solta, e um ciclo de grudadas é
-      // cortado — nenhum deles teria como ser desenhado.
+      // `watermark` só, que vira a primeira da lista. Marca de imagem sem
+      // imagem válida sai (as grudadas nela ocupam o lugar dela), `to` que
+      // não aponta para outra marca vira solta, e um ciclo de grudadas é
+      // cortado — nenhum deles teria como ser desenhado. Um texto vazio
+      // fica: é só não aparecer até ganhar texto.
       function sanitizeWatermarks(raw) {
         const source = Array.isArray(raw.watermarks) ? raw.watermarks
           : raw.watermark && typeof raw.watermark === "object"
@@ -3241,7 +3485,7 @@ META 2</span> </button>
         const ids = new Set();
         source.slice(0, WATERMARK_MAX).forEach((src) => {
           if (!src || typeof src !== "object") return;
-          const wm = Object.assign({}, WATERMARK_DEFAULTS);
+          const wm = watermarkDefaults(src.kind === "text" ? "text" : "image");
           Object.keys(wm).forEach((key) => {
             const value = sanitizeSetting("watermark", key, src[key]);
             if (value !== undefined) wm[key] = value;
@@ -3264,7 +3508,9 @@ META 2</span> </button>
             path.add(cur.to);
           }
         });
-        list.filter((wm) => !wm.image).forEach((wm) => { list = removeWatermark(list, wm.id); });
+        list.filter((wm) => !isTextMark(wm) && !wm.image).forEach((wm) => {
+          list = removeWatermark(list, wm.id);
+        });
         return list;
       }
 
@@ -3364,12 +3610,14 @@ META 2</span> </button>
       }
 
       // As chaves de marcas que saíram da lista (e a da v4) são apagadas
-      // antes das gravações, para devolver o espaço a tempo. Devolve false
+      // antes das gravações, para devolver o espaço a tempo. Só as marcas
+      // de imagem têm chave: o texto já vai inteiro no tema. Devolve false
       // quando o navegador recusou alguma imagem (cota cheia), para quem a
       // enviou ser avisado de que ela não sobrevive ao recarregar.
       function saveWatermarks() {
         try {
-          const keep = new Set(theme.watermarks.map((wm) => WATERMARK_PREFIX + wm.id));
+          const images = theme.watermarks.filter((wm) => !isTextMark(wm));
+          const keep = new Set(images.map((wm) => WATERMARK_PREFIX + wm.id));
           const stale = [];
           for (let i = 0; i < localStorage.length; i += 1) {
             const key = localStorage.key(i);
@@ -3378,7 +3626,7 @@ META 2</span> </button>
           stale.forEach((key) => localStorage.removeItem(key));
           localStorage.removeItem(WATERMARK_KEY);
           let stored = true;
-          theme.watermarks.forEach((wm) => {
+          images.forEach((wm) => {
             const key = WATERMARK_PREFIX + wm.id;
             if (localStorage.getItem(key) === wm.image) return;
             // Apaga antes de gravar: se a imagem nova não couber, a antiga
@@ -4236,6 +4484,19 @@ META 2</span> </button>
           relayout(0);
           updateVisibility();
           autoFit(0);
+          applyWatermarks();
+        });
+        // Fonte do Google Fonts escolhida depois (no painel, ou baixada só
+        // quando o tema pede): quando ela chega, os textos das marcas d'água
+        // são medidos de novo, o tronco pode mudar de raio e o título, de
+        // altura. A espera junta as fontes que chegam em sequência.
+        let fontsTimer = null;
+        document.fonts.addEventListener("loadingdone", () => {
+          clearTimeout(fontsTimer);
+          fontsTimer = setTimeout(() => {
+            applyWatermarks();
+            if (!refreshCoreSize() && nodeById.size) autoFit(0);
+          }, 60);
         });
       }
 
@@ -5251,6 +5512,8 @@ META 2</span> </button>
         // Entrar ou sair do modo celular troca as vagas dos elementos presos
         // à tela (no celular valem as de fábrica).
         if (metricsChanged) applyHud();
+        // A medida dos textos das marcas d'água muda um fio com a tela.
+        if (theme.watermarks.some(isTextMark)) applyWatermarks();
         // Sempre depois das medidas: o piso do círculo vem delas.
         const coreChanged = fitCoreSize();
         if (metricsChanged || coreChanged) {
@@ -5971,6 +6234,13 @@ META 2</span> </button>
           overlaySide: devOverlay.classList.contains("is-side"),
           watermarkHidden: watermarkEl.hidden,
           watermarkNodes: Array.from(watermarkEl.childNodes),
+          // As fontes que o painel baixou só para mostrar a lista. As em
+          // uso ficam: assim o arquivo já pede a fonte antes do script rodar.
+          spareFonts: (() => {
+            const used = fontsInUse();
+            return Array.from(document.head.querySelectorAll("link[data-font]"))
+              .filter((link) => !used.has(link.dataset.font));
+          })(),
         };
 
         branchesLayer.innerHTML = "";
@@ -5992,6 +6262,7 @@ META 2</span> </button>
         // ao abrir. Os mesmos elementos voltam depois, com o src intacto.
         watermarkEl.hidden = true;
         saved.watermarkNodes.forEach((node) => node.remove());
+        saved.spareFonts.forEach((link) => link.remove());
 
         let result;
         try {
@@ -6011,6 +6282,7 @@ META 2</span> </button>
           zoomReadout.textContent = saved.zoomText;
           watermarkEl.hidden = saved.watermarkHidden;
           saved.watermarkNodes.forEach((node) => watermarkEl.appendChild(node));
+          saved.spareFonts.forEach((link) => document.head.appendChild(link));
           render();
           updateVisibility();
           applyCamera(0);
@@ -6176,9 +6448,20 @@ META 2</span> </button>
         target[last] = value;
       }
 
+      // O padrão de uma chave. As das marcas d'água ("watermarks.2.color")
+      // não moram em DEFAULT_THEME: vêm dos padrões da espécie da marca.
+      function defaultFor(path) {
+        const parts = pathParts(path);
+        if (parts[0] === "watermarks") {
+          const wm = getIn(theme, parts.slice(0, 2));
+          return wm ? watermarkDefaults(wm.kind)[parts[2]] : undefined;
+        }
+        return getIn(DEFAULT_THEME, parts);
+      }
+
       function isDefaultPath(path) {
         const current = getPath(theme, path);
-        const fallback = getPath(DEFAULT_THEME, path);
+        const fallback = defaultFor(path);
         if (fallback === undefined) {
           // Chave de um galho só: o padrão é não existir.
           return current === undefined || current === ""
@@ -6188,7 +6471,7 @@ META 2</span> </button>
       }
 
       function resetPath(path) {
-        const fallback = getPath(DEFAULT_THEME, path);
+        const fallback = defaultFor(path);
         if (fallback !== undefined) {
           setPath(theme, path, JSON.parse(JSON.stringify(fallback)));
           return;
@@ -6259,6 +6542,19 @@ META 2</span> </button>
         shift: (v, wm) => (wm.side === "left" || wm.side === "right"
           ? signedPercent(v, "↑", "↓")
           : signedPercent(v, "←", "→")),
+        // Texto: a letra em % do lado menor da tela; o resto, em % da
+        // própria letra (é o que o em quer dizer).
+        size: (v) => decimal(v) + "%",
+        spacing: (v) => Math.round(v * 100) + "%",
+        lineHeight: (v) => decimal(v) + "×",
+        bgTransparency: (v) => v + "%",
+        bgPadding: (v) => Math.round(v * 100) + "%",
+        bgRadius: (v) => Math.round(v * 100) + "%",
+        strokeWidth: (v) => Math.round(v * 100) + "%",
+        shadowTransparency: (v) => v + "%",
+        shadowBlur: (v) => Math.round(v * 100) + "%",
+        shadowDistance: (v) => Math.round(v * 100) + "%",
+        shadowAngle: (v) => ARROWS[Math.round(v / 45) % 8] + " " + v + "°",
       };
 
       function readout(path) {
@@ -6398,12 +6694,17 @@ META 2</span> </button>
       }
 
       // Cada opção é escrita na própria fonte (o Chrome e o Firefox do
-      // computador mostram; o celular ignora e usa a lista do sistema).
+      // computador mostram; o celular ignora e usa a lista do sistema). As
+      // do Google Fonts vêm num grupo à parte: só elas dependem de internet.
       function fontRowMarkup(path) {
         const current = getPath(theme, path);
-        const options = Object.keys(FONTS).map((key) =>
-          `<option value="${key}"${key === current ? " selected" : ""} style="font-family:${escapeHtml(FONTS[key].css)}">${escapeHtml(FONTS[key].label)}</option>`
-        ).join("");
+        const option = (key) =>
+          `<option value="${key}"${key === current ? " selected" : ""} style="font-family:${escapeHtml(FONTS[key].css)}">${escapeHtml(FONTS[key].label)}</option>`;
+        const keys = Object.keys(FONTS);
+        const options = `
+          <optgroup label="Da página e do sistema">${keys.filter((k) => !FONTS[k].google).map(option).join("")}</optgroup>
+          <optgroup label="Google Fonts (baixadas da internet)">${keys.filter((k) => FONTS[k].google).map(option).join("")}</optgroup>
+        `;
         return `
           <div class="dev-field-row">
             <label class="dev-color-name" for="${bindId(path)}">Fonte</label>
@@ -6608,9 +6909,20 @@ META 2</span> </button>
         return theme.watermarks.find((wm) => wm.id === id) || null;
       }
 
+      // Sem nome dado, um texto se apresenta pela primeira linha dele.
       function watermarkName(wm) {
-        return wm.name || "Marca " + (theme.watermarks.indexOf(wm) + 1);
+        if (wm.name) return wm.name;
+        if (isTextMark(wm)) {
+          const line = wm.text.split("\n").map((l) => l.trim()).find(Boolean) || "";
+          if (!line) return "Texto vazio";
+          return "“" + (line.length > 28 ? line.slice(0, 27) + "…" : line) + "”";
+        }
+        return "Marca " + (theme.watermarks.indexOf(wm) + 1);
       }
+
+      // Seções recolhíveis do editor de texto (fundo, contorno, sombra) que
+      // estão abertas. Vale para todas as marcas e sobrevive aos redesenhos.
+      const wmFolds = new Set();
 
       // A principal do conjunto: a solta no começo da corrente de grudadas.
       function watermarkRootOf(wm) {
@@ -6653,20 +6965,40 @@ META 2</span> </button>
         return "Grudada " + SIDE_LABELS[wm.side] + " de " + (parent ? watermarkName(parent) : "?") + hidden;
       }
 
+      // A miniatura de um texto é um "Aa" na fonte, no estilo e nas cores
+      // dele (paintTextThumb); a de uma imagem recebe o src depois.
       function watermarkThumbMarkup(wm) {
+        if (isTextMark(wm)) {
+          return `<span class="dev-wm-thumb is-text" data-wm-text-thumb="${escapeHtml(wm.id)}" aria-hidden="true">Aa</span>`;
+        }
         return `<span class="dev-wm-thumb"><img data-wm-thumb="${escapeHtml(wm.id)}" alt="" /></span>`;
+      }
+
+      function paintTextThumb(el, wm) {
+        const s = el.style;
+        s.fontFamily = FONTS[wm.font].css;
+        s.fontWeight = wm.bold ? "700" : "400";
+        s.fontStyle = wm.italic ? "italic" : "normal";
+        s.color = wm.color;
+        s.backgroundColor = wm.bg ? wm.bgColor : "";
+        s.setProperty("-webkit-text-stroke", wm.stroke ? "1px " + wm.strokeColor : "");
       }
 
       function tabMarcaMarkup() {
         const list = theme.watermarks;
         const picker = `<input type="file" id="theme-wm-file" class="dev-file-input" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" />`;
-        const full = list.length >= WATERMARK_MAX;
-        const addButton = `<button type="button" class="dev-btn ${list.length ? "dev-btn-ghost" : "dev-btn-primary"}" data-theme-action="wm-add" style="width:100%;"${full ? " disabled" : ""}>${list.length ? "+ Adicionar outra imagem…" : "Enviar imagem…"}</button>`;
+        const full = list.length >= WATERMARK_MAX ? " disabled" : "";
+        const addButtons = `
+          <div class="dev-inline-actions">
+            <button type="button" class="dev-btn ${list.length ? "dev-btn-ghost" : "dev-btn-primary"}" data-theme-action="wm-add"${full}>${list.length ? "+ Imagem…" : "Enviar imagem…"}</button>
+            <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="wm-add-text"${full}>${list.length ? "+ Texto" : "Adicionar texto"}</button>
+          </div>
+        `;
         if (!list.length) {
           return `
-            <p class="dev-data-hint">Imagens fixas na tela, por cima do mapa — o logo da unidade, por exemplo. Elas não atrapalham os cliques e vão junto nas exportações. Cada uma pode ficar solta num ponto da tela ou grudada em outra.</p>
+            <p class="dev-data-hint">Imagens e textos fixos na tela, por cima do mapa — o logo da unidade, um aviso, a data da última revisão. Eles não atrapalham os cliques e vão junto nas exportações. Cada marca pode ficar solta num ponto da tela ou grudada em outra.</p>
             ${picker}
-            ${addButton}
+            ${addButtons}
             <p class="dev-data-hint" style="margin-top:0.6rem;">PNG com fundo transparente fica melhor. Imagens grandes são reduzidas antes de guardar.</p>
           `;
         }
@@ -6689,9 +7021,85 @@ META 2</span> </button>
           <p class="dev-data-hint">Clique numa marca para ajustá-la. Quando duas se cruzam, a de baixo na lista fica por cima.</p>
           <div class="dev-wm-list" role="group" aria-label="Marcas d'água">${rows}</div>
           ${picker}
-          ${addButton}
-          ${full ? `<p class="dev-data-hint" style="margin:0.4rem 0 0;">Limite de ${WATERMARK_MAX} marcas d'água.</p>` : ""}
+          ${addButtons}
+          ${full ? `<p class="dev-data-hint" style="margin:0 0 0.4rem;">Limite de ${WATERMARK_MAX} marcas d'água, entre imagens e textos.</p>` : ""}
           ${watermarkEditorMarkup(selected)}
+        `;
+      }
+
+      // Uma seção recolhível do editor de texto, com a chave que a liga e
+      // os controles dela. O resumo diz se está ligada sem precisar abrir.
+      function foldMarkup(key, title, onPath, body) {
+        const on = getPath(theme, onPath);
+        return `
+          <details class="dev-fold" data-fold="${key}"${wmFolds.has(key) ? " open" : ""}>
+            <summary><span>${escapeHtml(title)}</span><span class="dev-fold-state" data-fold-state="${escapeHtml(onPath)}">${on ? "ligado" : "desligado"}</span></summary>
+            ${checkRowMarkup(onPath, "Mostrar " + title.toLowerCase())}
+            ${body}
+          </details>
+        `;
+      }
+
+      // A parte de cima do editor de uma marca de texto: o texto, o nome e
+      // toda a formatação. O "Onde fica" que vem depois é o mesmo das
+      // imagens.
+      function textEditorMarkup(wm, p) {
+        return `
+          <div class="dev-inline-actions">
+            <button type="button" class="dev-btn dev-btn-ghost dev-btn-danger" data-theme-action="wm-remove">Remover texto</button>
+          </div>
+          <label class="dev-label">Texto
+            <textarea class="dev-input" rows="3" maxlength="${WATERMARK_TEXT_LIMIT}" data-bind="${escapeHtml(p("text"))}">${escapeHtml(wm.text)}</textarea>
+          </label>
+          <p class="dev-data-hint" style="margin:0.35rem 0 0.2rem;">Enter quebra a linha; fora isso, o texto não quebra sozinho.</p>
+          <label class="dev-label">Nome na lista
+            <input class="dev-input" type="text" maxlength="${WATERMARK_NAME_LIMIT}" data-bind="${escapeHtml(p("name"))}" value="${escapeHtml(wm.name)}" placeholder="${escapeHtml(watermarkName(Object.assign({}, wm, { name: "" })))}" />
+          </label>
+          ${checkRowMarkup(p("on"), "Mostrar esta marca")}
+
+          ${sectionTitle("Letra")}
+          ${fontRowMarkup(p("font"))}
+          <div class="dev-field-row">
+            <span class="dev-color-name">Estilo</span>
+            <div class="dev-seg-group" role="group" aria-label="Estilo do texto">
+              ${pressButtonMarkup(p("bold"), undefined, "<b>N</b>", "Negrito")}
+              ${pressButtonMarkup(p("italic"), undefined, "<i>I</i>", "Itálico")}
+              ${pressButtonMarkup(p("underline"), undefined, "<u>S</u>", "Sublinhado")}
+              ${pressButtonMarkup(p("upper"), undefined, "AA", "Tudo em maiúsculas")}
+            </div>
+          </div>
+          <div class="dev-field-row">
+            <span class="dev-color-name">Linhas</span>
+            <div class="dev-seg-group" role="group" aria-label="Alinhamento das linhas">
+              ${pressButtonMarkup(p("textAlign"), "left", ALIGN_ICONS.left, "Alinhar à esquerda")}
+              ${pressButtonMarkup(p("textAlign"), "center", ALIGN_ICONS.center, "Centralizar")}
+              ${pressButtonMarkup(p("textAlign"), "right", ALIGN_ICONS.right, "Alinhar à direita")}
+            </div>
+          </div>
+          ${rangeRowMarkup(p("size"), "Tamanho da letra")}
+          <p class="dev-data-hint" style="margin:-0.1rem 0 0.3rem;">Em % do lado menor da tela, como o tamanho das imagens: o texto acompanha a tela.</p>
+          ${colorRowMarkup(p("color"), "Cor", wm.color)}
+          ${rangeRowMarkup(p("spacing"), "Espaço entre letras")}
+          ${rangeRowMarkup(p("lineHeight"), "Espaço entre linhas")}
+
+          ${foldMarkup("bg", "Fundo", p("bg"), `
+            ${colorRowMarkup(p("bgColor"), "Cor do fundo", wm.bgColor)}
+            ${rangeRowMarkup(p("bgTransparency"), "Transparência")}
+            ${rangeRowMarkup(p("bgPadding"), "Margem interna")}
+            ${rangeRowMarkup(p("bgRadius"), "Cantos arredondados")}
+          `)}
+          ${foldMarkup("stroke", "Contorno", p("stroke"), `
+            ${colorRowMarkup(p("strokeColor"), "Cor do contorno", wm.strokeColor)}
+            ${rangeRowMarkup(p("strokeWidth"), "Espessura")}
+          `)}
+          ${foldMarkup("shadow", "Sombra", p("shadow"), `
+            ${colorRowMarkup(p("shadowColor"), "Cor da sombra", wm.shadowColor)}
+            ${rangeRowMarkup(p("shadowTransparency"), "Transparência")}
+            ${rangeRowMarkup(p("shadowBlur"), "Desfoque")}
+            ${rangeRowMarkup(p("shadowDistance"), "Distância")}
+            ${rangeRowMarkup(p("shadowAngle"), "Direção")}
+          `)}
+          <p class="dev-data-hint" style="margin:0.3rem 0 0.2rem;">Margem, cantos, espessura, desfoque e distância são em % do tamanho da letra: crescem junto com ela.</p>
         `;
       }
 
@@ -6701,7 +7109,7 @@ META 2</span> </button>
         const family = watermarkFamily(wm.id);
         const targets = theme.watermarks.filter((other) => !family.has(other.id));
         const hasAttached = theme.watermarks.some((other) => other.to === wm.id);
-        const attachTitle = targets.length ? "" : ' title="Adicione outra imagem para grudar esta nela"';
+        const attachTitle = targets.length ? "" : ' title="Adicione outra marca para grudar esta nela"';
         let place;
         if (!wm.to) {
           place = `
@@ -6749,18 +7157,22 @@ META 2</span> </button>
             <p class="dev-data-hint" style="margin:0.1rem 0 0;">Distância e deslocamento são em % do lado menor da tela, como o tamanho: o conjunto fica com a mesma forma em qualquer tela. Distância negativa sobrepõe as duas. Transparência e rotação vêm de ${escapeHtml(watermarkName(root))}, a principal do conjunto, e esconder ${escapeHtml(parent ? watermarkName(parent) : "a outra")} esconde esta também.</p>
           `;
         }
+        const top = isTextMark(wm) ? textEditorMarkup(wm, p) : `
+          <div class="dev-inline-actions">
+            <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="wm-pick">Trocar imagem…</button>
+            <button type="button" class="dev-btn dev-btn-ghost dev-btn-danger" data-theme-action="wm-remove">Remover</button>
+          </div>
+          <label class="dev-label">Nome
+            <input class="dev-input" type="text" maxlength="${WATERMARK_NAME_LIMIT}" data-bind="${escapeHtml(p("name"))}" value="${escapeHtml(wm.name)}" placeholder="Marca ${index + 1}" />
+          </label>
+          ${checkRowMarkup(p("on"), "Mostrar esta marca")}
+          ${rangeRowMarkup(p("scale"), "Tamanho")}
+          <p class="dev-data-hint" style="margin:-0.1rem 0 0.3rem;">O lado maior da imagem, em % do lado menor da tela.</p>
+        `;
         return `
           <div class="dev-wm-editor">
-            <div class="dev-inline-actions">
-              <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="wm-pick">Trocar imagem…</button>
-              <button type="button" class="dev-btn dev-btn-ghost dev-btn-danger" data-theme-action="wm-remove">Remover</button>
-            </div>
-            <label class="dev-label">Nome
-              <input class="dev-input" type="text" maxlength="${WATERMARK_NAME_LIMIT}" data-bind="${escapeHtml(p("name"))}" value="${escapeHtml(wm.name)}" placeholder="Marca ${index + 1}" />
-            </label>
-            ${checkRowMarkup(p("on"), "Mostrar esta marca")}
-            ${rangeRowMarkup(p("scale"), "Tamanho")}
-            <p class="dev-data-hint" style="margin:-0.1rem 0 0.3rem;">O lado maior da imagem, em % do lado menor da tela.</p>
+            ${top}
+            ${isTextMark(wm) ? sectionTitle("Lugar") : ""}
             <div class="dev-field-row">
               <span class="dev-color-name">Onde fica</span>
               <div class="dev-seg-group" role="group" aria-label="Onde a marca fica">
@@ -6835,6 +7247,7 @@ META 2</span> </button>
           const wm = watermarkById(img.dataset.wmThumb);
           if (wm) img.src = wm.image;
         });
+        loadFonts(true);
         const coreField = document.getElementById("theme-core-label");
         if (coreField) coreField.addEventListener("input", () => editCoreLabel(coreField.value));
         refreshThemeWidgets();
@@ -6931,6 +7344,13 @@ META 2</span> </button>
           const wm = watermarkById(el.dataset.wm);
           if (wm) el.classList.toggle("is-off", !wm.on);
         });
+        devModalBody.querySelectorAll("[data-wm-text-thumb]").forEach((el) => {
+          const wm = watermarkById(el.dataset.wmTextThumb);
+          if (wm) paintTextThumb(el, wm);
+        });
+        devModalBody.querySelectorAll("[data-fold-state]").forEach((el) => {
+          el.textContent = getPath(theme, el.dataset.foldState) ? "ligado" : "desligado";
+        });
       }
 
       // Delegação registrada uma única vez: renderThemeForm() se redesenha a
@@ -6954,6 +7374,14 @@ META 2</span> </button>
 
       devModalBody.addEventListener("input", onThemeControl);
       devModalBody.addEventListener("change", onThemeControl);
+      // "toggle" não sobe pela árvore: só a captura enxerga o de cada
+      // seção recolhível.
+      devModalBody.addEventListener("toggle", (event) => {
+        const fold = event.target.dataset && event.target.dataset.fold;
+        if (!fold) return;
+        if (event.target.open) wmFolds.add(fold);
+        else wmFolds.delete(fold);
+      }, true);
 
       devModalBody.addEventListener("click", (event) => {
         const tab = event.target.closest("[data-theme-tab]");
@@ -7002,6 +7430,18 @@ META 2</span> </button>
           wmPickTarget = name === "wm-pick" ? wmSelected : "";
           const input = document.getElementById("theme-wm-file");
           if (input) input.click();
+        } else if (name === "wm-add-text") {
+          if (theme.watermarks.length >= WATERMARK_MAX) return;
+          const wm = Object.assign(watermarkDefaults("text"), { id: newWatermarkId() });
+          theme.watermarks.push(wm);
+          wmSelected = wm.id;
+          applyTheme();
+          saveTheme();
+          // O foco vai para o texto, já selecionado: é só digitar por cima.
+          const path = keyPath("watermarks", String(theme.watermarks.length - 1), "text");
+          renderThemeForm('textarea[data-bind="' + CSS.escape(path) + '"]');
+          if (document.activeElement && document.activeElement.tagName === "TEXTAREA") document.activeElement.select();
+          status.textContent = "Texto adicionado.";
         } else if (name === "wm-select") {
           wmSelected = action.dataset.wm;
           renderThemeForm('[data-theme-action="wm-select"][data-wm="' + CSS.escape(wmSelected) + '"]');
@@ -7056,10 +7496,10 @@ META 2</span> </button>
         const fresh = defaultTheme();
         TAB_KEYS[tabId].forEach((key) => {
           if (key === "watermarks") {
-            // As imagens ficam, e cada marca continua grudada onde estava;
-            // o resto volta ao de fábrica.
-            theme.watermarks = theme.watermarks.map((wm) => Object.assign({}, WATERMARK_DEFAULTS, {
-              id: wm.id, name: wm.name, image: wm.image, ratio: wm.ratio, to: wm.to,
+            // As imagens e os textos ficam, e cada marca continua grudada
+            // onde estava; o resto volta ao de fábrica.
+            theme.watermarks = theme.watermarks.map((wm) => Object.assign(watermarkDefaults(wm.kind), {
+              id: wm.id, name: wm.name, image: wm.image, ratio: wm.ratio, to: wm.to, text: wm.text,
             }));
             return;
           }
@@ -7089,7 +7529,7 @@ META 2</span> </button>
             if (!wm) return;   // a marca foi removida enquanto a imagem era lida
           } else {
             if (theme.watermarks.length >= WATERMARK_MAX) return;
-            wm = Object.assign({}, WATERMARK_DEFAULTS, {
+            wm = Object.assign(watermarkDefaults("image"), {
               id: newWatermarkId(),
               name: file.name.replace(/\.[^.]*$/, "").trim().slice(0, WATERMARK_NAME_LIMIT),
             });
