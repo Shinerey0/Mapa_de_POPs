@@ -104,6 +104,10 @@
       color: rgba(11, 23, 54, 0.75);
     }
 
+    body.on-light .eyebrow-sub {
+      color: rgba(11, 23, 54, 0.66);
+    }
+
     body.on-light .instruction {
       color: rgba(11, 23, 54, 0.72) !important;
     }
@@ -195,11 +199,37 @@
       display: none !important;
     }
 
-    /* Tudo aqui é só o padrão: o painel de aparência escreve fonte,
-       tamanho, cor e caixa inline (applyTitle). O max-width guarda o canto
+    /* Título e subtítulo formam um elemento só na tela: vão juntos para a
+       vaga escolhida e somem juntos. As duas linhas se alinham como a
+       vaga: à esquerda, ao centro ou à direita. O max-width guarda o canto
        dos botões do topo, que no modo dev são três. */
-    .eyebrow {
+    .map-heading {
+      display: flex;
+      flex-direction: column;
       max-width: calc(100% - 8.5rem);
+      pointer-events: none;
+    }
+
+    .hud-slot[data-slot$="left"] .map-heading {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .hud-slot[data-slot="top"] .map-heading,
+    .hud-slot[data-slot="center"] .map-heading,
+    .hud-slot[data-slot="bottom"] .map-heading {
+      align-items: center;
+      text-align: center;
+    }
+
+    .hud-slot[data-slot$="right"] .map-heading {
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    /* Tudo aqui é só o padrão: o painel de aparência escreve fonte,
+       tamanho, cor e caixa inline (applyTitle). */
+    .eyebrow {
       color: rgba(231, 240, 255, 0.78);
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -207,6 +237,19 @@
       font-weight: 700;
       overflow-wrap: anywhere;
       pointer-events: none;
+    }
+
+    /* Subtítulo: mesmo esquema do título (applySubtitle escreve o resto
+       inline), só que mais discreto de fábrica. */
+    .eyebrow-sub {
+      color: rgba(231, 240, 255, 0.66);
+      font-size: var(--subtitle-size, 0.8rem);
+      overflow-wrap: anywhere;
+      pointer-events: none;
+    }
+
+    .eyebrow-sub[hidden] {
+      display: none;
     }
 
     .map-stage {
@@ -1308,25 +1351,6 @@
       cursor: default;
     }
 
-    /* Xadrez atrás da prévia: é o que mostra se o PNG tem fundo
-       transparente ou não. */
-    .dev-wm-preview {
-      height: 120px;
-      margin: 0.2rem 0 0.6rem;
-      border-radius: 12px;
-      border: 1px solid rgba(160, 190, 255, 0.3);
-      background: repeating-conic-gradient(rgba(255, 255, 255, 0.1) 0% 25%, transparent 0% 50%) 50% / 16px 16px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-    }
-
-    .dev-wm-preview img {
-      max-width: 90%;
-      max-height: 100px;
-      object-fit: contain;
-    }
-
     .dev-inline-actions {
       display: flex;
       flex-wrap: wrap;
@@ -1343,21 +1367,202 @@
       border-color: rgba(255, 120, 120, 0.45);
     }
 
-    /* --- Marca d'água ------------------------------------------------
-       Mora na janela da câmera, e não no #world: fica parada enquanto o
-       mapa é arrastado ou ampliado. É desenhada POR CIMA do mapa (só os
-       controles da câmera ficam acima dela) e é transparente ao ponteiro
-       — nem o clique, nem o arrasto, nem o elementFromPoint do religar
-       galho enxergam ela. Posição, tamanho, opacidade e giro vêm do
-       painel de aparência (applyWatermark). */
+    /* Botão de estado com palavra em vez de ícone (Acima, Abaixo...). */
+    .dev-seg.is-text {
+      width: auto;
+      min-width: 34px;
+      padding: 0 0.6rem;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .dev-seg:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .dev-seg-group.is-wrap {
+      flex-wrap: wrap;
+    }
+
+    /* Aba Marca d'água: a lista das marcas, com miniatura. Clicar numa
+       linha escolhe qual o editor embaixo mostra. */
+    .dev-wm-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin: 0.3rem 0 0.5rem;
+    }
+
+    .dev-wm-row {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .dev-wm-item {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+      border-radius: 10px;
+      border: 1px solid rgba(160, 190, 255, 0.25);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .dev-wm-item:hover,
+    .dev-wm-item:focus-visible {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .dev-wm-item[aria-pressed="true"] {
+      background: rgba(160, 190, 255, 0.18);
+      border-color: rgb(160, 190, 255);
+    }
+
+    /* Xadrez atrás da miniatura: é o que mostra se o PNG tem fundo
+       transparente ou não. */
+    .dev-wm-thumb {
+      flex: none;
+      width: 52px;
+      height: 34px;
+      border-radius: 6px;
+      background: repeating-conic-gradient(rgba(255, 255, 255, 0.1) 0% 25%, transparent 0% 50%) 50% / 10px 10px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .dev-wm-thumb img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .dev-wm-info {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.05rem;
+    }
+
+    .dev-wm-name,
+    .dev-wm-where {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dev-wm-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .dev-wm-where {
+      font-size: 0.7rem;
+      color: rgba(230, 238, 255, 0.6);
+    }
+
+    .dev-wm-item.is-off .dev-wm-name {
+      color: rgba(230, 238, 255, 0.5);
+    }
+
+    .dev-icon-btn {
+      flex: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(160, 190, 255, 0.3);
+      color: rgba(230, 238, 255, 0.85);
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .dev-icon-btn:hover:not(:disabled),
+    .dev-icon-btn:focus-visible:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .dev-icon-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .dev-wm-editor {
+      margin-top: 0.5rem;
+      padding: 0.6rem 0.75rem 0.5rem;
+      border: 1px solid rgba(160, 190, 255, 0.18);
+      border-radius: 12px;
+    }
+
+    /* "Grudada em": uma ficha por marca candidata, com miniatura. */
+    .dev-wm-targets {
+      flex: 1 1 10rem;
+      min-width: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .dev-wm-target {
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.2rem 0.5rem 0.2rem 0.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(160, 190, 255, 0.3);
+      color: rgba(230, 238, 255, 0.85);
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+
+    .dev-wm-target span:last-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dev-wm-target .dev-wm-thumb {
+      width: 34px;
+      height: 22px;
+    }
+
+    .dev-wm-target:hover,
+    .dev-wm-target:focus-visible {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dev-wm-target[aria-pressed="true"] {
+      background: rgba(160, 190, 255, 0.2);
+      border-color: rgb(160, 190, 255);
+      color: rgb(255, 255, 255);
+    }
+
+    /* --- Marcas d'água ------------------------------------------------
+       Moram na janela da câmera, e não no #world: ficam paradas enquanto
+       o mapa é arrastado ou ampliado. São desenhadas POR CIMA do mapa (só
+       os controles da câmera ficam acima delas) e são transparentes ao
+       ponteiro — nem o clique, nem o arrasto, nem o elementFromPoint do
+       religar galho enxergam elas. Tudo o que muda vem do painel de
+       aparência (applyWatermarks).
+
+       Cada conjunto (uma marca solta e as grudadas nela) tem uma vaga do
+       tamanho da janela: o flex da vaga põe o conjunto no ponto da grade
+       3×3, e o padding é a distância da borda. Dentro do conjunto, cada
+       imagem tem posição absoluta, calculada a partir de lado,
+       alinhamento e distância. Transparência e giro são do conjunto. */
     .watermark {
       position: absolute;
       inset: 0;
       z-index: 20;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
       overflow: hidden;
       pointer-events: none;
     }
@@ -1366,10 +1571,29 @@
       display: none;
     }
 
+    .wm-slot {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .wm-group {
+      position: relative;
+      flex: none;
+    }
+
+    .wm-slot[hidden],
+    .wm-img[hidden] {
+      display: none;
+    }
+
     /* O max-width do reset do Tailwind espremeria a imagem na largura da
        tela e a deformaria, já que a altura é escrita inline. */
-    .watermark img {
-      flex: none;
+    .wm-img {
+      position: absolute;
       max-width: none;
       user-select: none;
       -webkit-user-drag: none;
@@ -1378,32 +1602,40 @@
     /* --- Pesquisa ------------------------------------------------------
        Mora fora do #map-stage de propósito: assim nem o arrasto nem a roda
        da câmera enxergam os gestos feitos na caixa ou na lista. Quem a
-       posiciona é a vaga (.hud-slot) em que ela estiver. --- */
+       posiciona é a vaga (.hud-slot) em que ela estiver.
+
+       Fonte, cores e texto de exemplo vêm do painel de aparência (aba
+       Pesquisa) como variáveis escritas na .search por applySearch(). O
+       segundo valor de cada var() é o de fábrica — é ele que vale enquanto
+       a variável não existe. A lista de resultados segue a formatação do
+       texto digitado. --- */
     .search {
       position: relative;
       width: min(340px, 100%);
       pointer-events: auto;
     }
 
+    /* A caixa cresce com a letra maior (a do texto ou a do exemplo), sem
+       nunca ficar menor que os 40px de sempre. */
     .search-field {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       padding: 0 0.8rem;
-      height: 40px;
+      height: max(40px, calc(var(--search-text-size, 0.88rem) * 2.3), calc(var(--search-hint-size, 0.88rem) * 2.3));
       border-radius: 999px;
-      background: rgba(10, 20, 48, 0.72);
-      border: 1px solid rgba(160, 190, 255, 0.28);
+      background: var(--search-bg, rgba(10, 20, 48, 0.72));
+      border: 1px solid var(--search-border, rgba(160, 190, 255, 0.28));
       box-shadow: 0 10px 24px rgba(2, 9, 31, 0.35);
       backdrop-filter: blur(6px);
-      color: rgba(231, 240, 255, 0.7);
+      color: var(--search-icon, rgba(231, 240, 255, 0.7));
       cursor: text;
       transition: border-color 160ms ease, background 160ms ease;
     }
 
     .search-field:focus-within {
-      border-color: rgba(160, 190, 255, 0.7);
-      background: rgba(10, 20, 48, 0.9);
+      border-color: var(--search-border-focus, rgba(160, 190, 255, 0.7));
+      background: var(--search-bg-focus, rgba(10, 20, 48, 0.9));
     }
 
     .search-icon {
@@ -1417,13 +1649,24 @@
       border: 0;
       outline: none;
       background: transparent;
-      color: rgb(240, 245, 255);
+      color: var(--search-text-color, rgb(240, 245, 255));
       font: inherit;
-      font-size: 0.88rem;
+      font-family: var(--search-text-font, inherit);
+      font-size: var(--search-text-size, 0.88rem);
+      font-weight: var(--search-text-weight, inherit);
+      font-style: var(--search-text-style, inherit);
+      letter-spacing: var(--search-text-spacing, normal);
+      text-transform: var(--search-text-case, none);
     }
 
     .search-input::placeholder {
-      color: rgba(231, 240, 255, 0.5);
+      color: var(--search-hint-color, rgba(231, 240, 255, 0.5));
+      font-family: var(--search-hint-font, inherit);
+      font-size: var(--search-hint-size, inherit);
+      font-weight: var(--search-hint-weight, inherit);
+      font-style: var(--search-hint-style, inherit);
+      letter-spacing: var(--search-hint-spacing, normal);
+      text-transform: var(--search-hint-case, none);
     }
 
     /* O "x" nativo do type=search some: Esc já limpa, e o do Chrome é
@@ -1442,10 +1685,14 @@
       scrollbar-width: thin;
       scrollbar-color: rgba(160, 190, 255, 0.35) transparent;
       border-radius: 16px;
-      background: rgba(10, 20, 48, 0.94);
-      border: 1px solid rgba(160, 190, 255, 0.28);
+      background: var(--search-list-bg, rgba(10, 20, 48, 0.94));
+      border: 1px solid var(--search-list-border, rgba(160, 190, 255, 0.28));
       box-shadow: 0 18px 38px rgba(2, 9, 31, 0.5);
       backdrop-filter: blur(6px);
+      font-family: var(--search-text-font, inherit);
+      font-style: var(--search-text-style, inherit);
+      letter-spacing: var(--search-text-spacing, normal);
+      text-transform: var(--search-text-case, none);
     }
 
     .search-results::-webkit-scrollbar {
@@ -1464,7 +1711,7 @@
       padding: 0.5rem 0.6rem;
       border-radius: 11px;
       cursor: pointer;
-      color: rgb(236, 242, 255);
+      color: var(--search-item-color, rgb(236, 242, 255));
     }
 
     .search-item.is-active {
@@ -1492,8 +1739,10 @@
       gap: 0.1rem;
     }
 
+    /* Os tamanhos da lista acompanham o do texto digitado, na proporção
+       de sempre (0.84rem e 0.72rem para 0.88rem). */
     .search-label {
-      font-size: 0.84rem;
+      font-size: calc(var(--search-text-size, 0.88rem) * 0.84 / 0.88);
       font-weight: 700;
       line-height: 1.25;
       overflow-wrap: anywhere;
@@ -1504,8 +1753,8 @@
     }
 
     .search-path {
-      font-size: 0.72rem;
-      color: rgba(231, 240, 255, 0.55);
+      font-size: calc(var(--search-text-size, 0.88rem) * 0.72 / 0.88);
+      color: var(--search-path-color, rgba(231, 240, 255, 0.55));
       line-height: 1.3;
       overflow-wrap: anywhere;
     }
@@ -1521,18 +1770,18 @@
     .search-empty,
     .search-more {
       padding: 0.55rem 0.7rem;
-      font-size: 0.78rem;
-      color: rgba(231, 240, 255, 0.6);
+      font-size: calc(var(--search-text-size, 0.88rem) * 0.78 / 0.88);
+      color: var(--search-note-color, rgba(231, 240, 255, 0.6));
       cursor: default;
     }
 
     .search-more {
-      font-size: 0.72rem;
+      font-size: calc(var(--search-text-size, 0.88rem) * 0.72 / 0.88);
       border-top: 1px solid rgba(160, 190, 255, 0.14);
       margin-top: 0.2rem;
     }
 
-    body.on-light .eyebrow + .search .search-field {
+    body.on-light .map-heading + .search .search-field {
       box-shadow: 0 8px 20px rgba(11, 23, 54, 0.18);
     }
 
@@ -1588,16 +1837,23 @@
 
     /* O min-height é o que põe a pesquisa abaixo da fila do cadeado (4rem)
        mesmo com o título curto ou vazio; um título maior empurra mais. */
-    body.is-compact .eyebrow {
+    body.is-compact .map-heading {
       margin-left: 0.35rem;
       min-height: 2.3rem;
       max-width: calc(100% - 9.3rem);
+    }
+
+    body.is-compact .eyebrow {
       font-size: calc(var(--title-size, 0.7rem) * 0.62 / 0.7);
+    }
+
+    body.is-compact .eyebrow-sub {
+      font-size: calc(var(--subtitle-size, 0.8rem) * 0.62 / 0.7);
     }
 
     /* Título escondido no celular: some, mas guarda o lugar — sem ele a
        pesquisa, que ocupa a largura toda, subiria para baixo do cadeado. */
-    body.is-compact .eyebrow.hud-item.is-off {
+    body.is-compact .map-heading.hud-item.is-off {
       display: block !important;
       visibility: hidden;
       height: 2.3rem;
@@ -1610,9 +1866,18 @@
       width: 100%;
     }
 
-    /* 16px: menos que isso e o iOS dá zoom sozinho ao focar o campo. */
+    /* 16px: menos que isso e o iOS dá zoom sozinho ao focar o campo. Uma
+       letra escolhida maior que isso continua valendo. */
+    body.is-compact .search-field {
+      height: max(40px, calc(max(16px, var(--search-text-size, 0.88rem)) * 2.3), calc(max(16px, var(--search-hint-size, 0.88rem)) * 2.3));
+    }
+
     body.is-compact .search-input {
-      font-size: 16px;
+      font-size: max(16px, var(--search-text-size, 0.88rem));
+    }
+
+    body.is-compact .search-input::placeholder {
+      font-size: max(16px, var(--search-hint-size, 0.88rem));
     }
 
     /* O círculo do tronco encolheu, e o rótulo encolhe na mesma proporção
@@ -1776,7 +2041,7 @@
       </label>
       <ul id="search-results" class="search-results" role="listbox" aria-label="Resultados da pesquisa" hidden=""></ul>
     </div></div>
-    <div class="hud-slot" data-slot="top"><p id="map-title" class="eyebrow hud-item" data-hud="title" style="--title-size: 22px; font-family: &quot;DM Sans&quot;, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em; color: rgb(245, 249, 255);">Mapa Operacional Padrão - MOP</p></div>
+    <div class="hud-slot" data-slot="top"><div id="map-heading" class="map-heading hud-item" data-hud="title"><p id="map-title" class="eyebrow" style="--title-size: 22px; font-family: &quot;DM Sans&quot;, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em; color: rgb(245, 249, 255);">Mapa Operacional Padrão - MOP</p><p id="map-subtitle" class="eyebrow-sub" hidden=""></p></div></div>
     <div class="hud-slot" data-slot="top-right"></div>
     <button id="dev-toggle" class="dev-toggle" type="button" aria-haspopup="dialog" aria-label="Modo desenvolvedor" title="Modo desenvolvedor">
       <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" class="lucide lucide-lock dev-toggle-icon-locked" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -1809,7 +2074,7 @@ META 2</span> </button>
       </div>
       <div id="branches-layer"></div>
       </div>
-      <div id="watermark" class="watermark" aria-hidden="true" style="justify-content: flex-start; align-items: flex-end; padding: 24px;" hidden=""><img id="watermark-img" alt="" draggable="false" style="width: 45vmin; height: 12.0349vmin; opacity: 1;"></div>
+      <div id="watermark" class="watermark" aria-hidden="true" hidden=""></div>
       <div id="drag-hint" class="drag-hint" aria-hidden="true" hidden="">Solte sobre um nó para religar ou reordenar.</div>
      </div>
     </section>
@@ -1859,9 +2124,10 @@ META 2</span> </button>
       const coreButton = document.getElementById("core-button");
       const coreLabel = coreButton.querySelector(".node-label");
       const status = document.getElementById("map-status");
+      const headingEl = document.getElementById("map-heading");
       const titleEl = document.getElementById("map-title");
+      const subtitleEl = document.getElementById("map-subtitle");
       const watermarkEl = document.getElementById("watermark");
-      const watermarkImg = document.getElementById("watermark-img");
 
       // Elementos presos à tela que o painel posiciona (o cadeado e os
       // botões do modo dev ficam de fora, sempre no canto). A ordem é a da
@@ -2030,16 +2296,38 @@ META 2</span> </button>
         // (clara sobre fundo escuro, tinta sobre fundo claro).
         title: {
           text: "Mapa de POPs", font: "dmsans", size: 11.2, color: "",
-          bold: true, upper: true, spacing: 0.18,
+          bold: true, italic: false, upper: true, spacing: 0.18,
         },
-        // Marca d'água: imagem embutida como data URL, presa à janela da
-        // câmera. `ratio` (largura/altura) é guardado no envio, para o
-        // tamanho não depender de a imagem já ter carregado. `scale` é o
-        // lado maior da imagem, em % do lado menor da tela.
-        watermark: {
-          on: true, image: "", ratio: 1,
-          transparency: 85, scale: 35, position: "center", margin: 24, rotation: 0,
+        // Subtítulo: acompanha o título (mesma vaga, mesmo mostrar/esconder
+        // da aba Tela). Texto vazio = sem subtítulo. `place` diz se ele fica
+        // acima ou abaixo do título, e `gap` é a distância entre os dois,
+        // em px. `color` vazio = automática, como a do título.
+        subtitle: {
+          text: "", font: "dmsans", size: 13, color: "",
+          bold: false, italic: false, upper: false, spacing: 0,
+          place: "below", gap: 2,
         },
+        // Caixa de pesquisa. `searchHint` formata o texto de exemplo (o que
+        // aparece com a caixa vazia) e `searchText`, o que se digita — e a
+        // lista de resultados, que segue o texto digitado. Cores vazias =
+        // automáticas: as de sempre, ou tinta quando o fundo escolhido para
+        // a caixa for claro. Fundo e borda vazios = os de fábrica.
+        searchBox: {
+          placeholder: "Pesquisar nó ou subnó…",
+          background: "", transparency: 28, border: "", icon: "",
+        },
+        searchText: {
+          font: "dmsans", size: 14.08, color: "",
+          bold: false, italic: false, upper: false, spacing: 0,
+        },
+        searchHint: {
+          font: "dmsans", size: 14.08, color: "",
+          bold: false, italic: false, upper: false, spacing: 0,
+        },
+        // Marcas d'água: imagens presas à janela da câmera, uma entrada por
+        // imagem (ver WATERMARK_DEFAULTS). A ordem da lista é a ordem de
+        // pintura: a de baixo na lista fica por cima.
+        watermarks: [],
         // Elementos presos à tela. `position` é uma vaga da grade 3×3,
         // `offset` afasta da borda da vaga (em px, além da margem de
         // fábrica) e `scale` é o tamanho, em %. Posição, afastamento e
@@ -2056,6 +2344,33 @@ META 2</span> </button>
       const BLOB_A_ALPHA = 0.24;
       const BLOB_B_ALPHA = 0.18;
       const TITLE_CHAR_LIMIT = 60;
+      const SUBTITLE_CHAR_LIMIT = 120;
+      const SEARCH_HINT_LIMIT = 60;
+
+      // Uma marca d'água. A imagem vai embutida como data URL; `ratio`
+      // (largura/altura) é guardado no envio, para o tamanho não depender
+      // de a imagem já ter carregado. `scale` é o lado maior da imagem, em
+      // % do lado menor da tela, e vale sempre, solta ou grudada.
+      //
+      // Solta (`to` vazio): vaga da grade 3×3 (`position`), distância da
+      // borda em px (`margin`) e ajuste fino em % da largura e da altura da
+      // tela (`dx`, `dy`). Transparência e giro são dela.
+      //
+      // Grudada (`to` = id de outra marca): encosta num lado da outra
+      // (`side`), alinhada pelo começo, centro ou fim desse lado (`align`),
+      // afastada `gap` e deslocada ao longo do lado `shift` — os dois em %
+      // do lado menor da tela, como o tamanho, para o conjunto guardar a
+      // forma em qualquer tela. Mostrar/esconder, transparência e giro
+      // seguem a principal: o conjunto gira em volta dela, e a vaga da
+      // grade posiciona o conjunto inteiro.
+      const WATERMARK_DEFAULTS = {
+        id: "", name: "", image: "", ratio: 1, on: true, scale: 35,
+        position: "center", margin: 24, dx: 0, dy: 0, transparency: 85, rotation: 0,
+        to: "", side: "right", align: "center", gap: 2, shift: 0,
+      };
+      const WATERMARK_MAX = 8;
+      const WATERMARK_SIDES = ["above", "below", "left", "right"];
+      const WATERMARK_ALIGNS = ["start", "center", "end"];
 
       // Cópia funda: o tema tem objetos aninhados, e uma cópia rasa deixaria
       // o painel escrevendo direto dentro dos padrões.
@@ -2086,17 +2401,25 @@ META 2</span> </button>
         coreText: { size: [12, 44, 1], spacing: [-0.05, 0.3, 0.01], lineHeight: [0.8, 2, 0.05] },
         coreShadow: { transparency: [0, 100, 1], blur: [0, 80, 1], distance: [0, 60, 1], angle: [0, 355, 5] },
         title: { size: [8, 40, 0.2], spacing: [0, 0.4, 0.01] },
+        subtitle: { size: [8, 40, 0.2], spacing: [0, 0.4, 0.01], gap: [-10, 60, 1] },
+        // Passo de 0.04 para o padrão (14.08px, os 0.88rem de sempre) cair
+        // exatamente num degrau do controle.
+        searchText: { size: [8, 32, 0.04], spacing: [0, 0.4, 0.01] },
+        searchHint: { size: [8, 32, 0.04], spacing: [0, 0.4, 0.01] },
+        searchBox: { transparency: [0, 100, 1] },
+        // Valem para cada entrada de `watermarks` (ver limitsFor).
         watermark: {
           ratio: [0.05, 20, 0.001], transparency: [0, 98, 1], scale: [5, 100, 1],
           margin: [0, 160, 1], rotation: [-180, 180, 1],
+          dx: [-50, 50, 0.5], dy: [-50, 50, 0.5], gap: [-20, 40, 0.5], shift: [-50, 50, 0.5],
         },
         // Valem para todos os elementos de `hud` (ver limitsFor).
         hud: { offset: [0, 240, 2], scale: [50, 200, 5] },
       };
 
-      // Grade 3×3 de posições — da marca d'água e das vagas dos elementos
+      // Grade 3×3 de posições — das marcas d'água e das vagas dos elementos
       // presos à tela —, na ordem em que o painel as desenha. x/y são o
-      // alinhamento do flex da .watermark.
+      // alinhamento do flex da vaga de cada marca (.wm-slot).
       const GRID_POSITIONS = {
         "top-left": { x: "flex-start", y: "flex-start", label: "Canto superior esquerdo" },
         "top": { x: "center", y: "flex-start", label: "No alto, ao centro" },
@@ -2212,13 +2535,14 @@ META 2</span> </button>
         applyCoreText(textOver(mixRgb(coreA, coreB, 0.5)));
         applyCoreShadow();
         applyTitle();
-        applyWatermark();
+        applySearch();
+        applyWatermarks();
         const hudMoved = applyHud();
 
         applyNodeColors();
-        // Título e pesquisa entram no enquadramento (hudInsets): se mudaram
-        // de lugar ou de tamanho, a câmera reenquadra — a não ser que o
-        // tronco já tenha feito isso ao crescer.
+        // Título (com o subtítulo) e pesquisa entram no enquadramento
+        // (hudInsets): se mudaram de lugar ou de tamanho, a câmera
+        // reenquadra — a não ser que o tronco já tenha feito isso ao crescer.
         if (!refreshCoreSize() && hudMoved && nodeById.size) autoFit(0);
       }
 
@@ -2265,7 +2589,10 @@ META 2</span> </button>
             wanted.forEach((el) => slot.appendChild(el));
           }
         });
-        const signature = JSON.stringify([compact, theme.title, theme.hud.title, theme.hud.search]);
+        const signature = JSON.stringify([
+          compact, theme.title, theme.subtitle, theme.hud.title, theme.hud.search,
+          theme.searchText.size, theme.searchHint.size,
+        ]);
         const changed = signature !== hudApplied;
         hudApplied = signature;
         return changed;
@@ -2318,13 +2645,14 @@ META 2</span> </button>
         coreButton.style.boxShadow = base + ", " + soft;
       }
 
-      function applyTitle() {
-        const t = theme.title;
-        if (titleEl.textContent !== t.text) titleEl.textContent = t.text;
-        const s = titleEl.style;
-        s.setProperty("--title-size", t.size + "px");
+      // Fonte, peso, estilo, caixa, espaçamento e cor de um texto que o
+      // painel formata por inteiro (título e subtítulo). O tamanho não vem
+      // aqui: vai numa variável, que o CSS do celular reduz.
+      function applyTextStyle(el, t) {
+        const s = el.style;
         s.fontFamily = FONTS[t.font].css;
         s.fontWeight = t.bold ? "700" : "400";
+        s.fontStyle = t.italic ? "italic" : "normal";
         s.textTransform = t.upper ? "uppercase" : "none";
         s.letterSpacing = t.spacing + "em";
         // Vazio devolve a cor ao CSS, que já troca entre clara e tinta
@@ -2332,36 +2660,260 @@ META 2</span> </button>
         s.color = t.color;
       }
 
-      // O src só é reescrito quando a imagem muda: é uma data URL de
-      // centenas de KB, e o tema é reaplicado a cada quadro de um arrasto
-      // de controle no painel.
-      let shownWatermark = "";
-      function applyWatermark() {
-        const wm = theme.watermark;
-        const show = wm.on && !!wm.image;
-        watermarkEl.hidden = !show;
-        // Imagem removida: solta a data URL em vez de deixá-la escondida.
-        if (!wm.image && shownWatermark) {
-          watermarkImg.removeAttribute("src");
-          shownWatermark = "";
+      function applyTitle() {
+        const t = theme.title;
+        if (titleEl.textContent !== t.text) titleEl.textContent = t.text;
+        titleEl.style.setProperty("--title-size", t.size + "px");
+        applyTextStyle(titleEl, t);
+        applySubtitle();
+      }
+
+      // Acima ou abaixo do título é a ordem no DOM, e não um `order` do
+      // CSS: assim o leitor de tela lê as duas linhas na ordem em que elas
+      // aparecem. A distância é a margem do lado que dá para o título.
+      function applySubtitle() {
+        const t = theme.subtitle;
+        subtitleEl.hidden = !t.text.trim();
+        if (subtitleEl.textContent !== t.text) subtitleEl.textContent = t.text;
+        const above = t.place === "above";
+        if (above !== (headingEl.firstElementChild === subtitleEl)) {
+          headingEl.insertBefore(subtitleEl, above ? titleEl : null);
         }
-        if (!show) return;
-        if (shownWatermark !== wm.image) {
-          watermarkImg.setAttribute("src", wm.image);
-          shownWatermark = wm.image;
+        const s = subtitleEl.style;
+        s.setProperty("--subtitle-size", t.size + "px");
+        applyTextStyle(subtitleEl, t);
+        s.marginTop = above ? "" : t.gap + "px";
+        s.marginBottom = above ? t.gap + "px" : "";
+      }
+
+      // --- Caixa de pesquisa --------------------------------------------------
+      // Tudo vira variável CSS na .search: o texto de exemplo mora num
+      // pseudo-elemento, onde estilo inline não chega, e os itens da lista
+      // são recriados a cada letra digitada. Cor automática que continua a
+      // de fábrica não é escrita — vale o segundo valor do var() no CSS.
+      const SEARCH_BG_RGB = { r: 10, g: 20, b: 48 };
+      // As cores que valem enquanto a do painel está vazia, para o seletor
+      // mostrar a cor de verdade (ver effectiveHex). applySearch preenche.
+      let searchAuto = {};
+
+      function applySearch() {
+        const el = hudItems.search;
+        const s = el.style;
+        const box = theme.searchBox;
+        const input = el.querySelector(".search-input");
+        if (input.placeholder !== box.placeholder) input.placeholder = box.placeholder;
+
+        const setVar = (name, value) => {
+          if (value) s.setProperty(name, value);
+          else s.removeProperty(name);
+        };
+        [["--search-text", theme.searchText], ["--search-hint", theme.searchHint]].forEach((pair) => {
+          const prefix = pair[0];
+          const t = pair[1];
+          s.setProperty(prefix + "-font", FONTS[t.font].css);
+          s.setProperty(prefix + "-size", t.size + "px");
+          s.setProperty(prefix + "-weight", t.bold ? "700" : "400");
+          s.setProperty(prefix + "-style", t.italic ? "italic" : "normal");
+          s.setProperty(prefix + "-case", t.upper ? "uppercase" : "none");
+          s.setProperty(prefix + "-spacing", t.spacing + "em");
+        });
+
+        // Fundo: a mesma cor em três opacidades — parada, com o foco e na
+        // lista de resultados. Com a transparência de fábrica (28%) saem os
+        // 0.72, 0.9 e 0.94 de sempre.
+        const bg = box.background ? hexToRgb(box.background) : SEARCH_BG_RGB;
+        const alpha = (100 - box.transparency) / 100;
+        const opacity = (v) => Math.round(Math.min(1, v) * 100) / 100;
+        s.setProperty("--search-bg", rgbCss(bg, opacity(alpha)));
+        s.setProperty("--search-bg-focus", rgbCss(bg, opacity(alpha + 0.18)));
+        s.setProperty("--search-list-bg", rgbCss(bg, opacity(alpha + 0.22)));
+
+        // Caixa clara (a cor dela sobre a página, que aparece através):
+        // as cores automáticas viram tinta, senão o texto sumiria.
+        const seen = mixRgb(hexToRgb(theme.background), bg, alpha);
+        const light = luminance(seen) > 0.45;
+        const text = theme.searchText.color ? hexToRgb(theme.searchText.color) : light ? INK_RGB : null;
+        setVar("--search-text-color", text && rgbCss(text));
+        setVar("--search-item-color", text && rgbCss(text));
+        setVar("--search-path-color", text && rgbCss(text, 0.6));
+        setVar("--search-note-color", text && rgbCss(text, 0.65));
+        const hint = theme.searchHint.color ? rgbCss(hexToRgb(theme.searchHint.color))
+          : light ? rgbCss(INK_RGB, 0.5) : "";
+        setVar("--search-hint-color", hint);
+        const icon = box.icon ? rgbCss(hexToRgb(box.icon)) : light ? rgbCss(INK_RGB, 0.7) : "";
+        setVar("--search-icon", icon);
+        // A borda de fábrica é bem apagada (28%); uma cor escolhida aparece
+        // mais, e inteira com o foco.
+        const border = box.border ? hexToRgb(box.border) : null;
+        setVar("--search-border", border && rgbCss(border, 0.55));
+        setVar("--search-border-focus", border && rgbCss(border));
+        setVar("--search-list-border", border && rgbCss(border, 0.55));
+
+        searchAuto = {
+          "searchText.color": light ? INK : "rgb(240, 245, 255)",
+          "searchHint.color": light ? INK : "rgb(231, 240, 255)",
+          "searchBox.icon": light ? INK : "rgb(231, 240, 255)",
+          "searchBox.border": "rgb(160, 190, 255)",
+          "searchBox.background": rgbCss(SEARCH_BG_RGB),
+        };
+      }
+
+      // --- Marcas d'água ------------------------------------------------------
+      // Uma vaga (.wm-slot) por conjunto — a marca solta e as grudadas nela
+      // — e um <img> por marca, guardados pelo id: o tema é reaplicado a
+      // cada quadro de um arrasto de controle no painel, e recriar imagens
+      // de centenas de KB a cada quadro pesaria. O src só é reescrito
+      // quando a imagem muda. Tudo em vmin: o lado maior de cada imagem
+      // acompanha o lado menor da tela, e as marcas ficam com a mesma
+      // presença no celular em pé e no monitor.
+      const wmImgs = new Map();    // id da marca → <img>
+      const wmShown = new Map();   // id da marca → data URL posta no src
+      const wmSlots = new Map();   // id da principal → { slot, group }
+
+      function watermarkSize(wm) {
+        return wm.ratio >= 1
+          ? { w: wm.scale, h: wm.scale / wm.ratio }
+          : { w: wm.scale * wm.ratio, h: wm.scale };
+      }
+
+      // Onde fica uma grudada, a partir da caixa da marca em que ela gruda.
+      // O alinhamento corre ao longo do lado: topo, centro ou base à
+      // esquerda e à direita; esquerda, centro ou direita acima e abaixo.
+      function attachBox(parent, wm) {
+        const size = watermarkSize(wm);
+        const along = (start, length, own) => wm.shift + (
+          wm.align === "start" ? start
+            : wm.align === "end" ? start + length - own
+              : start + (length - own) / 2);
+        const box = { wm: wm, x: 0, y: 0, w: size.w, h: size.h };
+        if (wm.side === "left" || wm.side === "right") {
+          box.x = wm.side === "right" ? parent.x + parent.w + wm.gap : parent.x - wm.gap - size.w;
+          box.y = along(parent.y, parent.h, size.h);
+        } else {
+          box.y = wm.side === "below" ? parent.y + parent.h + wm.gap : parent.y - wm.gap - size.h;
+          box.x = along(parent.x, parent.w, size.w);
         }
-        const place = GRID_POSITIONS[wm.position];
-        watermarkEl.style.justifyContent = place.x;
-        watermarkEl.style.alignItems = place.y;
-        watermarkEl.style.padding = wm.margin + "px";
-        // vmin: o lado maior da imagem acompanha o lado menor da tela, e a
-        // marca fica com a mesma presença no celular em pé e no monitor.
-        const w = wm.ratio >= 1 ? wm.scale : wm.scale * wm.ratio;
-        const h = wm.ratio >= 1 ? wm.scale / wm.ratio : wm.scale;
-        watermarkImg.style.width = w + "vmin";
-        watermarkImg.style.height = h + "vmin";
-        watermarkImg.style.opacity = String((100 - wm.transparency) / 100);
-        watermarkImg.style.transform = wm.rotation ? "rotate(" + wm.rotation + "deg)" : "";
+        return box;
+      }
+
+      // Os conjuntos, na ordem das principais na lista. Cada um traz as
+      // caixas das marcas visíveis — a principal primeiro, em (0, 0). Uma
+      // marca escondida some junto com as grudadas nela e não ocupa lugar.
+      function watermarkGroups() {
+        const children = {};
+        theme.watermarks.forEach((wm) => {
+          if (wm.to) (children[wm.to] = children[wm.to] || []).push(wm);
+        });
+        return theme.watermarks.filter((wm) => !wm.to).map((root) => {
+          const boxes = [];
+          const seen = new Set();
+          const visit = (box) => {
+            if (seen.has(box.wm.id)) return;   // defesa contra ciclo
+            seen.add(box.wm.id);
+            boxes.push(box);
+            (children[box.wm.id] || []).forEach((child) => {
+              if (child.on && child.image) visit(attachBox(box, child));
+            });
+          };
+          if (root.on && root.image) {
+            const size = watermarkSize(root);
+            visit({ wm: root, x: 0, y: 0, w: size.w, h: size.h });
+          }
+          return { root: root, boxes: boxes };
+        });
+      }
+
+      function watermarkImgFor(wm) {
+        let img = wmImgs.get(wm.id);
+        if (!img) {
+          img = document.createElement("img");
+          img.className = "wm-img";
+          img.alt = "";
+          img.draggable = false;
+          wmImgs.set(wm.id, img);
+        }
+        if (wmShown.get(wm.id) !== wm.image) {
+          img.setAttribute("src", wm.image);
+          wmShown.set(wm.id, wm.image);
+        }
+        return img;
+      }
+
+      function applyWatermarks() {
+        const order = new Map(theme.watermarks.map((wm, i) => [wm.id, i]));
+        const groups = watermarkGroups();
+        const roots = new Set(groups.map((g) => g.root.id));
+        wmSlots.forEach((view, id) => {
+          if (roots.has(id)) return;
+          view.slot.remove();
+          wmSlots.delete(id);
+        });
+        const placed = new Set();
+        let before = watermarkEl.firstChild;
+        groups.forEach((g) => {
+          let view = wmSlots.get(g.root.id);
+          if (!view) {
+            view = { slot: document.createElement("div"), group: document.createElement("div") };
+            view.slot.className = "wm-slot";
+            view.group.className = "wm-group";
+            view.slot.appendChild(view.group);
+            wmSlots.set(g.root.id, view);
+          }
+          // As vagas seguem a ordem da lista, que é a ordem de pintura.
+          if (view.slot !== before) watermarkEl.insertBefore(view.slot, before);
+          before = view.slot.nextSibling;
+          view.slot.hidden = !g.boxes.length;
+          if (!g.boxes.length) return;
+
+          const root = g.root;
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          g.boxes.forEach((b) => {
+            minX = Math.min(minX, b.x);
+            minY = Math.min(minY, b.y);
+            maxX = Math.max(maxX, b.x + b.w);
+            maxY = Math.max(maxY, b.y + b.h);
+          });
+          const place = GRID_POSITIONS[root.position];
+          const ss = view.slot.style;
+          ss.justifyContent = place.x;
+          ss.alignItems = place.y;
+          ss.padding = root.margin + "px";
+          const gs = view.group.style;
+          gs.width = (maxX - minX) + "vmin";
+          gs.height = (maxY - minY) + "vmin";
+          gs.opacity = String((100 - root.transparency) / 100);
+          // O conjunto gira em volta do centro da principal, que está em
+          // (0, 0); o ajuste fino desloca tudo depois do giro.
+          const rootBox = g.boxes[0];
+          gs.transformOrigin = (rootBox.w / 2 - minX) + "vmin " + (rootBox.h / 2 - minY) + "vmin";
+          const moves = [];
+          if (root.dx || root.dy) moves.push("translate(" + root.dx + "vw, " + root.dy + "vh)");
+          if (root.rotation) moves.push("rotate(" + root.rotation + "deg)");
+          gs.transform = moves.join(" ");
+
+          const kids = view.group.children;
+          g.boxes.slice().sort((a, b) => order.get(a.wm.id) - order.get(b.wm.id)).forEach((b, i) => {
+            const img = watermarkImgFor(b.wm);
+            const is = img.style;
+            is.left = (b.x - minX) + "vmin";
+            is.top = (b.y - minY) + "vmin";
+            is.width = b.w + "vmin";
+            is.height = b.h + "vmin";
+            if (kids[i] !== img) view.group.insertBefore(img, kids[i] || null);
+            placed.add(b.wm.id);
+          });
+          while (kids.length > g.boxes.length) kids[kids.length - 1].remove();
+        });
+        // Marca escondida sai do DOM, mas o <img> fica guardado com o src;
+        // marca apagada solta a data URL de vez.
+        wmImgs.forEach((img, id) => {
+          if (placed.has(id)) return;
+          img.remove();
+          if (order.has(id)) return;
+          wmImgs.delete(id);
+          wmShown.delete(id);
+        });
+        watermarkEl.hidden = !placed.size;
       }
 
       // --- Tamanho do tronco ------------------------------------------------
@@ -2568,13 +3120,18 @@ META 2</span> </button>
       // portátil sai por exportação, em .json ou em .html autocontido. ---
       const STORAGE_KEY = "mapaPOPs.treeData.v1";
       const THEME_KEY = "mapaPOPs.theme.v1";
+      // A imagem da marca d'água única da v4. Só é lida, para migrar: na
+      // v5 cada marca tem a sua chave, WATERMARK_PREFIX + id.
       const WATERMARK_KEY = "mapaPOPs.watermark.v1";
+      const WATERMARK_PREFIX = "mapaPOPs.watermark.v2.";
       const SEED_STAMP_KEY = "mapaPOPs.seedStamp.v1";
       const MAP_FORMAT = "mapaPOPs";
       // v4: cor do texto por nó (textColor) e, no tema, textos, tronco,
-      // título e marca d'água. Arquivos v3 abrem normalmente — o que falta
-      // neles volta ao padrão no saneamento.
-      const MAP_FORMAT_VERSION = 4;
+      // título e marca d'água. v5: subtítulo, formatação da pesquisa e
+      // várias marcas d'água (a `watermark` única da v4 vira a primeira da
+      // lista). Arquivos antigos abrem normalmente — o que falta neles
+      // volta ao padrão no saneamento.
+      const MAP_FORMAT_VERSION = 5;
 
       function serializeNode(node) {
         return {
@@ -2608,18 +3165,43 @@ META 2</span> </button>
       // endereço externo: a marca d'água tem de viajar dentro do arquivo.
       const IMAGE_DATA_URL = /^data:image\/(png|jpeg|webp|gif|svg\+xml);base64,[a-z0-9+/]+=*$/i;
 
+      // Id de uma marca d'água: vira parte do nome da chave no localStorage
+      // e do caminho dos controles do painel, então fica curto e simples.
+      const WATERMARK_ID = /^[a-z0-9-]{1,40}$/i;
+      const WATERMARK_NAME_LIMIT = 40;
+
       // Chaves de texto dos grupos aninhados do tema, e o que cada uma
-      // aceita. Devolver undefined mantém o padrão.
+      // aceita. Devolver undefined mantém o padrão. As de "watermark" valem
+      // para cada entrada da lista de marcas d'água.
+      const fontRule = (v) => (hasOwn(FONTS, v) ? v : undefined);
+      const autoColorRule = (v) => (v === "" ? "" : cleanHex(v) || undefined);
       const TEXT_RULES = {
-        "coreText.font": (v) => (hasOwn(FONTS, v) ? v : undefined),
-        "coreText.color": (v) => (v === "" ? "" : cleanHex(v) || undefined),
+        "coreText.font": fontRule,
+        "coreText.color": autoColorRule,
         "coreText.align": (v) => (["left", "center", "right"].indexOf(v) >= 0 ? v : undefined),
         "coreShadow.color": (v) => cleanHex(v) || undefined,
         "title.text": (v) => v.slice(0, TITLE_CHAR_LIMIT),
-        "title.font": (v) => (hasOwn(FONTS, v) ? v : undefined),
-        "title.color": (v) => (v === "" ? "" : cleanHex(v) || undefined),
+        "title.font": fontRule,
+        "title.color": autoColorRule,
+        "subtitle.text": (v) => v.slice(0, SUBTITLE_CHAR_LIMIT),
+        "subtitle.font": fontRule,
+        "subtitle.color": autoColorRule,
+        "subtitle.place": (v) => (v === "above" || v === "below" ? v : undefined),
+        "searchBox.placeholder": (v) => v.slice(0, SEARCH_HINT_LIMIT),
+        "searchBox.background": autoColorRule,
+        "searchBox.border": autoColorRule,
+        "searchBox.icon": autoColorRule,
+        "searchText.font": fontRule,
+        "searchText.color": autoColorRule,
+        "searchHint.font": fontRule,
+        "searchHint.color": autoColorRule,
+        "watermark.id": (v) => (WATERMARK_ID.test(v) ? v : undefined),
+        "watermark.name": (v) => v.slice(0, WATERMARK_NAME_LIMIT),
         "watermark.image": (v) => (v === "" || IMAGE_DATA_URL.test(v) ? v : undefined),
         "watermark.position": (v) => (hasOwn(GRID_POSITIONS, v) ? v : undefined),
+        "watermark.to": (v) => (v === "" || WATERMARK_ID.test(v) ? v : undefined),
+        "watermark.side": (v) => (WATERMARK_SIDES.indexOf(v) >= 0 ? v : undefined),
+        "watermark.align": (v) => (WATERMARK_ALIGNS.indexOf(v) >= 0 ? v : undefined),
       };
 
       // Uma chave de grupo: número preso à faixa do controle, booleano, ou
@@ -2631,11 +3213,83 @@ META 2</span> </button>
             ? clamp(value, limits[0], limits[1])
             : undefined;
         }
-        if (typeof DEFAULT_THEME[group][key] === "boolean") {
+        const defaults = group === "watermark" ? WATERMARK_DEFAULTS : DEFAULT_THEME[group];
+        if (typeof defaults[key] === "boolean") {
           return typeof value === "boolean" ? value : undefined;
         }
         const rule = TEXT_RULES[group + "." + key];
         return rule && typeof value === "string" ? rule(value) : undefined;
+      }
+
+      let watermarkCounter = 0;
+      function newWatermarkId() {
+        watermarkCounter += 1;
+        return "wm-" + Date.now().toString(36) + "-" + watermarkCounter;
+      }
+
+      // As marcas d'água de um tema vindo de fora. Um tema da v4 traz uma
+      // `watermark` só, que vira a primeira da lista. Marca sem imagem
+      // válida sai (as grudadas nela ocupam o lugar dela), `to` que não
+      // aponta para outra marca vira solta, e um ciclo de grudadas é
+      // cortado — nenhum deles teria como ser desenhado.
+      function sanitizeWatermarks(raw) {
+        const source = Array.isArray(raw.watermarks) ? raw.watermarks
+          : raw.watermark && typeof raw.watermark === "object"
+            ? [Object.assign({}, raw.watermark, { id: "wm-0" })]
+            : [];
+        let list = [];
+        const ids = new Set();
+        source.slice(0, WATERMARK_MAX).forEach((src) => {
+          if (!src || typeof src !== "object") return;
+          const wm = Object.assign({}, WATERMARK_DEFAULTS);
+          Object.keys(wm).forEach((key) => {
+            const value = sanitizeSetting("watermark", key, src[key]);
+            if (value !== undefined) wm[key] = value;
+          });
+          if (!wm.id || ids.has(wm.id)) wm.id = newWatermarkId();
+          ids.add(wm.id);
+          list.push(wm);
+        });
+        list.forEach((wm) => {
+          if (wm.to === wm.id || !ids.has(wm.to)) wm.to = "";
+        });
+        const byId = new Map(list.map((wm) => [wm.id, wm]));
+        list.forEach((wm) => {
+          const path = new Set([wm.id]);
+          for (let cur = wm; cur.to; cur = byId.get(cur.to)) {
+            if (path.has(cur.to)) {
+              cur.to = "";
+              break;
+            }
+            path.add(cur.to);
+          }
+        });
+        list.filter((wm) => !wm.image).forEach((wm) => { list = removeWatermark(list, wm.id); });
+        return list;
+      }
+
+      // Tira uma marca da lista, e as grudadas nela ocupam o lugar dela. Se
+      // ela estava grudada em outra, as grudadas passam a grudar nessa
+      // outra. Se era solta, a primeira grudada fica solta onde ela estava
+      // — com a transparência e o giro que o conjunto já tinha — e as
+      // outras passam a grudar nessa primeira, cada uma no seu lado. Assim
+      // nenhuma imagem se perde e o conjunto muda o mínimo.
+      function removeWatermark(list, id) {
+        const gone = list.find((wm) => wm.id === id);
+        if (!gone) return list;
+        const rest = list.filter((wm) => wm !== gone);
+        const orphans = rest.filter((wm) => wm.to === id);
+        if (gone.to) {
+          orphans.forEach((wm) => { wm.to = gone.to; });
+        } else if (orphans.length) {
+          const heir = orphans[0];
+          ["position", "margin", "dx", "dy", "transparency", "rotation"].forEach((key) => {
+            heir[key] = gone[key];
+          });
+          heir.to = "";
+          orphans.slice(1).forEach((wm) => { wm.to = heir.id; });
+        }
+        return rest;
       }
 
       // O tema é guardado à parte da árvore: são coisas com ciclos de vida
@@ -2666,7 +3320,7 @@ META 2</span> </button>
             if (pair.node || pair.sub) clean.branchText[id] = pair;
           });
         }
-        ["coreText", "coreShadow", "title", "watermark"].forEach((group) => {
+        ["coreText", "coreShadow", "title", "subtitle", "searchBox", "searchText", "searchHint"].forEach((group) => {
           const src = raw[group];
           if (!src || typeof src !== "object") return;
           Object.keys(clean[group]).forEach((key) => {
@@ -2674,6 +3328,7 @@ META 2</span> </button>
             if (value !== undefined) clean[group][key] = value;
           });
         });
+        clean.watermarks = sanitizeWatermarks(raw);
         if (raw.hud && typeof raw.hud === "object") {
           Object.keys(clean.hud).forEach((item) => {
             const src = raw.hud[item];
@@ -2694,13 +3349,13 @@ META 2</span> </button>
         return clean;
       }
 
-      // O tema vai para o localStorage SEM a imagem da marca d'água: ela
-      // pode ter centenas de KB, e o tema é regravado a cada ajuste do
-      // painel. A imagem tem chave própria e só é gravada quando muda.
+      // O tema vai para o localStorage SEM as imagens das marcas d'água:
+      // cada uma pode ter centenas de KB, e o tema é regravado a cada ajuste
+      // do painel. Cada imagem tem chave própria e só é gravada quando muda.
       function saveTheme() {
         try {
           const light = Object.assign({}, theme, {
-            watermark: Object.assign({}, theme.watermark, { image: "" }),
+            watermarks: theme.watermarks.map((wm) => Object.assign({}, wm, { image: "" })),
           });
           localStorage.setItem(THEME_KEY, JSON.stringify(light));
         } catch (e) {
@@ -2708,28 +3363,60 @@ META 2</span> </button>
         }
       }
 
-      // Devolve false quando o navegador recusou (cota cheia), para quem
-      // enviou a imagem ser avisado de que ela não sobrevive ao recarregar.
-      function saveWatermark() {
+      // As chaves de marcas que saíram da lista (e a da v4) são apagadas
+      // antes das gravações, para devolver o espaço a tempo. Devolve false
+      // quando o navegador recusou alguma imagem (cota cheia), para quem a
+      // enviou ser avisado de que ela não sobrevive ao recarregar.
+      function saveWatermarks() {
         try {
-          if (theme.watermark.image) localStorage.setItem(WATERMARK_KEY, theme.watermark.image);
-          else localStorage.removeItem(WATERMARK_KEY);
-          return true;
+          const keep = new Set(theme.watermarks.map((wm) => WATERMARK_PREFIX + wm.id));
+          const stale = [];
+          for (let i = 0; i < localStorage.length; i += 1) {
+            const key = localStorage.key(i);
+            if (key && key.indexOf(WATERMARK_PREFIX) === 0 && !keep.has(key)) stale.push(key);
+          }
+          stale.forEach((key) => localStorage.removeItem(key));
+          localStorage.removeItem(WATERMARK_KEY);
+          let stored = true;
+          theme.watermarks.forEach((wm) => {
+            const key = WATERMARK_PREFIX + wm.id;
+            if (localStorage.getItem(key) === wm.image) return;
+            // Apaga antes de gravar: se a imagem nova não couber, a antiga
+            // não pode voltar no lugar dela ao recarregar.
+            localStorage.removeItem(key);
+            try {
+              localStorage.setItem(key, wm.image);
+            } catch (e) {
+              stored = false;
+            }
+          });
+          return stored;
         } catch (e) {
           return false;
         }
       }
 
+      // Devolve { theme, migrated }. `migrated` diz que o guardado era de
+      // antes da v5 (uma marca d'água só, na chave da v4) e precisa ser
+      // regravado no formato novo.
       function loadTheme() {
         try {
           const raw = localStorage.getItem(THEME_KEY);
           if (!raw) return null;
           const parsed = JSON.parse(raw);
-          const image = localStorage.getItem(WATERMARK_KEY);
-          if (image && parsed && typeof parsed === "object") {
-            parsed.watermark = Object.assign({}, parsed.watermark, { image: image });
+          if (!parsed || typeof parsed !== "object") return null;
+          const migrated = !Array.isArray(parsed.watermarks);
+          if (!migrated) {
+            parsed.watermarks = parsed.watermarks.map((wm) => (
+              wm && typeof wm === "object" && typeof wm.id === "string"
+                ? Object.assign({}, wm, { image: localStorage.getItem(WATERMARK_PREFIX + wm.id) || "" })
+                : wm));
+          } else if (parsed.watermark && typeof parsed.watermark === "object") {
+            parsed.watermark = Object.assign({}, parsed.watermark, {
+              image: localStorage.getItem(WATERMARK_KEY) || "",
+            });
           }
-          return sanitizeTheme(parsed);
+          return { theme: sanitizeTheme(parsed), migrated: migrated };
         } catch (e) {
           return null;
         }
@@ -2810,7 +3497,7 @@ META 2</span> </button>
         theme = sanitizeTheme(envelope.theme);
         applyTheme();
         saveTheme();
-        saveWatermark();
+        saveWatermarks();
         return true;
       }
 
@@ -3747,18 +4434,18 @@ META 2</span> </button>
         camera.y = clamp(camera.y, keep - box.b * camera.scale, vh - keep - box.t * camera.scale);
       }
 
-      // O título e a pesquisa flutuam sobre o mapa, no alto ou embaixo,
-      // conforme a vaga. Enquadrar sem descontá-los faz o nó da ponta nascer
-      // embaixo deles — no celular, onde a pesquisa ocupa a largura inteira,
-      // isso escondia um setor inteiro. Zoom e legenda são pequenos e ficam
-      // de fora da conta, como sempre ficaram; nas vagas do meio, nada é
-      // descontado. Da pesquisa conta só o campo: a lista de resultados
-      // abre e fecha, e a câmera não deve pular junto.
+      // O título (com o subtítulo) e a pesquisa flutuam sobre o mapa, no
+      // alto ou embaixo, conforme a vaga. Enquadrar sem descontá-los faz o
+      // nó da ponta nascer embaixo deles — no celular, onde a pesquisa
+      // ocupa a largura inteira, isso escondia um setor inteiro. Zoom e
+      // legenda são pequenos e ficam de fora da conta, como sempre ficaram;
+      // nas vagas do meio, nada é descontado. Da pesquisa conta só o campo:
+      // a lista de resultados abre e fecha, e a câmera não deve pular junto.
       function hudInsets() {
         const box = viewport.getBoundingClientRect();
         let top = 0;
         let bottom = 0;
-        [titleEl, document.querySelector(".search-field")].forEach((el) => {
+        [headingEl, document.querySelector(".search-field")].forEach((el) => {
           const item = el && el.closest(".hud-item");
           if (!item || item.classList.contains("is-off")) return;
           const r = el.getBoundingClientRect();
@@ -5283,7 +5970,7 @@ META 2</span> </button>
           coreExpanded: coreButton.getAttribute("aria-expanded"),
           overlaySide: devOverlay.classList.contains("is-side"),
           watermarkHidden: watermarkEl.hidden,
-          watermarkSrc: watermarkImg.getAttribute("src"),
+          watermarkNodes: Array.from(watermarkEl.childNodes),
         };
 
         branchesLayer.innerHTML = "";
@@ -5300,10 +5987,11 @@ META 2</span> </button>
         zoomReadout.textContent = "100%";
         world.removeAttribute("style");
         coreArea.removeAttribute("style");
-        // A imagem da marca d'água já vai no seed (tema); deixá-la também
-        // no src dobraria o tamanho do arquivo. O script a devolve ao abrir.
+        // As imagens das marcas d'água já vão no seed (tema); deixá-las
+        // também no DOM dobraria o tamanho do arquivo. O script as remonta
+        // ao abrir. Os mesmos elementos voltam depois, com o src intacto.
         watermarkEl.hidden = true;
-        watermarkImg.removeAttribute("src");
+        saved.watermarkNodes.forEach((node) => node.remove());
 
         let result;
         try {
@@ -5322,7 +6010,7 @@ META 2</span> </button>
           status.textContent = saved.statusText;
           zoomReadout.textContent = saved.zoomText;
           watermarkEl.hidden = saved.watermarkHidden;
-          if (saved.watermarkSrc) watermarkImg.setAttribute("src", saved.watermarkSrc);
+          saved.watermarkNodes.forEach((node) => watermarkEl.appendChild(node));
           render();
           updateVisibility();
           applyCamera(0);
@@ -5434,18 +6122,20 @@ META 2</span> </button>
         { id: "textos", label: "Textos" },
         { id: "tronco", label: "Tronco" },
         { id: "titulo", label: "Título" },
+        { id: "pesquisa", label: "Pesquisa" },
         { id: "marca", label: "Marca d'água" },
         { id: "tela", label: "Tela" },
       ];
 
-      // O que "Restaurar o padrão desta aba" devolve ao padrão. A imagem da
-      // marca d'água fica de fora: para tirá-la existe o "Remover".
+      // O que "Restaurar o padrão desta aba" devolve ao padrão. As imagens
+      // das marcas d'água ficam de fora: para tirá-las existe o "Remover".
       const TAB_KEYS = {
         cores: ["background", "line", "blobA", "blobB", "blobs", "branches"],
         textos: ["nodeText", "subText", "branchText"],
         tronco: ["core", "coreEnd", "coreText", "coreShadow"],
-        titulo: ["title"],
-        marca: ["watermark"],
+        titulo: ["title", "subtitle"],
+        pesquisa: ["searchBox", "searchText", "searchHint"],
+        marca: ["watermarks"],
         tela: ["hud"],
       };
 
@@ -5538,21 +6228,55 @@ META 2</span> </button>
         "coreShadow.angle": (v) => ARROWS[Math.round(v / 45) % 8] + " " + v + "°",
         "title.size": (v) => decimal(v) + "px",
         "title.spacing": (v) => Math.round(v * 100) + "%",
-        "watermark.transparency": (v) => v + "%",
-        "watermark.scale": (v) => v + "%",
-        "watermark.margin": (v) => v + "px",
-        "watermark.rotation": (v) => v + "°",
+        "subtitle.size": (v) => decimal(v) + "px",
+        "subtitle.spacing": (v) => Math.round(v * 100) + "%",
+        "subtitle.gap": (v) => v + "px",
+        "searchText.size": (v) => decimal(v) + "px",
+        "searchText.spacing": (v) => Math.round(v * 100) + "%",
+        "searchHint.size": (v) => decimal(v) + "px",
+        "searchHint.spacing": (v) => Math.round(v * 100) + "%",
+        "searchBox.transparency": (v) => v + "%",
       };
       HUD_ORDER.forEach((key) => {
         READOUTS["hud." + key + ".offset"] = (v) => "+" + v + "px";
         READOUTS["hud." + key + ".scale"] = (v) => v + "%";
       });
 
+      // Os de cada marca d'água recebem também a própria marca: o
+      // deslocamento de uma grudada corre na vertical ou na horizontal
+      // conforme o lado em que ela gruda.
+      function signedPercent(v, minus, plus) {
+        return (v > 0 ? plus + " " : v < 0 ? minus + " " : "") + decimal(Math.abs(v)) + "%";
+      }
+      const WATERMARK_READOUTS = {
+        transparency: (v) => v + "%",
+        scale: (v) => v + "%",
+        margin: (v) => v + "px",
+        rotation: (v) => v + "°",
+        dx: (v) => signedPercent(v, "←", "→"),
+        dy: (v) => signedPercent(v, "↑", "↓"),
+        gap: (v) => decimal(v) + "%",
+        shift: (v, wm) => (wm.side === "left" || wm.side === "right"
+          ? signedPercent(v, "↑", "↓")
+          : signedPercent(v, "←", "→")),
+      };
+
+      function readout(path) {
+        const parts = pathParts(path);
+        const value = getIn(theme, parts);
+        return parts[0] === "watermarks"
+          ? WATERMARK_READOUTS[parts[2]](value, getIn(theme, parts.slice(0, 2)))
+          : READOUTS[path](value);
+      }
+
       // Faixa de um controle deslizante. Os elementos presos à tela dividem
-      // as mesmas faixas (LIMITS.hud), qualquer que seja o elemento.
+      // as mesmas faixas (LIMITS.hud), qualquer que seja o elemento, e as
+      // marcas d'água, as de LIMITS.watermark.
       function limitsFor(path) {
         const parts = pathParts(path);
-        return parts[0] === "hud" ? LIMITS.hud[parts[2]] : LIMITS[parts[0]][parts[1]];
+        if (parts[0] === "hud") return LIMITS.hud[parts[2]];
+        if (parts[0] === "watermarks") return LIMITS.watermark[parts[2]];
+        return LIMITS[parts[0]][parts[1]];
       }
 
       const ALIGN_ICONS = {
@@ -5575,13 +6299,18 @@ META 2</span> </button>
 
       // Chaves de cor em que vazio quer dizer "automática". O seletor delas
       // mostra a cor que está valendo, e não o preto de um valor vazio.
-      const AUTO_COLOR_PATHS = ["coreText.color", "title.color"];
+      const AUTO_COLOR_PATHS = [
+        "coreText.color", "title.color", "subtitle.color",
+        "searchText.color", "searchHint.color", "searchBox.background", "searchBox.border", "searchBox.icon",
+      ];
 
       function effectiveHex(path) {
         if (path === "coreText.color") {
           return toHex(textOver(mixRgb(hexToRgb(theme.core), hexToRgb(theme.coreEnd), 0.5)));
         }
         if (path === "title.color") return toHex(getComputedStyle(titleEl).color);
+        if (path === "subtitle.color") return toHex(getComputedStyle(subtitleEl).color);
+        if (hasOwn(searchAuto, path)) return toHex(searchAuto[path]);
         return "#000000";
       }
 
@@ -5640,7 +6369,7 @@ META 2</span> </button>
           <div class="dev-range-row">
             <label for="${bindId(path)}">${escapeHtml(name)}</label>
             <input type="range" class="dev-range" id="${bindId(path)}" data-bind="${escapeHtml(path)}" min="${lim[0]}" max="${lim[1]}" step="${lim[2]}" value="${value}" />
-            <output class="dev-range-value" data-out="${escapeHtml(path)}" for="${bindId(path)}">${READOUTS[path](value)}</output>
+            <output class="dev-range-value" data-out="${escapeHtml(path)}" for="${bindId(path)}">${readout(path)}</output>
           </div>
         `;
       }
@@ -5685,12 +6414,35 @@ META 2</span> </button>
 
       // Botão de estado: sem `value`, liga e desliga um booleano; com
       // `value`, escolhe aquele valor entre os do grupo. aria-pressed é o
-      // estado — para o leitor de tela e para o CSS.
-      function pressButtonMarkup(path, value, content, title) {
+      // estado — para o leitor de tela e para o CSS. Em `opts`: `text` para
+      // um botão com palavra em vez de ícone, e `rerender` quando a escolha
+      // muda outros controles da aba (o painel se redesenha depois dela).
+      function pressButtonMarkup(path, value, content, title, opts) {
+        const o = opts || {};
         const current = getPath(theme, path);
         const on = value === undefined ? !!current : current === value;
         const valueAttr = value === undefined ? "" : ` data-value="${escapeHtml(value)}"`;
-        return `<button type="button" class="dev-seg" data-bind="${escapeHtml(path)}"${valueAttr} aria-pressed="${on}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">${content}</button>`;
+        const extra = (o.rerender ? " data-rerender" : "");
+        return `<button type="button" class="dev-seg${o.text ? " is-text" : ""}" data-bind="${escapeHtml(path)}"${valueAttr}${extra} aria-pressed="${on}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">${content}</button>`;
+      }
+
+      // Fonte, estilo, tamanho, cor e espaçamento de um texto formatado por
+      // inteiro — o mesmo bloco no título, no subtítulo e na pesquisa.
+      function textControlsMarkup(group, what) {
+        return `
+          ${fontRowMarkup(group + ".font")}
+          <div class="dev-field-row">
+            <span class="dev-color-name">Estilo</span>
+            <div class="dev-seg-group" role="group" aria-label="${escapeHtml("Estilo — " + what)}">
+              ${pressButtonMarkup(group + ".bold", undefined, "<b>N</b>", "Negrito")}
+              ${pressButtonMarkup(group + ".italic", undefined, "<i>I</i>", "Itálico")}
+              ${pressButtonMarkup(group + ".upper", undefined, "AA", "Tudo em maiúsculas")}
+            </div>
+          </div>
+          ${rangeRowMarkup(group + ".size", "Tamanho")}
+          ${colorRowMarkup(group + ".color", "Cor", theme[group].color || effectiveHex(group + ".color"), "Automática")}
+          ${rangeRowMarkup(group + ".spacing", "Espaço entre letras")}
+        `;
       }
 
       function chipMarkup(path, name, sub) {
@@ -5802,51 +6554,227 @@ META 2</span> </button>
           <label class="dev-label">Texto
             <input id="theme-title-text" class="dev-input" type="text" maxlength="${TITLE_CHAR_LIMIT}" data-bind="title.text" value="${escapeHtml(theme.title.text)}" />
           </label>
-          <p class="dev-data-hint" style="margin:0.35rem 0 0.2rem;">Posição, distância da borda e mostrar ou esconder ficam na aba Tela.</p>
-          ${fontRowMarkup("title.font")}
-          <div class="dev-field-row">
-            <span class="dev-color-name">Estilo</span>
-            <div class="dev-seg-group" role="group" aria-label="Estilo do título">
-              ${pressButtonMarkup("title.bold", undefined, "<b>N</b>", "Negrito")}
-              ${pressButtonMarkup("title.upper", undefined, "AA", "Tudo em maiúsculas")}
+          <p class="dev-data-hint" style="margin:0.35rem 0 0.2rem;">Posição, distância da borda e mostrar ou esconder ficam na aba Tela, e valem para o título e o subtítulo juntos.</p>
+          ${textControlsMarkup("title", "título")}
+
+          ${sectionTitle("Subtítulo")}
+          <label class="dev-label">Texto
+            <input id="theme-subtitle-text" class="dev-input" type="text" maxlength="${SUBTITLE_CHAR_LIMIT}" data-bind="subtitle.text" value="${escapeHtml(theme.subtitle.text)}" placeholder="Vazio = sem subtítulo" />
+          </label>
+          <div class="dev-field-row" style="margin-top:0.3rem;">
+            <span class="dev-color-name">Lugar</span>
+            <div class="dev-seg-group" role="group" aria-label="Lugar do subtítulo">
+              ${pressButtonMarkup("subtitle.place", "above", "Acima", "Acima do título", { text: true })}
+              ${pressButtonMarkup("subtitle.place", "below", "Abaixo", "Abaixo do título", { text: true })}
             </div>
           </div>
-          ${rangeRowMarkup("title.size", "Tamanho")}
-          ${colorRowMarkup("title.color", "Cor", theme.title.color || effectiveHex("title.color"), "Automática")}
-          ${rangeRowMarkup("title.spacing", "Espaço entre letras")}
+          ${rangeRowMarkup("subtitle.gap", "Distância do título")}
+          ${textControlsMarkup("subtitle", "subtítulo")}
         `;
       }
 
+      function tabPesquisaMarkup() {
+        const box = theme.searchBox;
+        return `
+          <p class="dev-data-hint">Posição, tamanho da caixa e mostrar ou esconder ficam na aba Tela.</p>
+          ${sectionTitle("Texto de exemplo")}
+          <label class="dev-label">Texto
+            <input id="theme-search-hint" class="dev-input" type="text" maxlength="${SEARCH_HINT_LIMIT}" data-bind="searchBox.placeholder" value="${escapeHtml(box.placeholder)}" />
+          </label>
+          <p class="dev-data-hint" style="margin:0.35rem 0 0.2rem;">Aparece enquanto a caixa está vazia.</p>
+          ${textControlsMarkup("searchHint", "texto de exemplo")}
+
+          ${sectionTitle("Texto digitado")}
+          <p class="dev-data-hint" style="margin:0 0 0.2rem;">A lista de resultados segue esta formatação (nós continuam em negrito, para se distinguirem dos subnós).</p>
+          ${textControlsMarkup("searchText", "texto digitado")}
+
+          ${sectionTitle("Caixa")}
+          ${colorRowMarkup("searchBox.background", "Fundo", box.background || effectiveHex("searchBox.background"))}
+          ${rangeRowMarkup("searchBox.transparency", "Transparência do fundo")}
+          ${colorRowMarkup("searchBox.border", "Borda", box.border || effectiveHex("searchBox.border"))}
+          ${colorRowMarkup("searchBox.icon", "Ícone da lupa", box.icon || effectiveHex("searchBox.icon"), "Automática")}
+          <p class="dev-data-hint" style="margin:0.2rem 0 0;">Com um fundo claro, as cores automáticas do texto e do ícone escurecem sozinhas. No celular a letra da caixa nunca fica menor que 16px: com menos que isso, o iPhone amplia a tela ao tocar nela.</p>
+        `;
+      }
+
+      // --- Aba Marca d'água -------------------------------------------------
+      // Uma lista das marcas e, embaixo, o editor da escolhida (wmSelected).
+      // Os controles apontam para a posição da marca na lista
+      // ("watermarks.2.scale"): mover ou apagar uma marca redesenha o
+      // painel, e os caminhos saem de novo.
+      let wmSelected = "";
+
+      function watermarkById(id) {
+        return theme.watermarks.find((wm) => wm.id === id) || null;
+      }
+
+      function watermarkName(wm) {
+        return wm.name || "Marca " + (theme.watermarks.indexOf(wm) + 1);
+      }
+
+      // A principal do conjunto: a solta no começo da corrente de grudadas.
+      function watermarkRootOf(wm) {
+        const seen = new Set();
+        let cur = wm;
+        while (cur.to && !seen.has(cur.id)) {
+          seen.add(cur.id);
+          const up = watermarkById(cur.to);
+          if (!up) break;
+          cur = up;
+        }
+        return cur;
+      }
+
+      // A marca e todas as que dependem dela (grudadas nela, nas grudadas
+      // nela...): nenhuma pode virar a principal dela, ou o conjunto
+      // grudaria em si mesmo.
+      function watermarkFamily(id) {
+        const family = new Set([id]);
+        let grew = true;
+        while (grew) {
+          grew = false;
+          theme.watermarks.forEach((wm) => {
+            if (wm.to && family.has(wm.to) && !family.has(wm.id)) {
+              family.add(wm.id);
+              grew = true;
+            }
+          });
+        }
+        return family;
+      }
+
+      const SIDE_LABELS = { above: "acima", below: "abaixo", left: "à esquerda", right: "à direita" };
+
+      // Onde a marca está, numa linha curta: é o que a lista mostra.
+      function watermarkWhere(wm) {
+        const hidden = wm.on ? "" : " · escondida";
+        if (!wm.to) return "Solta · " + GRID_POSITIONS[wm.position].label.toLowerCase() + hidden;
+        const parent = watermarkById(wm.to);
+        return "Grudada " + SIDE_LABELS[wm.side] + " de " + (parent ? watermarkName(parent) : "?") + hidden;
+      }
+
+      function watermarkThumbMarkup(wm) {
+        return `<span class="dev-wm-thumb"><img data-wm-thumb="${escapeHtml(wm.id)}" alt="" /></span>`;
+      }
+
       function tabMarcaMarkup() {
-        const wm = theme.watermark;
+        const list = theme.watermarks;
         const picker = `<input type="file" id="theme-wm-file" class="dev-file-input" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" />`;
-        if (!wm.image) {
+        const full = list.length >= WATERMARK_MAX;
+        const addButton = `<button type="button" class="dev-btn ${list.length ? "dev-btn-ghost" : "dev-btn-primary"}" data-theme-action="wm-add" style="width:100%;"${full ? " disabled" : ""}>${list.length ? "+ Adicionar outra imagem…" : "Enviar imagem…"}</button>`;
+        if (!list.length) {
           return `
-            <p class="dev-data-hint">Uma imagem fixa na tela, por cima do mapa e semitransparente — o logo da unidade, por exemplo. Ela não atrapalha os cliques e vai junto nas exportações.</p>
+            <p class="dev-data-hint">Imagens fixas na tela, por cima do mapa — o logo da unidade, por exemplo. Elas não atrapalham os cliques e vão junto nas exportações. Cada uma pode ficar solta num ponto da tela ou grudada em outra.</p>
             ${picker}
-            <button type="button" class="dev-btn dev-btn-primary" data-theme-action="wm-pick" style="width:100%;">Enviar imagem…</button>
+            ${addButton}
             <p class="dev-data-hint" style="margin-top:0.6rem;">PNG com fundo transparente fica melhor. Imagens grandes são reduzidas antes de guardar.</p>
           `;
         }
-        return `
-          <div class="dev-wm-preview"><img id="theme-wm-thumb" alt="Imagem atual da marca d'água" /></div>
-          ${picker}
-          <div class="dev-inline-actions">
-            <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="wm-pick">Trocar imagem…</button>
-            <button type="button" class="dev-btn dev-btn-ghost dev-btn-danger" data-theme-action="wm-remove">Remover</button>
+        const selected = watermarkById(wmSelected) || list[0];
+        wmSelected = selected.id;
+        const rows = list.map((wm, i) => `
+          <div class="dev-wm-row">
+            <button type="button" class="dev-wm-item${wm.on ? "" : " is-off"}" data-theme-action="wm-select" data-wm="${escapeHtml(wm.id)}" aria-pressed="${wm === selected}">
+              ${watermarkThumbMarkup(wm)}
+              <span class="dev-wm-info">
+                <span class="dev-wm-name" data-wm-name="${escapeHtml(wm.id)}">${escapeHtml(watermarkName(wm))}</span>
+                <span class="dev-wm-where" data-wm-where="${escapeHtml(wm.id)}">${escapeHtml(watermarkWhere(wm))}</span>
+              </span>
+            </button>
+            <button type="button" class="dev-icon-btn" data-theme-action="wm-up" data-wm="${escapeHtml(wm.id)}" title="Subir na lista (fica mais para trás)" aria-label="Subir na lista"${i === 0 ? " disabled" : ""}>↑</button>
+            <button type="button" class="dev-icon-btn" data-theme-action="wm-down" data-wm="${escapeHtml(wm.id)}" title="Descer na lista (fica mais na frente)" aria-label="Descer na lista"${i === list.length - 1 ? " disabled" : ""}>↓</button>
           </div>
-          ${checkRowMarkup("watermark.on", "Mostrar a marca d'água")}
-          ${rangeRowMarkup("watermark.transparency", "Transparência")}
-          ${rangeRowMarkup("watermark.scale", "Tamanho")}
-          <p class="dev-data-hint" style="margin:-0.1rem 0 0.3rem;">O lado maior da imagem, em % do lado menor da tela.</p>
-          ${positionGridMarkup("watermark.position", "Posição da marca d'água")}
-          ${rangeRowMarkup("watermark.margin", "Distância da borda")}
-          ${rangeRowMarkup("watermark.rotation", "Rotação")}
+        `).join("");
+        return `
+          <p class="dev-data-hint">Clique numa marca para ajustá-la. Quando duas se cruzam, a de baixo na lista fica por cima.</p>
+          <div class="dev-wm-list" role="group" aria-label="Marcas d'água">${rows}</div>
+          ${picker}
+          ${addButton}
+          ${full ? `<p class="dev-data-hint" style="margin:0.4rem 0 0;">Limite de ${WATERMARK_MAX} marcas d'água.</p>` : ""}
+          ${watermarkEditorMarkup(selected)}
+        `;
+      }
+
+      function watermarkEditorMarkup(wm) {
+        const index = theme.watermarks.indexOf(wm);
+        const p = (key) => keyPath("watermarks", String(index), key);
+        const family = watermarkFamily(wm.id);
+        const targets = theme.watermarks.filter((other) => !family.has(other.id));
+        const hasAttached = theme.watermarks.some((other) => other.to === wm.id);
+        const attachTitle = targets.length ? "" : ' title="Adicione outra imagem para grudar esta nela"';
+        let place;
+        if (!wm.to) {
+          place = `
+            ${hasAttached ? `<p class="dev-data-hint" style="margin:0.1rem 0 0.2rem;">As marcas grudadas nesta vão junto: posição, transparência e rotação valem para o conjunto.</p>` : ""}
+            ${rangeRowMarkup(p("transparency"), "Transparência")}
+            ${rangeRowMarkup(p("rotation"), "Rotação")}
+            ${positionGridMarkup(p("position"), "Posição da marca d'água")}
+            ${rangeRowMarkup(p("margin"), "Distância da borda")}
+            ${rangeRowMarkup(p("dx"), "Ajuste horizontal")}
+            ${rangeRowMarkup(p("dy"), "Ajuste vertical")}
+            <p class="dev-data-hint" style="margin:0.1rem 0 0;">O ajuste fino é em % da largura e da altura da tela.</p>
+          `;
+        } else {
+          const vertical = wm.side === "left" || wm.side === "right";
+          const alignNames = vertical ? ["Topo", "Centro", "Base"] : ["Esquerda", "Centro", "Direita"];
+          const root = watermarkRootOf(wm);
+          const parent = watermarkById(wm.to);
+          const targetButtons = targets.map((t) => `
+            <button type="button" class="dev-wm-target" data-bind="${escapeHtml(p("to"))}" data-value="${escapeHtml(t.id)}" data-rerender aria-pressed="${t.id === wm.to}">
+              ${watermarkThumbMarkup(t)}<span data-wm-name="${escapeHtml(t.id)}">${escapeHtml(watermarkName(t))}</span>
+            </button>
+          `).join("");
+          place = `
+            <div class="dev-field-row">
+              <span class="dev-color-name">Grudada em</span>
+              <div class="dev-wm-targets" role="group" aria-label="Marca em que esta gruda">${targetButtons}</div>
+            </div>
+            <div class="dev-field-row">
+              <span class="dev-color-name">Lado</span>
+              <div class="dev-seg-group is-wrap" role="group" aria-label="Lado da outra marca">
+                ${pressButtonMarkup(p("side"), "above", "Acima", "Acima da outra", { text: true, rerender: true })}
+                ${pressButtonMarkup(p("side"), "below", "Abaixo", "Abaixo da outra", { text: true, rerender: true })}
+                ${pressButtonMarkup(p("side"), "left", "Esquerda", "À esquerda da outra", { text: true, rerender: true })}
+                ${pressButtonMarkup(p("side"), "right", "Direita", "À direita da outra", { text: true, rerender: true })}
+              </div>
+            </div>
+            <div class="dev-field-row">
+              <span class="dev-color-name">Alinhamento</span>
+              <div class="dev-seg-group" role="group" aria-label="Alinhamento ao longo do lado">
+                ${WATERMARK_ALIGNS.map((a, k) => pressButtonMarkup(p("align"), a, alignNames[k], "Alinhar pelo " + alignNames[k].toLowerCase(), { text: true })).join("")}
+              </div>
+            </div>
+            ${rangeRowMarkup(p("gap"), "Distância")}
+            ${rangeRowMarkup(p("shift"), "Deslocamento")}
+            <p class="dev-data-hint" style="margin:0.1rem 0 0;">Distância e deslocamento são em % do lado menor da tela, como o tamanho: o conjunto fica com a mesma forma em qualquer tela. Distância negativa sobrepõe as duas. Transparência e rotação vêm de ${escapeHtml(watermarkName(root))}, a principal do conjunto, e esconder ${escapeHtml(parent ? watermarkName(parent) : "a outra")} esconde esta também.</p>
+          `;
+        }
+        return `
+          <div class="dev-wm-editor">
+            <div class="dev-inline-actions">
+              <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="wm-pick">Trocar imagem…</button>
+              <button type="button" class="dev-btn dev-btn-ghost dev-btn-danger" data-theme-action="wm-remove">Remover</button>
+            </div>
+            <label class="dev-label">Nome
+              <input class="dev-input" type="text" maxlength="${WATERMARK_NAME_LIMIT}" data-bind="${escapeHtml(p("name"))}" value="${escapeHtml(wm.name)}" placeholder="Marca ${index + 1}" />
+            </label>
+            ${checkRowMarkup(p("on"), "Mostrar esta marca")}
+            ${rangeRowMarkup(p("scale"), "Tamanho")}
+            <p class="dev-data-hint" style="margin:-0.1rem 0 0.3rem;">O lado maior da imagem, em % do lado menor da tela.</p>
+            <div class="dev-field-row">
+              <span class="dev-color-name">Onde fica</span>
+              <div class="dev-seg-group" role="group" aria-label="Onde a marca fica">
+                <button type="button" class="dev-seg is-text" data-theme-action="wm-free" aria-pressed="${!wm.to}">Solta na tela</button>
+                <button type="button" class="dev-seg is-text" data-theme-action="wm-attach" aria-pressed="${!!wm.to}"${targets.length ? "" : " disabled"}${attachTitle}>Grudada em outra</button>
+              </div>
+            </div>
+            ${place}
+          </div>
         `;
       }
 
       const HUD_LABELS = {
-        title: "Título",
+        title: "Título e subtítulo",
         search: "Pesquisa",
         zoom: "Controles de zoom",
         legend: "Legenda (Nó / Subnó)",
@@ -5881,6 +6809,7 @@ META 2</span> </button>
         textos: tabTextosMarkup,
         tronco: tabTroncoMarkup,
         titulo: tabTituloMarkup,
+        pesquisa: tabPesquisaMarkup,
         marca: tabMarcaMarkup,
         tela: tabTelaMarkup,
       };
@@ -5900,8 +6829,12 @@ META 2</span> </button>
           ${TAB_MARKUP[themeTab]()}
           <button type="button" class="dev-btn dev-btn-ghost" data-theme-action="reset-tab" style="margin-top:1rem;width:100%;">Restaurar o padrão desta aba</button>
         `;
-        const thumb = document.getElementById("theme-wm-thumb");
-        if (thumb) thumb.src = theme.watermark.image;
+        // As miniaturas recebem o src depois: data URLs de centenas de KB
+        // não passam pelo innerHTML.
+        devModalBody.querySelectorAll("img[data-wm-thumb]").forEach((img) => {
+          const wm = watermarkById(img.dataset.wmThumb);
+          if (wm) img.src = wm.image;
+        });
         const coreField = document.getElementById("theme-core-label");
         if (coreField) coreField.addEventListener("input", () => editCoreLabel(coreField.value));
         refreshThemeWidgets();
@@ -5953,8 +6886,7 @@ META 2</span> </button>
 
       function refreshThemeWidgets() {
         devModalBody.querySelectorAll("output[data-out]").forEach((out) => {
-          const path = out.dataset.out;
-          out.textContent = READOUTS[path](getPath(theme, path));
+          out.textContent = readout(out.dataset.out);
         });
         devModalBody.querySelectorAll("[data-reset]").forEach((btn) => {
           btn.disabled = isDefaultPaths(btn.dataset.reset);
@@ -5984,6 +6916,20 @@ META 2</span> </button>
           block.classList.toggle("is-off", !cfg.show);
           const offset = block.querySelector('input[data-bind$=".offset"]');
           if (offset) offset.disabled = cfg.position === "center";
+        });
+        // Aba Marca d'água: nome, lugar e mostrar/esconder, na lista e nas
+        // fichas de "Grudada em", acompanham o editor.
+        devModalBody.querySelectorAll("[data-wm-name]").forEach((el) => {
+          const wm = watermarkById(el.dataset.wmName);
+          if (wm) el.textContent = watermarkName(wm);
+        });
+        devModalBody.querySelectorAll("[data-wm-where]").forEach((el) => {
+          const wm = watermarkById(el.dataset.wmWhere);
+          if (wm) el.textContent = watermarkWhere(wm);
+        });
+        devModalBody.querySelectorAll(".dev-wm-item[data-wm]").forEach((el) => {
+          const wm = watermarkById(el.dataset.wm);
+          if (wm) el.classList.toggle("is-off", !wm.on);
         });
       }
 
@@ -6022,6 +6968,11 @@ META 2</span> </button>
           const path = press.dataset.bind;
           setPath(theme, path, press.hasAttribute("data-value") ? press.dataset.value : !getPath(theme, path));
           themeChanged();
+          // Escolhas que mudam outros controles da aba (o lado de uma marca
+          // grudada troca os nomes do alinhamento, por exemplo).
+          if (press.hasAttribute("data-rerender")) {
+            renderThemeForm('button[data-bind="' + CSS.escape(path) + '"][data-value="' + CSS.escape(press.dataset.value) + '"]');
+          }
           return;
         }
 
@@ -6046,17 +6997,57 @@ META 2</span> </button>
           saveTheme();
           renderThemeForm('[data-theme-action="reset-tab"]');
           status.textContent = "Aparência desta aba restaurada para o padrão.";
-        } else if (name === "wm-pick") {
+        } else if (name === "wm-add" || name === "wm-pick") {
+          if (name === "wm-add" && theme.watermarks.length >= WATERMARK_MAX) return;
+          wmPickTarget = name === "wm-pick" ? wmSelected : "";
           const input = document.getElementById("theme-wm-file");
           if (input) input.click();
-        } else if (name === "wm-remove") {
-          if (!window.confirm("Remover a imagem da marca d'água?")) return;
-          theme.watermark.image = "";
-          theme.watermark.ratio = 1;
+        } else if (name === "wm-select") {
+          wmSelected = action.dataset.wm;
+          renderThemeForm('[data-theme-action="wm-select"][data-wm="' + CSS.escape(wmSelected) + '"]');
+        } else if (name === "wm-up" || name === "wm-down") {
+          const list = theme.watermarks;
+          const from = list.findIndex((wm) => wm.id === action.dataset.wm);
+          const to = from + (name === "wm-up" ? -1 : 1);
+          if (from < 0 || to < 0 || to >= list.length) return;
+          list.splice(to, 0, list.splice(from, 1)[0]);
           applyTheme();
           saveTheme();
-          saveWatermark();
-          renderThemeForm('[data-theme-action="wm-pick"]');
+          // Na ponta da lista a seta usada fica desligada: o foco vai para
+          // a outra seta da mesma marca.
+          const edge = to === 0 || to === list.length - 1;
+          const arrow = edge ? (name === "wm-up" ? "wm-down" : "wm-up") : name;
+          renderThemeForm('[data-theme-action="' + arrow + '"][data-wm="' + CSS.escape(action.dataset.wm) + '"]');
+        } else if (name === "wm-free" || name === "wm-attach") {
+          const wm = watermarkById(wmSelected);
+          if (!wm || (name === "wm-free") === !wm.to) return;
+          if (name === "wm-free") {
+            wm.to = "";
+          } else {
+            const family = watermarkFamily(wm.id);
+            const target = theme.watermarks.find((other) => !family.has(other.id));
+            if (!target) return;
+            wm.to = target.id;
+          }
+          applyTheme();
+          saveTheme();
+          renderThemeForm('[data-theme-action="' + name + '"]');
+        } else if (name === "wm-remove") {
+          const wm = watermarkById(wmSelected);
+          if (!wm) return;
+          const attached = theme.watermarks.filter((other) => other.to === wm.id);
+          const question = "Remover a marca d'água “" + watermarkName(wm) + "”?"
+            + (attached.length === 1 ? " A marca grudada nela fica no lugar dela."
+              : attached.length ? " As " + attached.length + " marcas grudadas nela ficam no lugar dela." : "");
+          if (!window.confirm(question)) return;
+          const index = theme.watermarks.indexOf(wm);
+          theme.watermarks = removeWatermark(theme.watermarks, wm.id);
+          const next = attached[0] || theme.watermarks[Math.min(index, theme.watermarks.length - 1)];
+          wmSelected = next ? next.id : "";
+          applyTheme();
+          saveTheme();
+          saveWatermarks();
+          renderThemeForm('[data-theme-action="wm-add"]');
           status.textContent = "Marca d'água removida.";
         }
       });
@@ -6064,9 +7055,13 @@ META 2</span> </button>
       function resetThemeTab(tabId) {
         const fresh = defaultTheme();
         TAB_KEYS[tabId].forEach((key) => {
-          if (key === "watermark") {
-            fresh.watermark.image = theme.watermark.image;
-            fresh.watermark.ratio = theme.watermark.ratio;
+          if (key === "watermarks") {
+            // As imagens ficam, e cada marca continua grudada onde estava;
+            // o resto volta ao de fábrica.
+            theme.watermarks = theme.watermarks.map((wm) => Object.assign({}, WATERMARK_DEFAULTS, {
+              id: wm.id, name: wm.name, image: wm.image, ratio: wm.ratio, to: wm.to,
+            }));
+            return;
           }
           theme[key] = fresh[key];
         });
@@ -6078,21 +7073,39 @@ META 2</span> </button>
       const WM_MAX_CHARS = 1500000;       // teto da data URL (~1,1 MB de imagem)
       const WM_EXTENSIONS = /\.(png|jpe?g|webp|gif|svg)$/i;
 
+      // Para onde vai a próxima imagem escolhida: "" é uma marca nova; um
+      // id troca a imagem daquela marca.
+      let wmPickTarget = "";
+
       function takeWatermarkFile(input) {
         const file = input.files && input.files[0];
         input.value = "";   // escolher o mesmo arquivo de novo volta a disparar
         if (!file) return;
+        const targetId = wmPickTarget;
         readWatermark(file).then((result) => {
-          theme.watermark.image = result.image;
-          theme.watermark.ratio = result.ratio;
-          theme.watermark.on = true;
+          let wm = null;
+          if (targetId) {
+            wm = watermarkById(targetId);
+            if (!wm) return;   // a marca foi removida enquanto a imagem era lida
+          } else {
+            if (theme.watermarks.length >= WATERMARK_MAX) return;
+            wm = Object.assign({}, WATERMARK_DEFAULTS, {
+              id: newWatermarkId(),
+              name: file.name.replace(/\.[^.]*$/, "").trim().slice(0, WATERMARK_NAME_LIMIT),
+            });
+            theme.watermarks.push(wm);
+          }
+          wm.image = result.image;
+          wm.ratio = result.ratio;
+          wm.on = true;
+          wmSelected = wm.id;
           applyTheme();
           saveTheme();
-          const stored = saveWatermark();
+          const stored = saveWatermarks();
           if (!devOverlay.hidden) renderThemeForm('[data-theme-action="wm-pick"]');
-          status.textContent = "Marca d'água aplicada.";
+          status.textContent = targetId ? "Imagem da marca d'água trocada." : "Marca d'água adicionada.";
           if (!stored) {
-            window.alert("A imagem foi aplicada, mas o navegador não tem espaço para guardá-la: ela some ao recarregar a página. Exporte o mapa agora para mantê-la, ou use uma imagem menor.");
+            window.alert("A imagem foi aplicada, mas o navegador não tem espaço para guardá-la: ela some ao recarregar a página. Exporte o mapa agora para mantê-la, ou use imagens menores.");
           }
         }).catch((error) => {
           window.alert(error.message);
@@ -6222,10 +7235,18 @@ META 2</span> </button>
       if (seedTheme) {
         theme = sanitizeTheme(seedTheme);
         saveTheme();
-        saveWatermark();
+        saveWatermarks();
       } else {
         const savedTheme = loadTheme();
-        if (savedTheme) theme = savedTheme;
+        if (savedTheme) {
+          theme = savedTheme.theme;
+          // Guardado por uma versão anterior: passa para o formato novo
+          // (a imagem sai da chave da v4 para a chave da marca).
+          if (savedTheme.migrated) {
+            saveTheme();
+            saveWatermarks();
+          }
+        }
       }
 
       // Antes do primeiro render: as medidas decidem a largura das caixas,
