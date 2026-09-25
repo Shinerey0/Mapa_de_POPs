@@ -2193,21 +2193,11 @@
       gap: 0.6rem;
     }
 
+    /* O modo dev é só do computador: no celular não há cadeado nem botões
+       de edição (todos têm a classe dev-toggle), e a pesquisa não disputa
+       o canto de cima com eles. */
     body.is-compact .dev-toggle {
-      top: 1rem;
-      right: 1rem;
-    }
-
-    body.is-compact .data-toggle {
-      right: 3.9rem;
-    }
-
-    body.is-compact .theme-toggle {
-      right: 6.8rem;
-    }
-
-    body.is-compact .phone-toggle {
-      right: 9.7rem;
+      display: none !important;
     }
 
     body.is-compact .dev-modal {
@@ -6165,6 +6155,15 @@
       function handleViewportChange() {
         setViewportUnit();
         const metricsChanged = applyMetrics();
+        // A janela ficou no tamanho de celular com o modo dev aberto: os
+        // botões saem (ver CSS), e a edição fecha junto com eles.
+        if (document.body.classList.contains("is-compact")) {
+          if (editLayout) exitPhoneEdit();
+          if (devUnlocked) {
+            closeDevOverlay();
+            setDevMode(false);
+          }
+        }
         // Entrar ou sair do modo celular, ou girar o aparelho, pode trocar o
         // tema em uso; applyTheme já refaz tudo o que depende dele.
         const picked = pickTheme();
