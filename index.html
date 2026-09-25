@@ -2509,7 +2509,7 @@ META 2</span> </button>
 
       // Faixa de cada ajuste numérico: [mínimo, máximo, passo]. Serve ao
       // mesmo tempo ao controle deslizante do painel e ao saneamento do que
-      // volta de arquivo ou do localStorage, para os dois nunca discordarem.
+      // volta de arquivo, para os dois nunca discordarem.
       const LIMITS = {
         coreText: { size: [12, 44, 1], spacing: [-0.05, 0.3, 0.01], lineHeight: [0.8, 2, 0.05] },
         coreShadow: { transparency: [0, 100, 1], blur: [0, 80, 1], distance: [0, 60, 1], angle: [0, 355, 5] },
@@ -3350,16 +3350,10 @@ META 2</span> </button>
         }[ch]));
       }
 
-      // --- Persistência: o localStorage é o rascunho automático (salva a
-      // cada mudança do modo dev, no mesmo navegador/perfil). O mapa
-      // portátil sai por exportação, em .json ou em .html autocontido. ---
-      const STORAGE_KEY = "mapaPOPs.treeData.v1";
-      const THEME_KEY = "mapaPOPs.theme.v1";
-      // A imagem da marca d'água única da v4. Só é lida, para migrar: na
-      // v5 cada marca tem a sua chave, WATERMARK_PREFIX + id.
-      const WATERMARK_KEY = "mapaPOPs.watermark.v1";
-      const WATERMARK_PREFIX = "mapaPOPs.watermark.v2.";
-      const SEED_STAMP_KEY = "mapaPOPs.seedStamp.v1";
+      // --- Persistência: nenhuma no navegador. Toda abertura parte do mapa
+      // embutido no próprio arquivo (o seed — o que está no servidor), e o
+      // que o modo dev muda vale só até fechar ou recarregar a aba. O mapa
+      // sai por exportação, em .json ou em .html autocontido. ---
       const MAP_FORMAT = "mapaPOPs";
       // v4: cor do texto por nó (textColor) e, no tema, textos, tronco,
       // título e marca d'água. v5: subtítulo, formatação da pesquisa,
@@ -3381,11 +3375,36 @@ META 2</span> </button>
         };
       }
 
-      function saveState() {
+      // Há edição que ainda não saiu em nenhum arquivo exportado. Enquanto
+      // houver, fechar ou recarregar a aba pede confirmação: sem rascunho no
+      // navegador, ela se perderia ali. Exportar zera.
+      let unsavedChanges = false;
+      function markChanged() {
+        unsavedChanges = true;
+      }
+
+      // O navegador mostra a pergunta dele (o texto de um site é ignorado);
+      // returnValue é para os navegadores mais antigos.
+      window.addEventListener("beforeunload", (event) => {
+        if (!unsavedChanges) return;
+        event.preventDefault();
+        event.returnValue = "";
+      });
+
+      // As versões anteriores guardavam um rascunho do mapa no localStorage
+      // (árvore, tema, imagens das marcas d'água e o carimbo do seed), todo
+      // sob chaves "mapaPOPs.". Nada disso é lido mais: apagar devolve o
+      // espaço a quem abriu a página antes.
+      function clearOldDrafts() {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeNode(treeData.root)));
+          const old = [];
+          for (let i = 0; i < localStorage.length; i += 1) {
+            const key = localStorage.key(i);
+            if (key && key.indexOf(MAP_FORMAT + ".") === 0) old.push(key);
+          }
+          old.forEach((key) => localStorage.removeItem(key));
         } catch (e) {
-          // localStorage indisponível (ex.: navegação privada) — ignora.
+          // localStorage indisponível (ex.: navegação privada): nada a limpar.
         }
       }
 
@@ -3400,8 +3419,8 @@ META 2</span> </button>
       // endereço externo: a marca d'água tem de viajar dentro do arquivo.
       const IMAGE_DATA_URL = /^data:image\/(png|jpeg|webp|gif|svg\+xml);base64,[a-z0-9+/]+=*$/i;
 
-      // Id de uma marca d'água: vira parte do nome da chave no localStorage
-      // e do caminho dos controles do painel, então fica curto e simples.
+      // Id de uma marca d'água: vira parte do caminho dos controles do
+      // painel, então fica curto e simples.
       const WATERMARK_ID = /^[a-z0-9-]{1,40}$/i;
       const WATERMARK_NAME_LIMIT = 40;
 
@@ -3595,81 +3614,6 @@ META 2</span> </button>
         return clean;
       }
 
-      // O tema vai para o localStorage SEM as imagens das marcas d'água:
-      // cada uma pode ter centenas de KB, e o tema é regravado a cada ajuste
-      // do painel. Cada imagem tem chave própria e só é gravada quando muda.
-      function saveTheme() {
-        try {
-          const light = Object.assign({}, theme, {
-            watermarks: theme.watermarks.map((wm) => Object.assign({}, wm, { image: "" })),
-          });
-          localStorage.setItem(THEME_KEY, JSON.stringify(light));
-        } catch (e) {
-          // sem localStorage o tema vale só para esta sessão.
-        }
-      }
-
-      // As chaves de marcas que saíram da lista (e a da v4) são apagadas
-      // antes das gravações, para devolver o espaço a tempo. Só as marcas
-      // de imagem têm chave: o texto já vai inteiro no tema. Devolve false
-      // quando o navegador recusou alguma imagem (cota cheia), para quem a
-      // enviou ser avisado de que ela não sobrevive ao recarregar.
-      function saveWatermarks() {
-        try {
-          const images = theme.watermarks.filter((wm) => !isTextMark(wm));
-          const keep = new Set(images.map((wm) => WATERMARK_PREFIX + wm.id));
-          const stale = [];
-          for (let i = 0; i < localStorage.length; i += 1) {
-            const key = localStorage.key(i);
-            if (key && key.indexOf(WATERMARK_PREFIX) === 0 && !keep.has(key)) stale.push(key);
-          }
-          stale.forEach((key) => localStorage.removeItem(key));
-          localStorage.removeItem(WATERMARK_KEY);
-          let stored = true;
-          images.forEach((wm) => {
-            const key = WATERMARK_PREFIX + wm.id;
-            if (localStorage.getItem(key) === wm.image) return;
-            // Apaga antes de gravar: se a imagem nova não couber, a antiga
-            // não pode voltar no lugar dela ao recarregar.
-            localStorage.removeItem(key);
-            try {
-              localStorage.setItem(key, wm.image);
-            } catch (e) {
-              stored = false;
-            }
-          });
-          return stored;
-        } catch (e) {
-          return false;
-        }
-      }
-
-      // Devolve { theme, migrated }. `migrated` diz que o guardado era de
-      // antes da v5 (uma marca d'água só, na chave da v4) e precisa ser
-      // regravado no formato novo.
-      function loadTheme() {
-        try {
-          const raw = localStorage.getItem(THEME_KEY);
-          if (!raw) return null;
-          const parsed = JSON.parse(raw);
-          if (!parsed || typeof parsed !== "object") return null;
-          const migrated = !Array.isArray(parsed.watermarks);
-          if (!migrated) {
-            parsed.watermarks = parsed.watermarks.map((wm) => (
-              wm && typeof wm === "object" && typeof wm.id === "string"
-                ? Object.assign({}, wm, { image: localStorage.getItem(WATERMARK_PREFIX + wm.id) || "" })
-                : wm));
-          } else if (parsed.watermark && typeof parsed.watermark === "object") {
-            parsed.watermark = Object.assign({}, parsed.watermark, {
-              image: localStorage.getItem(WATERMARK_KEY) || "",
-            });
-          }
-          return { theme: sanitizeTheme(parsed), migrated: migrated };
-        } catch (e) {
-          return null;
-        }
-      }
-
       // Mapas salvos antes das categorias não têm `type`. Nesses casos a
       // categoria é inferida da aparência que o nó já tinha: da segunda
       // geração em diante, quem não tinha filhos era desenhado na cor
@@ -3704,21 +3648,9 @@ META 2</span> </button>
         node.children.forEach(normalizeTypes);
       }
 
-      function loadState() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return null;
-          const parsed = JSON.parse(raw);
-          if (!parsed || typeof parsed !== "object") return null;
-          return parsed;
-        } catch (e) {
-          return null;
-        }
-      }
-
-      // Aceita tanto o envelope de exportação quanto um nó solto — que é o
-      // formato gravado no localStorage desde a v05. Assim um mapa antigo
-      // continua abrindo sem conversão.
+      // Aceita tanto o envelope de exportação quanto um nó solto — que era o
+      // formato do rascunho que as versões anteriores gravavam no
+      // localStorage. Assim um mapa antigo continua abrindo sem conversão.
       function readEnvelope(parsed) {
         if (!parsed || typeof parsed !== "object") return null;
         if (parsed.format === MAP_FORMAT && parsed.root && typeof parsed.root === "object") {
@@ -3744,8 +3676,6 @@ META 2</span> </button>
         if (!envelope || typeof envelope !== "object" || !envelope.theme) return false;
         theme = sanitizeTheme(envelope.theme);
         applyTheme();
-        saveTheme();
-        saveWatermarks();
         return true;
       }
 
@@ -5291,7 +5221,7 @@ META 2</span> </button>
         };
         parentNode.children.push(node);
         rebuildPreservingExpanded(parentNode.id, parentNode.id);
-        saveState();
+        markChanged();
         status.textContent = (type === SUBNODE ? "Subnó" : "Nó")
           + " criado em " + shortLabel(parentNode, 40) + ".";
         return true;
@@ -5304,7 +5234,7 @@ META 2</span> </button>
         if (idx === -1) return;
         parent.children.splice(idx, 1);
         rebuildPreservingExpanded();
-        saveState();
+        markChanged();
         status.textContent = (isSub(node) ? "Subnó" : "Nó") + " removido.";
       }
 
@@ -5404,7 +5334,7 @@ META 2</span> </button>
         node.parent = newParent;
         // O novo pai abre para o nó recém-chegado aparecer no lugar novo.
         rebuildPreservingExpanded(newParent.id, node.id);
-        saveState();
+        markChanged();
         const carga = node.children.length
           ? " com " + node.children.length + (node.children.length > 1 ? " filhos" : " filho")
           : "";
@@ -5445,7 +5375,7 @@ META 2</span> </button>
         } else {
           rebuildPreservingExpanded();
         }
-        saveState();
+        markChanged();
       }
 
       coreButton.addEventListener("click", toggleCore);
@@ -5878,7 +5808,6 @@ META 2</span> </button>
       function closeDevOverlay() {
         devOverlay.hidden = true;
         devOverlay.classList.remove("is-side");
-        flushCoreLabel();
       }
 
       function setDevMode(unlocked) {
@@ -6172,9 +6101,9 @@ META 2</span> </button>
       });
 
       // --- Dados do mapa: exportar e importar ------------------------------
-      // O localStorage é só o rascunho local. O mapa portátil sai daqui: um
-      // .json para backup e troca, e um .html que já abre montado em
-      // qualquer computador, sem depender do cache de navegador nenhum.
+      // O navegador não guarda nada: o mapa só sobrevive à aba saindo daqui.
+      // Um .json para backup e troca, e um .html que já abre montado em
+      // qualquer computador — é ele que vai para o servidor.
       // ---------------------------------------------------------------------
 
       // Nome que o painel de dados sugere para os arquivos exportados.
@@ -6197,11 +6126,10 @@ META 2</span> </button>
 
       function exportJson(name) {
         const filename = exportFileName(name, ".json");
-        downloadFile(
-          filename,
-          "application/json",
-          JSON.stringify(buildEnvelope(), null, 2)
-        );
+        const text = JSON.stringify(buildEnvelope(), null, 2);
+        // Antes do download: o clique no link não pode achar edição pendente.
+        unsavedChanges = false;
+        downloadFile(filename, "application/json", text);
         status.textContent = "Mapa exportado em JSON: " + filename + ".";
       }
 
@@ -6302,6 +6230,7 @@ META 2</span> </button>
           return "<!doctype html>\n" + document.documentElement.outerHTML;
         });
 
+        unsavedChanges = false;   // antes do download, como em exportJson
         downloadFile(filename, "text/html;charset=utf-8", html);
         status.textContent = "Mapa exportado como página autocontida: " + filename + ".";
       }
@@ -6313,7 +6242,7 @@ META 2</span> </button>
         updateVisibility();
         releaseCameraControl();
         fitCamera(420);
-        saveState();
+        markChanged();
         status.textContent = "Mapa importado de " + origem + ".";
       }
 
@@ -6345,7 +6274,7 @@ META 2</span> </button>
       function renderDataForm() {
         devModalBody.innerHTML = `
           <h2 id="dev-modal-title" class="dev-modal-title">Dados do mapa</h2>
-          <p class="dev-data-hint">O navegador guarda uma cópia local automaticamente, mas ela não viaja com você. Para abrir o mapa em outro computador, exporte um arquivo.</p>
+          <p class="dev-data-hint">Nada fica salvo no navegador: ao fechar ou recarregar a página, as alterações se perdem e o mapa volta a ser o que está no servidor. Para mantê-las, exporte a página (.html) e publique-a no lugar da atual.</p>
           <form id="data-export-form" class="dev-data-actions">
             <label class="dev-label">Nome do arquivo
               <input id="data-export-name" class="dev-input" type="text" autocomplete="off" spellcheck="false" value="${defaultExportName()}" />
@@ -6381,7 +6310,7 @@ META 2</span> </button>
       // chave do tema que ele edita ("coreText.size", "branches.<id>"…), e
       // um só punhado de listeners delegados, registrados uma vez, cuida de
       // todos: lê o valor, grava no tema e agenda a repintura. A prévia é
-      // imediata e a gravação acontece junto, como sempre foi.
+      // imediata.
       //
       // Um "input" NUNCA redesenha o painel: recriar o <input type="color">
       // no meio da escolha fecharia o seletor nativo. O que precisa
@@ -7259,25 +7188,14 @@ META 2</span> </button>
 
       // O texto do tronco é o rótulo do nó raiz, não uma chave do tema: vai
       // para a árvore, com a regra do formulário do lápis — vazio não vale,
-      // e o tronco fica com o último texto não vazio. A árvore inteira é
-      // regravada a cada vez, então a gravação espera a digitação pausar
-      // (e fechar o painel grava na hora, ver closeDevOverlay).
-      let coreLabelTimer = null;
+      // e o tronco fica com o último texto não vazio.
       function editCoreLabel(value) {
         const text = value.trim();
         if (!text || text === treeData.root.label) return;
         treeData.root.label = text;
         coreLabel.textContent = text;
         refreshCoreSize();
-        clearTimeout(coreLabelTimer);
-        coreLabelTimer = setTimeout(flushCoreLabel, 400);
-      }
-
-      function flushCoreLabel() {
-        if (!coreLabelTimer) return;
-        clearTimeout(coreLabelTimer);
-        coreLabelTimer = null;
-        saveState();
+        markChanged();
       }
 
       // Um controle mudou o tema. A repintura vai para o próximo quadro: um
@@ -7285,12 +7203,12 @@ META 2</span> </button>
       // desenhar uma vez por quadro.
       let themeFrame = null;
       function themeChanged() {
+        markChanged();
         refreshThemeWidgets();
         if (themeFrame) return;
         themeFrame = requestAnimationFrame(() => {
           themeFrame = null;
           applyTheme();
-          saveTheme();
           // As cores automáticas dependem do que applyTheme acabou de
           // aplicar (a do título é lida do CSS da página).
           refreshThemeWidgets();
@@ -7408,7 +7326,7 @@ META 2</span> </button>
         if (reset) {
           resetPaths(reset.dataset.reset);
           applyTheme();
-          saveTheme();
+          markChanged();
           // Redesenha para o seletor mostrar o valor padrão. O botão fica
           // desabilitado, então o foco vai para o controle da mesma linha.
           const first = reset.dataset.reset.split(" ")[0];
@@ -7422,7 +7340,7 @@ META 2</span> </button>
         if (name === "reset-tab") {
           resetThemeTab(themeTab);
           applyTheme();
-          saveTheme();
+          markChanged();
           renderThemeForm('[data-theme-action="reset-tab"]');
           status.textContent = "Aparência desta aba restaurada para o padrão.";
         } else if (name === "wm-add" || name === "wm-pick") {
@@ -7436,7 +7354,7 @@ META 2</span> </button>
           theme.watermarks.push(wm);
           wmSelected = wm.id;
           applyTheme();
-          saveTheme();
+          markChanged();
           // O foco vai para o texto, já selecionado: é só digitar por cima.
           const path = keyPath("watermarks", String(theme.watermarks.length - 1), "text");
           renderThemeForm('textarea[data-bind="' + CSS.escape(path) + '"]');
@@ -7452,7 +7370,7 @@ META 2</span> </button>
           if (from < 0 || to < 0 || to >= list.length) return;
           list.splice(to, 0, list.splice(from, 1)[0]);
           applyTheme();
-          saveTheme();
+          markChanged();
           // Na ponta da lista a seta usada fica desligada: o foco vai para
           // a outra seta da mesma marca.
           const edge = to === 0 || to === list.length - 1;
@@ -7470,7 +7388,7 @@ META 2</span> </button>
             wm.to = target.id;
           }
           applyTheme();
-          saveTheme();
+          markChanged();
           renderThemeForm('[data-theme-action="' + name + '"]');
         } else if (name === "wm-remove") {
           const wm = watermarkById(wmSelected);
@@ -7485,8 +7403,7 @@ META 2</span> </button>
           const next = attached[0] || theme.watermarks[Math.min(index, theme.watermarks.length - 1)];
           wmSelected = next ? next.id : "";
           applyTheme();
-          saveTheme();
-          saveWatermarks();
+          markChanged();
           renderThemeForm('[data-theme-action="wm-add"]');
           status.textContent = "Marca d'água removida.";
         }
@@ -7540,13 +7457,9 @@ META 2</span> </button>
           wm.on = true;
           wmSelected = wm.id;
           applyTheme();
-          saveTheme();
-          const stored = saveWatermarks();
+          markChanged();
           if (!devOverlay.hidden) renderThemeForm('[data-theme-action="wm-pick"]');
           status.textContent = targetId ? "Imagem da marca d'água trocada." : "Marca d'água adicionada.";
-          if (!stored) {
-            window.alert("A imagem foi aplicada, mas o navegador não tem espaço para guardá-la: ela some ao recarregar a página. Exporte o mapa agora para mantê-la, ou use imagens menores.");
-          }
         }).catch((error) => {
           window.alert(error.message);
         });
@@ -7555,8 +7468,7 @@ META 2</span> </button>
       // Lê a imagem escolhida e devolve { image: data URL, ratio }. Imagem
       // pequena entra como veio (e um SVG continua vetorial). Grande é
       // redesenhada num canvas com no máximo WM_MAX_SIDE px no lado maior:
-      // uma foto de celular tem vários MB, não caberia no localStorage e
-      // deixaria pesado o HTML exportado.
+      // uma foto de celular tem vários MB e deixaria pesado o HTML exportado.
       function readWatermark(file) {
         return new Promise((resolve, reject) => {
           const known = /^image\/(png|jpeg|webp|gif|svg\+xml)$/.test(file.type)
@@ -7630,64 +7542,18 @@ META 2</span> </button>
       });
 
       // --- Carregamento -----------------------------------------------------
-      // Ordem: um seed embutido ainda não adotado vence (é um arquivo
-      // recém-exportado, aberto talvez numa máquina que já tinha outro mapa
-      // salvo); fora isso vale o rascunho do localStorage. Depois de adotado
-      // uma vez, o seed sai da frente e as edições locais é que mandam.
+      // Toda abertura parte do seed embutido no arquivo — o mapa que está no
+      // servidor —, com a árvore e o tema dele. Sem seed (uma cópia do
+      // programa sem mapa), valem o mapa e as cores de fábrica; um seed sem
+      // tema (mapa da v2) fica com as cores de fábrica. Nada vem do navegador.
+      clearOldDrafts();
       const seedEnvelope = readSeed();
       const seedRoot = readEnvelope(seedEnvelope);
-      const seedStampValue = seedEnvelope && seedEnvelope.exportedAt
-        ? String(seedEnvelope.exportedAt)
-        : "sem-carimbo";
-      let seedAdopted = false;
-      let seedTheme = null;
-
       if (seedRoot) {
-        let lastSeed = null;
-        try {
-          lastSeed = localStorage.getItem(SEED_STAMP_KEY);
-        } catch (e) {
-          lastSeed = null;
-        }
-        if (seedStampValue !== lastSeed) {
-          adoptRoot(seedRoot);
-          seedAdopted = true;
-          seedTheme = seedEnvelope && seedEnvelope.theme ? seedEnvelope.theme : null;
-          saveState();
-          try {
-            localStorage.setItem(SEED_STAMP_KEY, seedStampValue);
-          } catch (e) {
-            // localStorage indisponível — o seed será readotado a cada abertura,
-            // que é o comportamento certo quando não há onde guardar edições.
-          }
-        }
-      }
-
-      if (!seedAdopted) {
-        const saved = readEnvelope(loadState());
-        if (saved) adoptRoot(saved);
+        adoptRoot(seedRoot);
+        if (seedEnvelope.theme) theme = sanitizeTheme(seedEnvelope.theme);
       }
       normalizeTypes(treeData.root);
-
-      // O tema segue a mesma ordem da árvore: o que veio no arquivo aberto
-      // manda sobre o rascunho local; sem nenhum dos dois, valem as cores
-      // de fábrica.
-      if (seedTheme) {
-        theme = sanitizeTheme(seedTheme);
-        saveTheme();
-        saveWatermarks();
-      } else {
-        const savedTheme = loadTheme();
-        if (savedTheme) {
-          theme = savedTheme.theme;
-          // Guardado por uma versão anterior: passa para o formato novo
-          // (a imagem sai da chave da v4 para a chave da marca).
-          if (savedTheme.migrated) {
-            saveTheme();
-            saveWatermarks();
-          }
-        }
-      }
 
       // Antes do primeiro render: as medidas decidem a largura das caixas,
       // e medir com o jogo errado obrigaria a desenhar duas vezes. O tema
