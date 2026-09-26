@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-editor="a5c08653ab8be45ab279ceec65936fe7a1cad798b961ee62330ae4fbce33556e" style="--line: rgba(160, 190, 255, 0.56); --blob-a: rgba(25, 183, 187, 0.24); --blob-b: rgba(245, 177, 75, 0.18); --vh: 7.3px; --node-w: 214px; --core-size: 168px; --node-min-h: 70px; --sub-min-h: 54px; --sub-max-h: 320px; --name-size: 1rem; --sub-size: 0.92rem; --core-w: 168px; --core-h: 168px;"><head>
+<html lang="pt-BR" data-editor="" style="--line: rgba(160, 190, 255, 0.56); --blob-a: rgba(25, 183, 187, 0.24); --blob-b: rgba(245, 177, 75, 0.18); --vh: 7.3px; --node-w: 214px; --core-size: 168px; --node-min-h: 70px; --sub-min-h: 54px; --sub-max-h: 320px; --name-size: 1rem; --sub-size: 0.92rem; --core-w: 168px; --core-h: 168px;"><head>
   <script>window["__codeletBootstrap__"] = JSON.parse('{"A":"A","B":"20260902-06-6f520ec","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YAHO2-t-jNE,0","Arial":"YAGyDvJ_4Ts,0","Bebas Neue":"YACgESME5ew,0","Bricolage Grotesque":"YAFyMcdwzpc,0","Canva Sans":"YAFLd8sKbwc,2","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAHO2VMiyZo,0","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAEul-FRQw4,0","Georgia":"YAGzXkO0pEM,0","Helvetica Neue":"YAFcf6CtJfI,0","Impact":"YAFcfnjI7Vk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YAHO2a5g66Q,0","JetBrains Mono":"YAFdJksXcAk,0","Libre Baskerville":"YACgEUFdPdA,0","Manrope":"YAHO2b2feC4,0","Merriweather":"YACgEXvHxxs,0","Montserrat":"YADLjI9qxTA,0","Nunito":"YACgEX8C5Gg,0","Oleo Script":"YACgEQQ14jI,0","Phantom Sans":"YAHO2E8Pb88,0","Playfair Display":"YACgEYmuCJE,0","Poppins":"YAFdJjbTu24,1","Press Start 2P":"YAFyGr-8pmQ,0","Quicksand":"YADWjpfPmdk,0","Raleway":"YACgEVg3xZg,0","Segoe UI":"YAHNdRD1Klw,0","Source Sans 3":"YAG4lO1Mj10,0","Spectral":"YAHO2rVUHIM,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Ubuntu":"YACgERDU--Q,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0","ui-monospace":"YADlN8CFZ8Q,0","ui-sans-serif":"YACkoN-xg4g,0"}}');</script>
   <script src="/_sdk/50d846425a1e5082.telemetry_sdk.js" integrity="sha512-Otbex+ztlVbcEGql0rXGd/3E3ee/hqAntg6DeuUEMG6pIPbXGOSvZbFZVzknAXi1tH/itQ+ijEhOTr2aWj6CXg=="></script>
   <meta charset="UTF-8">
@@ -2440,11 +2440,9 @@
       const zoomReadout = document.getElementById("camera-zoom-readout");
       const dragHint = document.getElementById("drag-hint");
 
-      // Só o editor.html carrega o atributo data-editor no <html>, com o
-      // SHA-256 da senha. A página publicada não o tem: o modo dev não abre
-      // nela, e a senha não está em lugar nenhum do código.
-      const EDITOR_HASH = (document.documentElement.getAttribute("data-editor") || "").trim().toLowerCase();
-      const IS_EDITOR = EDITOR_HASH !== "";
+      // Só o editor.html carrega o atributo data-editor (vazio) no <html>.
+      // A página publicada não o tem: o modo dev não abre nela.
+      const IS_EDITOR = document.documentElement.hasAttribute("data-editor");
       const devToggle = document.getElementById("dev-toggle");
       const dataToggle = document.getElementById("data-toggle");
       const themeToggle = document.getElementById("theme-toggle");
@@ -6565,8 +6563,8 @@
         }
       });
 
-      // --- Módulo de desenvolvedor: protegido por senha. Uma vez
-      // desbloqueado, pequenos botões escondidos em cada nó ficam visíveis,
+      // --- Módulo de desenvolvedor: só existe no editor.html. Uma vez
+      // ativado, pequenos botões escondidos em cada nó ficam visíveis,
       // permitindo criar, editar e remover diretamente no lugar. Quais
       // botões de criação aparecem depende da categoria do nó e das regras
       // de nó/subnó. No modo usuário (padrão) esses controles ficam ocultos
@@ -6602,41 +6600,6 @@
         updateVisibility();
         relayout(TWEEN_MS);
         autoFit(TWEEN_MS);
-      }
-
-      function renderPasswordForm(errorMsg) {
-        devModalBody.innerHTML = `
-          <h2 id="dev-modal-title" class="dev-modal-title">Área do desenvolvedor</h2>
-          <p class="dev-modal-desc">Digite a senha para revelar os controles de edição nos nós.</p>
-          <form id="dev-password-form" class="dev-form">
-            <input id="dev-password-input" type="password" autocomplete="off" placeholder="Senha" class="dev-input" />
-            ${errorMsg ? `<p class="dev-error">${escapeHtml(errorMsg)}</p>` : ""}
-            <button type="submit" class="dev-btn dev-btn-primary">Entrar</button>
-          </form>
-        `;
-        const form = document.getElementById("dev-password-form");
-        const input = document.getElementById("dev-password-input");
-        form.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          // A senha nunca aparece no arquivo: só o hash dela. crypto.subtle
-          // existe em https, em localhost/127.0.0.1 e em file://.
-          if (!(window.crypto && window.crypto.subtle)) {
-            renderPasswordForm("Este endereço não permite conferir a senha. Abra por https ou localhost.");
-            return;
-          }
-          const bytes = new TextEncoder().encode(input.value);
-          const digest = await window.crypto.subtle.digest("SHA-256", bytes);
-          const hex = Array.from(new Uint8Array(digest))
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join("");
-          if (hex === EDITOR_HASH) {
-            setDevMode(true);
-            closeDevOverlay();
-          } else {
-            renderPasswordForm("Senha incorreta.");
-          }
-        });
-        input.focus();
       }
 
       // Campo de texto: nós seguem com 80 caracteres, subnós passam a
@@ -6842,12 +6805,7 @@
 
       devToggle.addEventListener("click", () => {
         if (!IS_EDITOR) return;
-        if (devUnlocked) {
-          setDevMode(false);
-        } else {
-          renderPasswordForm();
-          openDevOverlay();
-        }
+        setDevMode(!devUnlocked);
       });
 
       devModalClose.addEventListener("click", closeDevOverlay);
