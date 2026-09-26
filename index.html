@@ -2629,6 +2629,9 @@
           placeholder: "Pesquisar nó ou subnó…",
           background: "", transparency: 28, border: "", icon: "",
           widthAuto: true, width: 100,
+          // Clicar na caixa que já tem um texto (o de uma pesquisa anterior)
+          // seleciona o texto inteiro, para a próxima pesquisa ser só digitar.
+          selectOnClick: false,
         },
         searchText: {
           font: "dmsans", size: 14.08, color: "",
@@ -6463,6 +6466,25 @@
         revealNode(node);
       }
 
+      // "Selecionar o texto ao clicar" (aba Pesquisa): só vale para o clique
+      // que dá o foco à caixa — com ela já focada, o clique põe o cursor onde
+      // se clicou, como sempre — e nunca sobre um trecho que a pessoa acabou
+      // de selecionar arrastando. O select() espera o foco que o clique dá
+      // (o do <label> vem depois do evento), senão ele seria desfeito.
+      const searchField = searchInput.closest(".search-field");
+      let searchWasFocused = false;
+      searchField.addEventListener("pointerdown", () => {
+        searchWasFocused = document.activeElement === searchInput;
+      });
+      searchField.addEventListener("click", () => {
+        if (!theme.searchBox.selectOnClick || searchWasFocused || !searchInput.value) return;
+        setTimeout(() => {
+          if (document.activeElement !== searchInput) return;
+          if (searchInput.selectionStart !== searchInput.selectionEnd) return;
+          searchInput.select();
+        }, 0);
+      });
+
       searchInput.addEventListener("input", renderSearchList);
       searchInput.addEventListener("focus", () => {
         if (searchInput.value.trim().length >= SEARCH_MIN_CHARS) renderSearchList();
@@ -7628,6 +7650,7 @@
           ${sectionTitle("Caixa")}
           ${colorRowMarkup("searchBox.background", "Fundo", box.background || effectiveHex("searchBox.background"))}
           ${rangeRowMarkup("searchBox.transparency", "Transparência do fundo")}
+          ${checkRowMarkup("searchBox.selectOnClick", "Ao clicar na caixa que já tem texto, selecionar o texto todo")}
           ${checkRowMarkup("searchBox.widthAuto", "Largura automática (340px no computador, a vaga inteira no celular)")}
           ${rangeRowMarkup("searchBox.width", "Até onde a caixa se estende")}
           <p class="dev-data-hint" style="margin:-0.1rem 0 0.3rem;">Em % da largura da tela, e nunca além da vaga em que a caixa está: no celular, com 100% ela ocupa a vaga inteira. Onde ela fica dentro da vaga (esquerda, meio, direita) segue a posição da aba Tela.</p>
