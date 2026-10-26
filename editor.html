@@ -2516,13 +2516,14 @@
           siblingGap: 24,  // folga vertical entre irmãos dentro do galho
           sectorGap: 40,   // folga vertical entre galhos vizinhos do mesmo lado
           arcR: 168,       // quanto o arco dos setores se abre a partir do tronco
+          ringSpread: 60,  // até quantos graus acima/abaixo do tronco o anel vai
           coreGap: 46,     // menor distância entre o tronco e a caixa de um setor
           coreTextPad: 12, // folga mínima entre o texto do tronco e a borda do círculo
           nameSize: 1, subSize: 0.92,
         },
         narrow: {
           nodeW: 168, coreR: 62, nodeMinH: 58, subMinH: 46, subMaxH: 210,
-          stepX: 194, siblingGap: 16, sectorGap: 28, arcR: 110, coreGap: 28,
+          stepX: 194, siblingGap: 16, sectorGap: 28, arcR: 110, ringSpread: 60, coreGap: 28,
           coreTextPad: 8, nameSize: 0.88, subSize: 0.84,
         },
       };
@@ -4486,12 +4487,16 @@
       // onde troca de lado) é reescolhido a cada desenho para equilibrar a
       // altura dos dois lados, então abrir um galho gigante gira o anel até
       // ele caber sozinho de um lado, com os fechados juntinhos do outro.
-      // E o quanto cada setor se afasta do tronco
-      // sai da distância vertical entre a faixa dele e a linha do tronco: os
-      // de cima e os de baixo vêm para perto do eixo, os do meio se abrem —
-      // é o arco que devolve a silhueta de anel do layout antigo. O arco é
-      // só aparência e não pode criar sobreposição: empurrar um setor para
-      // dentro ou para fora não muda a faixa de y dele.
+      // E cada setor mira um ponto de uma circunferência centrada no
+      // tronco: em cada lado, ângulos iguais dentro de ±M.ringSpread, com o
+      // centro da caixa sobre o anel. O raio cresce com o número de setores
+      // (ringRadius), o bastante para os vizinhos fechados não se tocarem,
+      // e por isso o anel continua redondo quando o tronco ganha setores.
+      // Um galho aberto não muda o raio: ele empurra os vizinhos na
+      // vertical só o necessário (spreadBands), e cada um vai para o ponto
+      // do anel na altura em que ficou. O anel é só aparência e não pode
+      // criar sobreposição: mover um setor para dentro ou para fora não
+      // muda a faixa de y dele.
       //
       // Só nós VISÍVEIS ocupam espaço: quem está fechado não reserva lugar,
       // e nós ocultos herdam a posição do pai para emergirem de dentro dele
@@ -4578,41 +4583,66 @@
           });
         }
 
-        // Altura de uma pilha de galhos, com as folgas entre eles.
-        function stackHeight(list) {
-          if (!list.length) return 0;
-          return list.reduce((a, b) => a + b, 0) + M.sectorGap * (list.length - 1);
+        // O anel: os setores se apoiam numa circunferência centrada no
+        // tronco, com o CENTRO de cada caixa sobre ela. Cada lado distribui
+        // os seus setores em ângulos iguais dentro de ±M.ringSpread graus
+        // (0° = na altura do tronco), e os dois lados usam a mesma faixa,
+        // então um lado com um setor a mais não sai torto.
+        function ringAngles(count) {
+          const max = M.ringSpread * Math.PI / 180;
+          if (count < 2) return [0];
+          return Array.from({ length: count }, (_, k) => -max + 2 * max * k / (count - 1));
         }
 
-        // Onde a caixa do setor começa, medido do centro do tronco. Quanto
-        // mais longe da linha do tronco a faixa do setor estiver, mais para
-        // dentro ele pode vir — daí o arco. O segundo termo é a garantia de
-        // que nenhuma caixa encoste no círculo do tronco, mesmo que o arco
-        // um dia seja configurado menor que ele.
-        // Onde a caixa do setor começa, medido do centro do tronco.
-        //
-        // O bojo é uma meia-elipse NORMALIZADA PELA PRÓPRIA PILHA: o setor
-        // do meio se afasta o máximo do tronco e os das pontas encostam no
-        // eixo, quantos setores existam. Normalizar é o que mantém o anel
-        // redondo — com um raio de arco fixo, todo setor cuja faixa caísse
-        // além dele recebia o mesmo bojo zero, e as pontas do anel viravam
-        // uma coluna reta assim que o tronco ganhava setores novos.
-        //
-        // `span` nunca desce abaixo de M.arcR: num lado com um ou dois
-        // setores, a pilha inteira cabe dentro do arco e eles ficariam
-        // achatados contra o eixo sem esse piso.
-        //
-        // O segundo termo é a garantia dura: enquanto a FAIXA do setor
-        // cruzar a altura do tronco, a caixa começa depois dele inteiro, com
-        // a folga — no contorno de uma imagem, a folga vale a partir do
-        // desenho, em qualquer direção (ver coreClearance). Ele olha a
-        // faixa, e não o centro do setor, porque é a faixa que pode encostar
-        // no tronco — um galho alto tem o nó no meio dele, longe de onde a
-        // caixa realmente passa.
-        function innerOffset(y0, y1, centerY, span, dir) {
-          const t = centerY / span;
-          const bulge = M.arcR * Math.sqrt(Math.max(0, 1 - t * t));
-          return Math.max(M.coreGap + bulge, coreClearance(y0, y1, dir));
+        // O raio cresce com o número de setores, e só com ele: é o menor
+        // raio em que, com tudo fechado, dois vizinhos do mesmo lado ficam
+        // separados por M.sectorGap na vertical. Abrir um galho não muda o
+        // raio — quem cede lugar é a pilha (ver spreadBands) —, então o anel
+        // não pula para os lados a cada clique. O piso é o anel de sempre,
+        // com o tronco dentro dele se o tronco for maior que o arco.
+        function ringRadius(sides, ownHeights) {
+          let radius = M.coreGap + Math.max(M.arcR, ROOT.hw) + M.nodeW / 2;
+          sides.forEach((idxs) => {
+            const sin = ringAngles(idxs.length).map(Math.sin);
+            for (let k = 1; k < idxs.length; k += 1) {
+              const need = (ownHeights[idxs[k - 1]] + ownHeights[idxs[k]]) / 2 + M.sectorGap;
+              radius = Math.max(radius, need / (sin[k] - sin[k - 1]));
+            }
+          });
+          return radius;
+        }
+
+        // Aproxima as faixas dos alvos sem deixar duas se cruzarem: cada
+        // faixa (topo `want`, altura `size`) precisa começar M.sectorGap
+        // depois do fim da anterior. Descontando de cada alvo o espaço das
+        // faixas de cima, a restrição vira "topos em ordem crescente" — e a
+        // ordem mais próxima dos alvos sai da regressão isotônica (blocos
+        // que se cruzam se fundem na média). Com tudo fechado os alvos já
+        // estão em ordem e nada se move; um galho aberto empurra os
+        // vizinhos para cima e para baixo por igual, e não só para baixo.
+        function spreadBands(want, size) {
+          const shift = [];
+          let acc = 0;
+          size.forEach((s) => { shift.push(acc); acc += s + M.sectorGap; });
+          const blocks = [];
+          want.forEach((w, i) => {
+            blocks.push({ sum: w - shift[i], count: 1 });
+            while (blocks.length > 1) {
+              const last = blocks[blocks.length - 1];
+              const prev = blocks[blocks.length - 2];
+              if (prev.sum / prev.count <= last.sum / last.count) break;
+              prev.sum += last.sum;
+              prev.count += last.count;
+              blocks.pop();
+            }
+          });
+          const tops = [];
+          blocks.forEach((block) => {
+            for (let k = 0; k < block.count; k += 1) {
+              tops.push(block.sum / block.count + shift[tops.length]);
+            }
+          });
+          return tops;
         }
 
         treeData.root.x = 0;
@@ -4659,23 +4689,32 @@
           return { start: bestStart, cut: bestCut };
         }
 
-        const n = sectors.length;
-        const split = ringSplit(heights);
-        const right = [];
-        const left = [];
-        for (let i = 0; i < n; i += 1) {
-          const idx = (split.start + i) % n;
-          (i < split.cut ? right : left).push(idx);
+        // Índices de cada lado, de cima para baixo.
+        function sidesOf(count, split) {
+          const r = [];
+          const l = [];
+          for (let i = 0; i < count; i += 1) {
+            const idx = (split.start + i) % count;
+            (i < split.cut ? r : l).push(idx);
+          }
+          return [r, l.reverse()];
         }
-        left.reverse();
+
+        const n = sectors.length;
+        const [right, left] = sidesOf(n, ringSplit(heights));
+
+        // A volta com tudo fechado: dela saem o raio do anel e o lado em
+        // que cada setor "mora".
+        const all = treeData.root.children;
+        const ownHeights = all.map((s) => s.h || M.nodeMinH);
+        const home = ringSplit(ownHeights);
+        const radius = ringRadius(sidesOf(all.length, home), ownHeights);
 
         // Um galho por vez: com um setor só à vista, ele fica do lado em que
         // mora quando estão todos fechados. Sozinho no anel ele iria sempre
         // para a direita, e cada setor aberto do lado esquerdo pularia de
         // lado — o olho perderia o galho que acabou de clicar.
-        const all = treeData.root.children;
         if (n === 1 && all.length > 1) {
-          const home = ringSplit(all.map((s) => s.h || M.nodeMinH));
           const turn = (all.indexOf(sectors[0]) - home.start + all.length) % all.length;
           if (turn >= home.cut) left.push(right.pop());
         }
@@ -4685,31 +4724,33 @@
           const idxs = entry[1];
           if (!idxs.length) return;
 
-          // A vertical primeiro: o empilhamento não depende do arco, e o
-          // arco precisa saber de antemão até onde a pilha vai.
-          const linha = [];
-          let cursor = -stackHeight(idxs.map((i) => heights[i])) / 2;
-          idxs.forEach((i) => {
+          // A vertical primeiro: cada setor mira o ponto do anel no seu
+          // ângulo, e spreadBands abre espaço se algum galho aberto pedir.
+          const sin = ringAngles(idxs.length).map(Math.sin);
+          const flip = idxs.map((i) => (dir > 0 ? boxes[i]
             // A caixa foi medida crescendo para a direita; do lado esquerdo
             // ela é a mesma, espelhada — a altura não muda com o lado.
-            const box = dir > 0 ? boxes[i]
-              : { l: -boxes[i].r, r: -boxes[i].l, t: boxes[i].t, b: boxes[i].b };
-            const top = cursor;
-            const bottom = top + heights[i];
-            sectors[i].y = top - box.t;
-            linha.push({ node: sectors[i], box: box, top: top, bottom: bottom });
-            cursor = bottom + M.sectorGap;
-          });
-
-          // Agora a horizontal, com a pilha inteira já conhecida.
-          const span = Math.max(
-            M.arcR,
-            linha.reduce((max, l) => Math.max(max, Math.abs(l.node.y)), 0)
+            : { l: -boxes[i].r, r: -boxes[i].l, t: boxes[i].t, b: boxes[i].b }));
+          const tops = spreadBands(
+            idxs.map((i, k) => radius * sin[k] + flip[k].t),
+            idxs.map((i) => heights[i])
           );
-          linha.forEach((l) => {
-            const inner = innerOffset(l.top, l.bottom, l.node.y, span, dir);
-            l.node.x = dir > 0 ? inner - l.box.l : -inner - l.box.r;
-            placeBranch(l.node, dir);
+
+          // Agora a horizontal: o centro do setor vai para o anel na altura
+          // em que ele ficou. Quem a pilha empurrou para além do raio fica
+          // o mais perto possível do eixo. O piso é a garantia dura: a
+          // caixa nunca começa antes de M.coreGap, nem antes do tronco
+          // enquanto a FAIXA dela cruzar a altura dele (ver coreClearance).
+          idxs.forEach((i, k) => {
+            const node = sectors[i];
+            const box = flip[k];
+            const top = tops[k];
+            const bottom = top + heights[i];
+            node.y = top - box.t;
+            const reach = Math.sqrt(Math.max(0, radius * radius - node.y * node.y));
+            const inner = Math.max(reach - halfW(node), M.coreGap, coreClearance(top, bottom, dir));
+            node.x = dir > 0 ? inner - box.l : -inner - box.r;
+            placeBranch(node, dir);
           });
         });
 
